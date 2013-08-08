@@ -1,3 +1,7 @@
+##########
+# Python #
+##########
+
 *.py[cod]
 
 # C extensions
@@ -33,3 +37,9 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+########
+# Misc #
+########
+spice
+_spice.so
