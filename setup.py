@@ -11,6 +11,7 @@ try:
 except ImportError:
     from distutils.core import setup
 
+
 # METADATA
 version = '0.0.1'
 
