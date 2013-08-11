@@ -98,7 +98,8 @@ class Body(object):
     def get_data(self, times, observer='SUN', ref_frame='ECLIPJ2000',
         abcorr=None):
         #TODO type checking
-        #TODO conversion if observer is a Body
+        if isinstance(observer, Body):
+            observer = observer.name
         if isinstance(times, numbers.Real):
             times = [float(real)]
         if isinstance(times, collections.Iterable):

@@ -24,7 +24,7 @@ if not os.path.isdir(spice_path):
     print 'ERROR: spice not found'
     sys.exit(1)
 
-cwrapper = Extension('spiceminer._libspice', ['cwrapper/ckgp.c'],
+cwrapper = Extension('spiceminer.libspice', ['cwrapper/ckgp.c'],
     include_dirs=[spice_path])
 
 metadata = {

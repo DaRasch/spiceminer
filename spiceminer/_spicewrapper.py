@@ -3,7 +3,7 @@
 
 from ctypes import *
 
-cspice = CDLL('_libspice.so')
+cspice = CDLL('libspice.so')
 
 
 def ckgp(spacecraft_id, instrument_id, et, tol, ref_frame):
@@ -13,4 +13,5 @@ def ckgp(spacecraft_id, instrument_id, et, tol, ref_frame):
     cspice.ckgp_c2(spacecraft_id, instrument_id, et, tol, ref_frame, cmat,
         byref(clkout), byref(found))
     if not found:
-        raise Exception():
+        raise Exception()
+    return
