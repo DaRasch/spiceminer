@@ -5,7 +5,7 @@ import os
 
 import spice
 
-import _bodies as bodies
+import bodies
 
 from _helpers import ignored
 
@@ -41,15 +41,15 @@ def unload(path):
                 spice.unload(item)
 
 def get(body_id):
-    if isinstance(body_id, str):
+    if isinstance(body_id, basestring):
         body_id = spice.bodn2c(body_id)
         if body_id is not None:
-            return bodies.makebody(body_id)
+            return bodies.Body(body_id)
         else:
             raise ValueError('get() got invalid name {}'.format(body_id))
     elif isinstance(body_id, int):
         if spice.bodc2n(body_id) is not None:
-            return bodies.makebody(body_id)
+            return bodies.Body(body_id)
         else:
             raise ValueError('get() got invalid id {}'.format(body_id))
     else:
