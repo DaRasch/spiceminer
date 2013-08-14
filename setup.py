@@ -21,7 +21,7 @@ with open('LICENSE') as f:
 
 spice_path = os.path.join(os.getenv('CSPICEPATH', 'cspice'), 'include')
 if not os.path.isdir(spice_path):
-    print 'ERROR: spice not found'
+    print 'ERROR: spice not found' #TODO find library in default locations
     sys.exit(1)
 
 cwrapper = Extension('spiceminer.libspice', ['cwrapper/ckgp.c'],
