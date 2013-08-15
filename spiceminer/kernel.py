@@ -3,11 +3,10 @@
 
 import os
 
-import spice
+import spiceminer._spicewrapper as spice
+import spiceminer.bodies as bodies
 
-import bodies
-
-from _helpers import ignored
+from spiceminer._helpers import ignored
 
 __all__ = ['load', 'unload', 'get', 'LOADED_KERNELS']
 
@@ -15,11 +14,12 @@ __all__ = ['load', 'unload', 'get', 'LOADED_KERNELS']
 LOADED_KERNELS = set()
 
 
-def load(path='.', recursions=99):
+def load(path='.', recursions=99): #XXX use os.walk for recursion?
     def _loader(path, recursions):
         if os.path.isdir(path) and recursions > 0:
-            return sum(_loader(os.path.join(path, d), recursions - 1) for d in os.listdir(path))
-        with ignored(spice.SpiceException):
+            return sum(_loader(os.path.join(path, d), recursions - 1)
+                for d in os.listdir(path))
+        with ignored(spice.SpiceError):
             spice.furnsh(path)
             LOADED_KERNELS.add(path)
             return 1
@@ -53,8 +53,8 @@ def get(body_id):
         else:
             raise ValueError('get() got invalid id {}'.format(body_id))
     else:
-        msg = 'get() integer or str argument expected, got {}'.format(type(body_id))
-        raise TypeError(msg)
+        msg = 'get() integer or str argument expected, got {}'
+        raise TypeError(msg.format(type(body_id)))
 
 
 

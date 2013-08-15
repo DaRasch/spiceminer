@@ -3,6 +3,7 @@
 
 import os
 import sys
+import glob
 
 try:
     from setuptools import setup, Extension
@@ -18,9 +19,7 @@ if not os.path.isdir(cspice_root):
 cspice_include = os.path.join(cspice_root, 'include')
 cspice_lib = os.path.join(cspice_root, 'lib', 'cspice.a') #XXX same under windows?
 
-src_files = ['cwrapper/ckgp.c',
-            'cwrapper/bodn2c.c',
-            'cwrapper/bodc2n.c']
+src_files = glob.glob('cwrapper/*.c')
 cwrapper = Extension('spiceminer.libspice', src_files,
     include_dirs=[cspice_include],
     extra_link_args=[cspice_lib])

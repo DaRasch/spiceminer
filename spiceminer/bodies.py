@@ -7,7 +7,7 @@ import numpy
 
 import spiceminer.spice as spice
 
-from spiceminer._time import Time
+from spiceminer.time import Time
 from spiceminer._helpers import ignored
 
 __all__ = ['Body']
