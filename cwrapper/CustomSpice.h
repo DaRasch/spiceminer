@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 /* constants */
+#define STR_LEN 256
 #define ERROR_LEN 26
 
 

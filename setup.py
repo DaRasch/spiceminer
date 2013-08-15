@@ -10,7 +10,23 @@ except ImportError:
     from distutils.core import setup, Extension
 
 
-# METADATA
+### BUILD C-EXTENSION ###
+cspice_root = os.getenv('CSPICEPATH', 'cspice')
+if not os.path.isdir(cspice_root):
+    print 'ERROR: spice not found' #XXX search lib in default locations?
+    sys.exit(1)
+cspice_include = os.path.join(cspice_root, 'include')
+cspice_lib = os.path.join(cspice_root, 'lib')
+
+src_files = ['cwrapper/ckgp.c',
+            'cwrapper/bodn2c.c',
+            'cwrapper/bodc2n.c']
+cwrapper = Extension('spiceminer.libspice', src_files,
+    include_dirs=[cspice_include],
+    library_dirs=[cspice_lib])
+
+
+### METADATA ###
 version = '0.0.1'
 
 with open('README.md') as f:
@@ -18,14 +34,6 @@ with open('README.md') as f:
 
 with open('LICENSE') as f:
     license = f.read()
-
-spice_path = os.path.join(os.getenv('CSPICEPATH', 'cspice'), 'include')
-if not os.path.isdir(spice_path):
-    print 'ERROR: spice not found' #TODO find library in default locations
-    sys.exit(1)
-
-cwrapper = Extension('spiceminer.libspice', ['cwrapper/ckgp.c'],
-    include_dirs=[spice_path])
 
 metadata = {
     'name': 'spiceminer',

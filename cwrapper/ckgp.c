@@ -1,4 +1,3 @@
-#include "SpiceUsr.h"
 #include "CustomSpice.h"
 
 char* ckgp_custom(int spacecraft_id, int instrument_id, double et, double tol, char* ref, double cmat[3][3], double* clkout, int* found){
