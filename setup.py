@@ -16,14 +16,14 @@ if not os.path.isdir(cspice_root):
     print 'ERROR: spice not found' #XXX search lib in default locations?
     sys.exit(1)
 cspice_include = os.path.join(cspice_root, 'include')
-cspice_lib = os.path.join(cspice_root, 'lib')
+cspice_lib = os.path.join(cspice_root, 'lib', 'cspice.a') #XXX same under windows?
 
 src_files = ['cwrapper/ckgp.c',
             'cwrapper/bodn2c.c',
             'cwrapper/bodc2n.c']
 cwrapper = Extension('spiceminer.libspice', src_files,
     include_dirs=[cspice_include],
-    library_dirs=[cspice_lib])
+    extra_link_args=[cspice_lib])
 
 
 ### METADATA ###
