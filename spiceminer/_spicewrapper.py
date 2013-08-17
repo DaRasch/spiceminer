@@ -7,7 +7,7 @@ import ctypes
 import functools
 import numpy
 
-from ctypes import c_int, c_char_p, byref, POINTER
+from ctypes import c_int, c_double, c_char_p, byref, POINTER
 
 cwrapper = os.path.join(os.path.dirname(__file__), 'libspice.*') #FIXME fails when module is loaded from within its own directory
 cwrapper = next(glob.iglob(cwrapper)) #TODO find better system independant alternative for glob
@@ -66,6 +66,35 @@ cspice.unload_custom.restype = c_char_p
 cspice.unload_custom.errcheck = errcheck
 def unload(path):
     cspice.unload_custom(path)
+
+### Time conversion ###
+cspice.utc2et_custom.argtypes = [c_char_p, POINTER(c_double)]
+cspice.utc2et_custom.restype = c_char_p
+cspice.utc2et_custom.errcheck = errcheck
+def utc2et(time_string):
+    et = c_double()
+    cspice.utc2et_custom(time_string, byref(et))
+    return et.value
+
+cspice.unitim_custom.argtypes = [POINTER(c_double), c_char_p, c_char_p]
+cspice.unitim_custom.restype = c_char_p
+cspice.unitim_custom.errcheck = errcheck
+def unitim(et, insys, outsys):
+    et = c_double(et)
+    cspice.unitim_custom(byref(et), insys, outsys)
+    return et.value
+
+### Get position, velocity, etc. ###
+cspice.spkezr_custom.argtypes = [c_char_p, c_double, c_char_p, c_char_p,
+    c_char_p]
+cspice.spkezr_custom.restype = c_char_p
+cspice.spkezr_custom.errcheck = errcheck
+def spkezr(target, et, ref, abcorr, observer):
+    output = c_double * 6
+    light_time = c_double
+    cspice.spkezr_custom(target, et, ref, abcorr, observer, output,
+        byref(light_time))
+    return output[::], light_time
 
 ### get pointing ###
 def ckgp(spacecraft_id, instrument_id, et, tol, ref_frame):

@@ -5,9 +5,9 @@ import collections
 import numbers
 import numpy
 
-import spiceminer.spice as spice
+import spiceminer._spicewrapper as spice
 
-from spiceminer.time import Time
+from spiceminer.time_ import Time
 from spiceminer._helpers import ignored
 
 __all__ = ['Body']
@@ -15,9 +15,9 @@ __all__ = ['Body']
 ### Helper ###
 def _data_generator(name, times, ref_frame, abcorr, observer):
     for time in times:
-        with ignored(spice.SpiceException): #XXX good practice to ignore errors?
-            yield [time] + list(spice.spkezr(name, Time.fromposix(time).et(),
-                ref_frame, abcorr, observer)[0])
+        with ignored(spice.SpiceError): #XXX good practice to ignore errors?
+            yield [time] + spice.spkezr(name, Time.fromposix(time).et(),
+                ref_frame, abcorr, observer)[0]
 
 def _child_generator(start, stop):
     for i in xrange(start, stop):

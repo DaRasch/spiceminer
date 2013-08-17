@@ -7,7 +7,7 @@ import time
 import calendar
 import datetime
 
-import spice
+import spiceminer._spicewrapper as spice
 
 __all__ = ['Time']
 
@@ -36,7 +36,8 @@ class Time(numbers.Real):
 
     @classmethod
     def fromdatetime(cls, dt):
-        return cls(*dt.utctimetuple()[:5], second=dt.second + dt.microsecond / 1000.0)
+        return cls(*dt.utctimetuple()[:5],
+            second=dt.second + dt.microsecond / 1000.0)
 
     ### Real-type stuff###
     @property
@@ -155,7 +156,7 @@ class Time(numbers.Real):
     ### Representation ###
     def __str__(self):
         fraction = float(self) - int(self.real)
-        return time.strftime("%Y-%m-%dT%H:%M:%S.", self.timetuple()) + str(fraction)[2:]
+        return time.strftime("%Y-%m-%dT%H:%M:%S.",self.timetuple()) + str(fraction)[2:]
 
     def __repr__(self):
         tmp = self.timetuple()
