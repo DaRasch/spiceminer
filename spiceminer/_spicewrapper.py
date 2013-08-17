@@ -12,6 +12,7 @@ from ctypes import c_int, c_double, c_char_p, byref, POINTER
 cwrapper = os.path.join(os.path.dirname(__file__), 'libspice.*') #FIXME fails when module is loaded from within its own directory
 cwrapper = next(glob.iglob(cwrapper)) #TODO find better system independant alternative for glob
 cspice = ctypes.CDLL(cwrapper)
+cspice.erract_custom('SET', 'RETURN')
 del cwrapper
 del os, glob
 
@@ -27,7 +28,7 @@ def typecheck(f, *args): #XXX necessary? overhead vs. clear error message
 
 def errcheck(result, func, args):
     if result:
-        raise SpiceError(result.value)
+        raise SpiceError(result)
     return args[-1] #XXX is -1 always 'found'?
 
 
@@ -86,25 +87,27 @@ def unitim(et, insys, outsys):
 
 ### Get position, velocity, etc. ###
 cspice.spkezr_custom.argtypes = [c_char_p, c_double, c_char_p, c_char_p,
-    c_char_p]
+    c_char_p, POINTER(c_double * 6), POINTER(c_double)]
 cspice.spkezr_custom.restype = c_char_p
 cspice.spkezr_custom.errcheck = errcheck
 def spkezr(target, et, ref, abcorr, observer):
-    output = c_double * 6
-    light_time = c_double
-    cspice.spkezr_custom(target, et, ref, abcorr, observer, output,
+    output = (c_double * 6)()
+    light_time = c_double()
+    cspice.spkezr_custom(target, et, ref, abcorr, observer, byref(output),
         byref(light_time))
-    return output[::], light_time
+    return output[::], light_time.value
 
 ### get pointing ###
+cspice.ckgp_custom.argtypes = [c_int, c_int, c_double, c_double, c_char_p,
+    POINTER(c_double * 9), POINTER(c_double), POINTER(c_int)]
+cspice.ckgp_custom.restype = c_char_p
+cspice.ckgp_custom.errcheck = errcheck
 def ckgp(spacecraft_id, instrument_id, et, tol, ref_frame):
-    cmat = c_int * 9
+    cmat = (c_int * 9)()
     clkout = c_double()
     found = c_int()
-    error_msg = cspice.ckgp_custom(spacecraft_id, instrument_id, et, tol,
-        ref_frame, cmat, byref(clkout), byref(found))
-    if error_msg:
-        raise SpiceError(error_msg)
+    cspice.ckgp_custom(spacecraft_id, instrument_id, et, tol, ref_frame,
+        byref(cmat), byref(clkout), byref(found))
     if not found:
-        raise Exception('No data found') #TODO find good exception
+        return None
     return (numpy.array(cmat).reshape(3, 3), float(clkout))
