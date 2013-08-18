@@ -18,6 +18,7 @@ class Time(numbers.Real):
         super(Time, self).__init__()
         #TODO allow kwargs
         #TODO check arg ranges
+        #FIXME limit ranges and types
         self._value = calendar.timegm([year, month, day, hour, minute, 0, 0, 0,
             -1]) + second
 

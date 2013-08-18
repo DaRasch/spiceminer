@@ -34,6 +34,9 @@ class Body(object):
     _ABCORR = 'NONE'
 
     def __new__(cls, body_id, *args, **kwargs):
+        if not isinstance(body_id, numbers.Integral):
+            msg = 'Body.__new__() integer argument expected, got {}'
+            raise TypeError(msg.format(type(body_id)))
         ### factory function ###
         if body_id in Body._CACHE:
             body = Body._CACHE[body_id]
@@ -65,7 +68,7 @@ class Body(object):
         self._id = body_id
         self._name = spice.bodc2n(body_id)
         if self._name is None:
-            msg = '__init__() {} is not a valid option'
+            msg = 'Body.__init__() {} is not a valid ID'
             raise ValueError(msg.format(body_id))
 
     def __str__(self):
@@ -77,31 +80,37 @@ class Body(object):
     @property
     def id(self):
         return self._id
-
     @property
     def name(self):
         return self._name
-
     @property
     def parent(self):
         return None
-
     @property
     def children(self):
         return []
 
     def get_data(self, times, observer='SUN', ref_frame='ECLIPJ2000',
         abcorr=None):
-        #TODO type checking
         if isinstance(observer, Body):
             observer = observer.name
         if isinstance(times, numbers.Real):
             times = [float(times)]
         if isinstance(times, collections.Iterable):
-            return numpy.array(_data_generator(self.name, times, ref_frame,
-                abcorr or Body._ABCORR, observer)).transpose()
+            return numpy.array(tuple(_data_generator(self.name, times,
+                ref_frame, abcorr or Body._ABCORR, observer))).transpose()
         msg = 'get_data() Real or Iterable argument expected, got {}'
         raise TypeError(msg.format(type(times)))
+
+    def get_pointing(self, times, observer='SUN', ref_frame='ECLIPJ2000',
+        abcorr=None):
+        if isinstance(observer, basestring):
+            observer = Body(spice.bodn2c(observer))
+        if isinstance(times, numbers.Real):
+            times = [float(times)]
+        if isinstance(times, collections.Iterable):
+            for time in times:
+                return spice.ckgp(self.id, observer.id, Time.fromposix(time).et() , 1000, ref_frame)
 
 
 class Asteroid(Body):
