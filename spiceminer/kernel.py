@@ -14,21 +14,32 @@ __all__ = ['load', 'unload', 'get', 'LOADED_KERNELS']
 LOADED_KERNELS = set()
 
 
-def load(path='.', recursions=99): #XXX use os.walk for recursion?
-    def _loader(path, recursions):
-        if os.path.isdir(path) and recursions > 0:
-            return sum(_loader(os.path.join(path, d), recursions - 1)
-                for d in os.listdir(path))
+# def load(path='.', recursions=99): #XXX use os.walk for recursion?
+#     def _loader(path, recursions):
+#         if os.path.isdir(path) and recursions > 0:
+#             return sum(_loader(os.path.join(path, d), recursions - 1)
+#                 for d in os.listdir(path))
+#         with ignored(spice.SpiceError):
+#             spice.furnsh(path)
+#             LOADED_KERNELS.add(path)
+#             return 1
+#         return 0
+
+#     count = _loader(path, recursions)
+#     if count == 0:
+#         raise IOError('no kernels loaded')
+#     return count
+
+def load(path='.'):
+    def _loader(path):
         with ignored(spice.SpiceError):
             spice.furnsh(path)
             LOADED_KERNELS.add(path)
             return 1
         return 0
+    return sum((_loader(os.path.join(item[0], f)) for f in item[2])
+        for item in os.walk(path))
 
-    count = _loader(path, recursions)
-    if count == 0:
-        raise IOError('no kernels loaded')
-    return count
 
 def unload(path):
     try:

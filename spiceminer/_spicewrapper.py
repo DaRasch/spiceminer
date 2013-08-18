@@ -9,7 +9,7 @@ import numpy
 
 from ctypes import c_int, c_double, c_char_p, byref, POINTER
 
-cwrapper = os.path.join(os.path.dirname(__file__), 'libspice.*') #FIXME fails when module is loaded from within its own directory
+cwrapper = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'libspice.*')
 cwrapper = next(glob.iglob(cwrapper)) #TODO find better system independant alternative for glob
 cspice = ctypes.CDLL(cwrapper)
 cspice.erract_custom('SET', 'RETURN')

@@ -43,6 +43,7 @@ metadata = {
     'author_email': 'ph.r@hotmail.de',
     'url': 'https://github.com/DaRasch/spiceminer',
     'download_url': 'https://github.com/DaRasch/spiceminer/archive/master.zip',
+    'platforms': 'any',
     'license': license,
     'packages': ['spiceminer'],
     'ext_modules': [cwrapper],

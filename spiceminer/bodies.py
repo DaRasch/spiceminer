@@ -98,8 +98,8 @@ class Body(object):
         if isinstance(times, numbers.Real):
             times = [float(times)]
         if isinstance(times, collections.Iterable):
-            return numpy.array(tuple(_data_generator(self.name, times,
-                ref_frame, abcorr or Body._ABCORR, observer))).transpose()
+            return numpy.array(_data_generator(self.name, times, ref_frame,
+                abcorr or Body._ABCORR, observer)).transpose()
         msg = 'get_data() Real or Iterable argument expected, got {}'
         raise TypeError(msg.format(type(times)))
 
