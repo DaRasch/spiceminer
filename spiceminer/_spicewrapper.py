@@ -72,10 +72,19 @@ def unload(path):
 cspice.utc2et_custom.argtypes = [c_char_p, POINTER(c_double)]
 cspice.utc2et_custom.restype = c_char_p
 cspice.utc2et_custom.errcheck = errcheck
-def utc2et(time_string):
+def utc2et(time_string): # Outdatet and unused
     et = c_double()
     cspice.utc2et_custom(time_string, byref(et))
     return et.value
+
+cspice.deltet_custom.argtypes = [c_double, c_char_p, POINTER(c_double)]
+cspice.deltet_custom.restype = c_char_p
+cspice.deltet_custom.errcheck = errcheck
+def deltet(time, source_format):
+    delta = c_double()
+    cspice.deltet_custom(time, source_format, byref(delta))
+    return delta.value
+
 
 cspice.unitim_custom.argtypes = [POINTER(c_double), c_char_p, c_char_p]
 cspice.unitim_custom.restype = c_char_p
@@ -102,7 +111,7 @@ cspice.ckgp_custom.argtypes = [c_int, c_int, c_double, c_double, c_char_p,
 cspice.ckgp_custom.restype = c_char_p
 cspice.ckgp_custom.errcheck = errcheck
 def ckgp(spacecraft_id, instrument_id, et, tol, ref_frame):
-    cmat = (c_int * 9)()
+    cmat = (c_double * 9)()
     clkout = c_double()
     found = c_int()
     cspice.ckgp_custom(spacecraft_id, instrument_id, et, tol, ref_frame,

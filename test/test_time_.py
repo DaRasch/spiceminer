@@ -13,7 +13,7 @@ def test_init_valid():
 
 @tools.raises(ValueError)
 def test_init_fail_year_0():
-    Time(year=0)
+    Time(year=1899)
 @tools.raises(TypeError)
 def test_init_fail_year_float():
     Time(year=0.1)

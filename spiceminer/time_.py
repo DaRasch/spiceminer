@@ -194,7 +194,7 @@ class Time(numbers.Real):
         return time.gmtime(self.real)
 
     def et(self):
-        return spice.utc2et(str(self))
+        return self.real - 946728000 - spice.deltet(self, 'UTC')
 
     def tai(self):
         return spice.unitim(self.et(), 'ET', 'TAI')
