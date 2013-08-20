@@ -110,7 +110,7 @@ class Body(object):
             times = [float(times)]
         if isinstance(times, collections.Iterable):
             for time in times:
-                return spice.ckgp(self.id, observer.id, Time.fromposix(time).et() , 1000, ref_frame)
+                return spice.ckgp(self.id, observer.id, Time.fromposix(time).et() , 10000, ref_frame)
 
 
 class Asteroid(Body):

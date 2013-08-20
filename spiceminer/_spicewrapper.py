@@ -13,6 +13,7 @@ cwrapper = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'libspice.*'
 cwrapper = next(glob.iglob(cwrapper)) #TODO find better system independant alternative for glob
 cspice = ctypes.CDLL(cwrapper)
 cspice.erract_custom('SET', 'RETURN')
+cspice.errdev_custom('SET', 'NULL')
 del cwrapper
 del os, glob
 

@@ -42,5 +42,4 @@ nosetests.xml
 ########
 # Misc #
 ########
-spice
-_spice.so
+cspice
