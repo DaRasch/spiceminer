@@ -19,12 +19,10 @@ def _data_generator(name, times, ref_frame, abcorr, observer):
             yield [time] + spice.spkezr(name, Time.fromposix(time).et(),
                 ref_frame, abcorr, observer)[0]
 
-def _child_generator(start, stop):
-    for i in xrange(start, stop):
-        try:
+def _child_generator(start, stop, step=1):
+    for i in xrange(start, stop, step):
+        with ignored(ValueError):
             yield Body(i)
-        except ValueError: #XXX better check complete range?
-            break
 
 
 class Body(object):
@@ -134,7 +132,8 @@ class Instrument(Body):
 
     @property
     def parent(self):
-        spacecraft_id = self.id % 1000
+        offset = 0 if self.id % 1000 == 0 else -1
+        spacecraft_id = self.id / 1000 + offset
         return Body(spacecraft_id)
 
 
@@ -165,4 +164,4 @@ class Spacecraft(Body):
 
     @property
     def children(self):
-        return list(_child_generator(self.id * 1000, self.id * 1000 + 1000))
+        return list(_child_generator(self.id * 1000, self.id * 1000 - 1000, -1))
