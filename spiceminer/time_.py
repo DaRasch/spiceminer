@@ -106,7 +106,7 @@ class Time(numbers.Real):
     def __add__(self, other):
         if isinstance(other, Time):
             return NotImplemented
-        if isinstance(other, (numbers.Integral, numbers.Real)):
+        if isinstance(other, numbers.Real):
             new = Time()
             new._value = self.real + other.real
             return new
@@ -115,7 +115,7 @@ class Time(numbers.Real):
     def __sub__(self, other): #XXX allow sub with datetime or timedelta?
         if isinstance(other, Time):
             return self.real - other.real
-        if isinstance(other, (numbers.Integral, numbers.Real)):
+        if isinstance(other, numbers.Real):
             new = Time()
             new._value = self.real - other.real
             return new
@@ -137,7 +137,7 @@ class Time(numbers.Real):
     ### Self is right operand ###
     def __radd__(self, other): #XXX should returntype be Time?
         try:
-            return other + self.real
+            return self.real + other
         except ValueError:
             return NotImplemented
 

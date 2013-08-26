@@ -48,6 +48,5 @@ def dtrange(*args):
     def _datetimemutator(args):
         for arg in args[:2]:
             yield float(Time.fromdatetime(arg))
-        if len(args) > 2:
-            yield args[2].total_seconds()
+        yield args[2].total_seconds()
     return _basicrange(args, _datetimemutator, 'dtrange')

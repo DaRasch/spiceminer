@@ -104,6 +104,8 @@ class Body(object):
         abcorr=None):
         if isinstance(observer, basestring):
             observer = Body(spice.bodn2c(observer))
+        elif isinstance(observer, numbers.Real):
+            observer = Body(observer)
         if isinstance(times, numbers.Real):
             times = [float(times)]
         if isinstance(times, collections.Iterable):
