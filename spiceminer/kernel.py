@@ -15,35 +15,29 @@ LOADED_KERNELS = set()
 
 #TODO enforce resolution of symlinks at all times
 def load(path='.', recursive=True, followlinks=False):
-    '''
-    Load one or more kernel files.
+    '''Load a kernel file or a directory containing kernel files.
 
-    Parameters:
-    -----------
-    *path* : ``str``
-      Relative or absolute path to the file/(root)directory to load.
-    *recursive* : ``bool``
-      If *path* is a directory and *recursive* is ``True``, this will also
-      search in child directories and not only the root.
-    *followlinks* : ``bool``
-      If *path* is a directory and *recursive* and *followlinks* are both
-      ``True``, symlinked directories further up the directory tree will also
-      be traversed.
-      **WARNING** this may lead to infinite recursion.
+    :type path: ``str``
+    :arg path: Relative or absolute path to the file/(root)directory to load.
+    :type recursive: ``bool``
+    :arg recursive: If ``path`` is a directory and ``recursive`` is ``True``,
+      this will also search in child directories and not only the root.
+    :type followlinks: ``bool``
+    :arg followlinks: If ``path`` is a directory and ``recursive`` and
+      ``followlinks`` are both ``True``, symlinked directories further up the
+      directory tree will also be traversed.
 
-    Returns:
-    --------
-    ``int`` The number of loaded files.
+    .. WARNING:: Setting followlinks to ``True`` may lead to infinite
+       recursion.
 
-    Raises:
-    -------
-    Nothing.
+    :return: (``int``) -- The number of loaded files.
+    :raise: Nothing.
 
     This function will actually try to load **any** file encountered and not
-    only valid SPICE-kernel files. This may significantly slow down the laoding
-    process if many and/or big irrelevant files are encountered. The return
-    value will also be impacted by this, actually showing the number of
-    encountered files, not only kernels.
+    only valid SPICE-kernel files, possibly slowing down the loading
+    process significantly if many and/or big non-kernel files are encountered.
+    The return value will also be impacted by this, actually showing the number
+    of encountered files, not only kernels.
     '''
     def _loader(path):
         with ignored(spice.SpiceError):
@@ -62,23 +56,15 @@ def load(path='.', recursive=True, followlinks=False):
 
 #TODO enforce resolution of symlinks at all times
 def unload(path):
-    '''
-    Unload one or more kernel files.
+    '''Unload one or more kernel files.
 
-    Parameters:
-    -----------
-    *path* : ``str``
-      Relative or absolute path to the file/(root)directory to unload. Unloads
-      **all loaded** kernels further up the directory tree if *path* is a
-      directory.
+    :type path: ``str``
+    :arg path: Relative or absolute path to the file/(root)directory to unload.
+      Unloads **all** kernels further up the directory tree if ``path`` is
+      a directory.
 
-    Returns:
-    --------
-    ``int`` The number of unloaded files.
-
-    Raises:
-    -------
-    Nothing.
+    :return: (``int``) -- The number of unloaded files.
+    :raises: Nothing.
     '''
     def _unloader(path):
         #FIXME fails if different representations of a path are used on load/unload
@@ -93,24 +79,17 @@ def unload(path):
             for item in tuple(LOADED_KERNELS) if path in item)
 
 def get(body):
-    '''
-    Get an entity by name/ID.
+    '''Get an entity by name or ID.
 
-    Parameters:
-    -----------
-    *body* : ``str|int``
-      Name or ID of the entity to get.
+    :type body: ``str|int``
+    :arg body: Name or ID of the entity to get.
 
-    Returns:
-    --------
-    A ``Body``-object representing the requested entity.
+    :return: (:py:class:`~spiceminer.bodies.Body`) -- Representation of the
+      requested entity.
+    :raises:
+      (``ValueError``) -- If the provided name/ID doesn't reference an entity.
 
-    Raises:
-    -------
-    ``ValueError``
-      If the provided name/ID doesn't reference an entity.
-    ``TypeError``
-      If the *body* is neither a string nor an integer.
+      (``TypeError``) -- If ``body`` is neither a string nor an integer.
     '''
     if isinstance(body, basestring):
         body = spice.bodn2c(body)

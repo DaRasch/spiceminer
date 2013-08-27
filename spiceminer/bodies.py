@@ -26,7 +26,17 @@ def _iterbodies(start, stop, step=1):
 
 
 class Body(object):
-    """Abstract base class"""
+    '''Base class for representing ephimeres objects.
+
+    :type body_id: ``int``
+    :arg body_id: ID of the ephimeris object referenced by ``body_id``.
+    :return: (``Body``) -- Representation of the requested entity.
+    :raises:
+      (``ValueError``) -- If the provided ``body_id`` does not reference
+      any entity.
+
+      (``TypeError``) -- If the provided ``body_id`` is not of type ``int``.
+    '''
 
     _CACHE = {}
     _ABCORR = 'NONE'
