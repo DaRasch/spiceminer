@@ -24,13 +24,10 @@ class SpiceError(Exception):
 
 
 ### helper functions ###
-def typecheck(f, *args): #XXX necessary? overhead vs. clear error message
-    pass
-
 def errcheck(result, func, args):
     if result:
         raise SpiceError(result)
-    return args[-1] #XXX is -1 always 'found'?
+    #return args[-1] #XXX is -1 always 'found'?
 
 
 ### Kernel id <-> name ###
@@ -105,7 +102,7 @@ def spkezr(target, et, ref, abcorr, observer):
     light_time = c_double()
     cspice.spkezr_custom(target, et, ref, abcorr, observer, byref(output),
         byref(light_time))
-    return output[::], light_time.value
+    return output[::], light_time.value #XXX is light_time usefull?
 
 cspice.ckgp_custom.argtypes = [c_int, c_int, c_double, c_double, c_char_p,
     POINTER(c_double * 9), POINTER(c_double), POINTER(c_int)]

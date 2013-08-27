@@ -3,8 +3,8 @@
 
 /* constants */
 #define STR_LEN 256
-#define ERROR_LEN 26
 #define STR_LEN_MAX 2000
+#define ERROR_LEN 26
 
 
 /* Every function MUST return the error message */

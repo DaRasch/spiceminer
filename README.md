@@ -7,20 +7,20 @@ This module is a high level python wrapper around the SPICE c-library provided b
 
 Installation:
 -------------
-*Dependencies:* numpy
+**Dependencies:** numpy
 
-*Building:* Run ```python getspice.py``` from the project root to automatically
+**Building:** Run `python getspice.py` from the project root to automatically
 download and unpack the correct version of the c-SPICE source code.
 If you'd rather do that manually or have an existing version already available
-you can simply set an environment variable named ```CPICEPATH``` to its path.
-After that just use ```python setup.py build``` to build all necessary
+you can simply set an environment variable named `CPICEPATH` to its path.
+After that just use `python setup.py build` to build all necessary
 extensions.
 
-*Installing:* If building was successfull, just run ```python setup.py install``` and all should be good to go.
+**Installing:** If building was successfull, just run `python setup.py install` and all should be good to go.
 
 Usage:
 ------
-```
+```python
 # This example will show the basic usage of the spiceminer module.
 from spiceminer import frange, dtrange, Time, kernel
 # Or simply from spiceminer import *. I just like to be explicit.
@@ -31,8 +31,8 @@ kernel.load('../data')
 # Next get the object we desire info about:
 obj = kernel.get('MARS')
 print obj
-print 'Parent:  ', obj.parent
-print 'Children:', obj.children
+print 'Parent:  ', obj.parent()
+print 'Children:', obj.children()
 # Note: if you know the id of the object rather than the name, you can also
 #do: kernel.get(499)
 

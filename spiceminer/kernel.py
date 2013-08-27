@@ -33,7 +33,7 @@ def load(path='.', recursive=True, followlinks=False):
 
     Returns:
     --------
-    The number of loaded files.
+    ``int`` The number of loaded files.
 
     Raises:
     -------
@@ -74,7 +74,7 @@ def unload(path):
 
     Returns:
     --------
-    The number of unloaded files.
+    ``int`` The number of unloaded files.
 
     Raises:
     -------
@@ -117,9 +117,7 @@ def get(body):
         if body is not None:
             return bodies.Body(body)
         raise ValueError('get() got invalid name {}'.format(body))
-    elif isinstance(body, int):
-        if spice.bodc2n(body) is not None:
-            return bodies.Body(body)
-        raise ValueError('get() got invalid ID {}'.format(body))
+    with ignored(TypeError):
+        return bodies.Body(body)
     msg = 'get() integer or str argument expected, got {}'
     raise TypeError(msg.format(type(body)))
