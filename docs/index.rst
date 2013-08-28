@@ -16,7 +16,9 @@ Contents:
    :maxdepth: 2
 
    installation
+   tutorial
    documentation
+
 
 Indices and tables
 ==================
@@ -24,4 +26,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

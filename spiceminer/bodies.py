@@ -10,7 +10,8 @@ import spiceminer._spicewrapper as spice
 from spiceminer.time_ import Time
 from spiceminer._helpers import ignored
 
-__all__ = ['Body']
+__all__ = ['Body', 'Asteroid', 'Barycenter', 'Comet', 'Instrument', 'Planet',
+           'Satellite', 'Spacecraft']
 
 ### Helper ###
 def _data_generator(name, times, ref_frame, abcorr, observer):
@@ -72,12 +73,12 @@ class Body(object):
         return body
 
     def __init__(self, body_id):
-        Body._CACHE[body_id] = self
         self._id = body_id
         self._name = spice.bodc2n(body_id)
         if self._name is None:
             msg = 'Body() {} is not a valid ID'
             raise ValueError(msg.format(body_id))
+        Body._CACHE[body_id] = self
 
     def __str__(self):
         return self.__class__.__name__ + ' {} (ID {})'.format(self.name, self.id)
@@ -93,9 +94,14 @@ class Body(object):
         return self._name
 
     def parent(self):
+        '''Get entity, this :py:class:`~spiceminer.bodies.Body` is bound to (be
+            it orbiting or physical attachment).
+        '''
         return None
 
     def children(self):
+        '''Get enteties bound to this :py:class:`~spiceminer.bodies.Body`.
+        '''
         return []
 
     def get_data(self, times, observer='SUN', ref_frame='ECLIPJ2000',
@@ -124,21 +130,39 @@ class Body(object):
 
 
 class Asteroid(Body):
+    '''Subclass of :py:class:`~spiceminer.bodies.Body` representing asteroids.
+
+    Asteroids are ephimeris objects with IDs > 200000.
+    '''
     def __init__(self, body_id):
         super(Asteroid, self).__init__(body_id)
 
 
 class Barycenter(Body):
+    '''Subclass of :py:class:`~spiceminer.bodies.Body` representing a
+    barycenter of an ephimeris object and all of its satellites.
+
+    Barycenters are ephimeris objects with IDs between 0 and 9.
+    '''
     def __init__(self, body_id):
         super(Barycenter, self).__init__(body_id)
 
 
 class Comet(Body):
+    '''Subclass of :py:class:`~spiceminer.bodies.Body` representing comets.
+
+    Comets are ephimeris objects with IDs between 100000 and 200000.
+    '''
     def __init__(self, body_id):
         super(Comet, self).__init__(body_id)
 
 
 class Instrument(Body):
+    '''Subclass of :py:class:`~spiceminer.bodies.Body` representing instruments
+    mounted on spacecraft (including rovers and their instruments).
+
+    Instruments are ephimeris objects with IDs between -1001 and -10000.
+    '''
     def __init__(self, body_id):
         super(Instrument, self).__init__(body_id)
 
@@ -149,6 +173,11 @@ class Instrument(Body):
 
 
 class Planet(Body):
+    '''Subclass of :py:class:`~spiceminer.bodies.Body` representing planets.
+
+    Planets are ephimeris objects with IDs between 199 and 999 with
+    pattern [1-9]99.
+    '''
     def __init__(self, body_id):
         super(Planet, self).__init__(body_id)
 
@@ -160,6 +189,12 @@ class Planet(Body):
 
 
 class Satellite(Body):
+    '''Subclass of :py:class:`~spiceminer.bodies.Body` representing satellites
+    (natural bodies orbiting a planet).
+
+    Satellites are ephimeris objects with IDs between 101 and 998 with
+    pattern [1-9][0-9][1-8].
+    '''
     def __init__(self, body_id):
         super(Satellite, self).__init__(body_id)
 
@@ -168,6 +203,10 @@ class Satellite(Body):
 
 
 class Spacecraft(Body):
+    '''Subclass of :py:class:`~spiceminer.bodies.Body` representing spacecraft.
+
+    Spacecraft are ephimeris objects with IDs between -1 and -999 or < -99999.
+    '''
     def __init__(self, body_id):
         super(Spacecraft, self).__init__(body_id)
 

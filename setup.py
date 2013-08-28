@@ -11,27 +11,29 @@ except ImportError:
     from distutils.core import setup, Extension
 
 
+root_dir = os.path.dirname(os.path.realpath(__file__))
 ### BUILD C-EXTENSION ###
-cspice_root = os.getenv('CSPICEPATH', 'cspice')
+cspice_root = os.getenv('CSPICEPATH', os.path.join(root_dir, 'cspice'))
 if not os.path.isdir(cspice_root):
     print 'ERROR: spice not found' #XXX search lib in default locations?
     sys.exit(1)
 cspice_include = os.path.join(cspice_root, 'include')
 cspice_lib = os.path.join(cspice_root, 'lib', 'cspice.a') #XXX same under windows?
 
-src_files = glob.glob('cwrapper/*.c')
+src_files = glob.glob(os.path.join(root_dir, 'cwrapper', '*.c'))
 cwrapper = Extension('spiceminer.libspice', src_files,
     include_dirs=[cspice_include],
     extra_link_args=[cspice_lib])
 
 
 ### METADATA ###
-version = '0.0.1'
+with open(os.path.join(root_dir, 'VERSION')) as f:
+version = f.readline().strip()
 
-with open('README.md') as f:
+with open(os.path.join(root_dir, 'README.md')) as f:
     readme = f.read()
 
-with open('LICENSE') as f:
+with open(os.path.join(root_dir, 'LICENSE')) as f:
     license = f.read()
 
 metadata = {
@@ -50,4 +52,5 @@ metadata = {
     'requires': ['numpy']
 }
 
-setup(**metadata)
+if __name__ == '__main__':
+    setup(**metadata)
