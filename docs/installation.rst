@@ -26,3 +26,5 @@ Installation
 ============
 If building was successfull, just run ``python setup.py install`` and all
 should be good to go.
+
+.. NOTE:: The download scripts will not be installed.

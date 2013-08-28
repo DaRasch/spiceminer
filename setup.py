@@ -28,7 +28,7 @@ cwrapper = Extension('spiceminer.libspice', src_files,
 
 ### METADATA ###
 with open(os.path.join(root_dir, 'VERSION')) as f:
-version = f.readline().strip()
+    version = f.readline().strip()
 
 with open(os.path.join(root_dir, 'README.md')) as f:
     readme = f.read()
