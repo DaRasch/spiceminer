@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 #-*- coding:utf-8 -*-
 
+#WARNING: Only tested with Linux 64bit
+#TODO: Test with other platforms
+
 import os
 import sys
 import platform
+import re
+
 import urllib
 import StringIO
 import zipfile
 import subprocess
-
-SYSTEM = ['Cygwin', 'Linux', 'Mac', 'SunOS', 'Windows']
-COMPILER = ['Apple C', 'GCC']
-PROCESSOR = []
-MACHINE = ['32bit', '64bit']
 
 root_url = 'http://naif.jpl.nasa.gov/pub/naif/toolkit/C/'
 platform_urls = [
@@ -46,15 +46,26 @@ print 'SYSTEM:   ', system
 give_points(points, system)
 
 compiler = platform.python_compiler()
+compiler = re.search('(Apple|GC|Visual|Sun)C', compiler).group()
 print 'COMPILER: ', compiler
+give_points(points, compiler)
 
 processor = platform.processor()
 print 'PROCESSOR:', processor
 
 machine = '64bit' if sys.maxsize > 2**32 else '32bit'
 print 'MACHINE:  ', machine
+give_points(points, machine)
 
-result = platform_urls[5] + 'packages/cspice.tar.Z'
+def get_winner(dct):
+    candidates = dct.iteritems()
+    winner = next(candidates)
+    for item in candidates:
+        if item[1] > winner[1]:
+            winner = item
+    return winner[0]
+
+result = get_winner(points) + 'packages/cspice.tar.Z'
 print 'Best option:', result.split('/')[0]
 
 ### DOWNLOAD AND UNPACK BEST PACKAGE ###
