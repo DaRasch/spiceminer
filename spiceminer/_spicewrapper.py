@@ -27,7 +27,7 @@ class SpiceError(Exception):
 def errcheck(result, func, args):
     if result:
         raise SpiceError(result)
-    #return args[-1] #XXX is -1 always 'found'?
+    return args[-1] #XXX is -1 always 'found'?
 
 
 ### Kernel id <-> name ###
@@ -83,7 +83,6 @@ def deltet(time, source_format):
     cspice.deltet_custom(time, source_format, byref(delta))
     return delta.value
 
-
 cspice.unitim_custom.argtypes = [POINTER(c_double), c_char_p, c_char_p]
 cspice.unitim_custom.restype = c_char_p
 cspice.unitim_custom.errcheck = errcheck
@@ -93,6 +92,17 @@ def unitim(et, insys, outsys):
     return et.value
 
 ### Get position, velocity, etc. ###
+cspice.spkpos_custom.argtypes = [c_char_p, c_double, c_char_p, c_char_p,
+    c_char_p, POINTER(c_double * 3), POINTER(c_double)]
+cspice.spkpos_custom.restype = c_char_p
+cspice.spkpos_custom.errcheck = errcheck
+def spkpos(target, et, ref, abcorr, observer):
+    output = (c_double * 3)()
+    light_time = c_double()
+    cspice.spkpos_custom(target, et, ref, abcorr, observer, byref(output),
+        byref(light_time))
+    return output[::], light_time.value #XXX is light_time usefull?
+
 cspice.spkezr_custom.argtypes = [c_char_p, c_double, c_char_p, c_char_p,
     c_char_p, POINTER(c_double * 6), POINTER(c_double)]
 cspice.spkezr_custom.restype = c_char_p
@@ -103,6 +113,15 @@ def spkezr(target, et, ref, abcorr, observer):
     cspice.spkezr_custom(target, et, ref, abcorr, observer, byref(output),
         byref(light_time))
     return output[::], light_time.value #XXX is light_time usefull?
+
+cspice.pxform_custom.argtypes = [c_char_p, c_char_p, c_double,
+    POINTER(c_double * 9)]
+cspice.pxform_custom.restype = c_char_p
+cspice.pxform_custom.errcheck = errcheck
+def pxform(from_, to, et):
+    output = (c_double * 9)()
+    cspice.pxform_custom(from_, to, et, byref(output))
+    return numpy.array(output[:]).reshape(3, 3)
 
 cspice.ckgp_custom.argtypes = [c_int, c_int, c_double, c_double, c_char_p,
     POINTER(c_double * 9), POINTER(c_double), POINTER(c_int)]

@@ -3,7 +3,7 @@
 
 /* constants */
 #define STR_LEN 256
-#define STR_LEN_MAX 2000
+#define STR_LEN_MAX 2048
 #define ERROR_LEN 26
 
 
@@ -11,8 +11,8 @@
 
 #define CHECK_EXCEPTION {\
     if(failed_c()) {\
-        char* message = malloc(sizeof(char) * ERROR_LEN);\
-        getmsg_c("short", ERROR_LEN, message);\
+        char* message = malloc(sizeof(char) * STR_LEN_MAX);\
+        getmsg_c("LONG", STR_LEN_MAX, message);\
         reset_c();\
         return message;\
     }\

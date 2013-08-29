@@ -104,6 +104,26 @@ class Body(object):
         '''
         return []
 
+    def position(self, times, observer='SUN', ref_frame='ECLIPJ2000',
+        abcorr=None):
+        if isinstance(observer, Body):
+            observer = observer.name
+        if isinstance(times, numbers.Real):
+            times = [float(times)]
+        if isinstance(times, collections.Iterable):
+            result = []
+            for time in times:
+                with ignored(spice.SpiceError):
+                    result.append([time] + spice.spkpos(self.name,
+                Time.fromposix(time).et(), ref_frame, abcorr or Body._ABCORR,
+                observer)[0])
+            print result
+            return numpy.array(result).transpose()
+        msg = 'position() Real or Iterable argument expected, got {}'
+        raise TypeError(msg.format(type(times)))
+
+
+
     def get_data(self, times, observer='SUN', ref_frame='ECLIPJ2000',
         abcorr=None):
         if isinstance(observer, Body):
@@ -126,7 +146,7 @@ class Body(object):
             times = [float(times)]
         if isinstance(times, collections.Iterable):
             for time in times:
-                return spice.ckgp(self.id, observer.id, Time.fromposix(time).et() , 10000, ref_frame)
+                yield spice.ckgp(self.id, observer.id, Time.fromposix(time).et() , 3600, ref_frame)
 
 
 class Asteroid(Body):

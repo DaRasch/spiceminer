@@ -92,9 +92,9 @@ def get(body):
       (``TypeError``) -- If ``body`` is neither a string nor an integer.
     '''
     if isinstance(body, basestring):
-        body = spice.bodn2c(body)
-        if body is not None:
-            return bodies.Body(body)
+        body_id = spice.bodn2c(body)
+        if body_id is not None:
+            return bodies.Body(body_id)
         raise ValueError('get() got invalid name {}'.format(body))
     with ignored(TypeError):
         return bodies.Body(body)
