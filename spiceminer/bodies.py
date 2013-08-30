@@ -14,11 +14,11 @@ __all__ = ['Body', 'Asteroid', 'Barycenter', 'Comet', 'Instrument', 'Planet',
            'Satellite', 'Spacecraft']
 
 ### Helper ###
-def _data_generator(name, times, ref_frame, abcorr, observer):
+def _data_generator(name, times, frame, abcorr, observer):
     for time in times:
         with ignored(spice.SpiceError): #XXX good practice to ignore errors?
             yield [time] + spice.spkezr(name, Time.fromposix(time).et(),
-                ref_frame, abcorr, observer)[0]
+                frame, abcorr, observer)[0]
 
 def _iterbodies(start, stop, step=1):
     for i in xrange(start, stop, step):
@@ -104,8 +104,23 @@ class Body(object):
         '''
         return []
 
-    def position(self, times, observer='SUN', ref_frame='ECLIPJ2000',
-        abcorr=None):
+    def state(self, times, observer='SUN', frame='ECLIPJ2000', abcorr=None):
+        if isinstance(observer, Body):
+            observer = observer.name
+        if isinstance(times, numbers.Real):
+            times = [float(times)]
+        if isinstance(times, collections.Iterable):
+            result = []
+            for time in times:
+                with ignored(spice.SpiceError):
+                    data = spice.spkezr(self.name, Time.fromposix(time).et(),
+                        frame, abcorr or Body._ABCORR, observer)
+                    result.append([time] + data[0] + [data[1]])
+            return numpy.array(result).transpose()
+        msg = 'state() Real or Iterable argument expected, got {}'
+        raise TypeError(msg.format(type(times)))
+
+    def position(self, times, observer='SUN', frame='ECLIPJ2000', abcorr=None):
         if isinstance(observer, Body):
             observer = observer.name
         if isinstance(times, numbers.Real):
@@ -115,28 +130,18 @@ class Body(object):
             for time in times:
                 with ignored(spice.SpiceError):
                     result.append([time] + spice.spkpos(self.name,
-                Time.fromposix(time).et(), ref_frame, abcorr or Body._ABCORR,
+                Time.fromposix(time).et(), frame, abcorr or Body._ABCORR,
                 observer)[0])
-            print result
             return numpy.array(result).transpose()
         msg = 'position() Real or Iterable argument expected, got {}'
         raise TypeError(msg.format(type(times)))
 
+    def speed(self, times, observer='SUN', frame='ECLIPJ2000', abcorr=None):
+        data = self.state(times, observer, frame, abcorr)[0]
+        return data[numpy.array([True] + [False] * 3 + [True] * 3)]
 
 
-    def get_data(self, times, observer='SUN', ref_frame='ECLIPJ2000',
-        abcorr=None):
-        if isinstance(observer, Body):
-            observer = observer.name
-        if isinstance(times, numbers.Real):
-            times = [float(times)]
-        if isinstance(times, collections.Iterable):
-            return numpy.array(tuple(_data_generator(self.name, times,
-                ref_frame, abcorr or Body._ABCORR, observer))).transpose()
-        msg = 'get_data() Real or Iterable argument expected, got {}'
-        raise TypeError(msg.format(type(times)))
-
-    def get_pointing(self, times, observer='SUN', ref_frame='ECLIPJ2000',
+    def get_pointing(self, times, observer='SUN', frame='ECLIPJ2000',
         abcorr=None):
         if isinstance(observer, basestring):
             observer = Body(spice.bodn2c(observer))
@@ -146,7 +151,7 @@ class Body(object):
             times = [float(times)]
         if isinstance(times, collections.Iterable):
             for time in times:
-                yield spice.ckgp(self.id, observer.id, Time.fromposix(time).et() , 3600, ref_frame)
+                yield spice.ckgp(self.id, observer.id, Time.fromposix(time).et() , 3600, frame)
 
 
 class Asteroid(Body):
