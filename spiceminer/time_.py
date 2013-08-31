@@ -12,13 +12,49 @@ import spiceminer._spicewrapper as spice
 __all__ = ['Time']
 
 
+### Helpers for argument checking ###
+def _argcheck_basic(min_, max_, name, value):
+    if not isinstance(value, int):
+        msg = '__init__() {}: Integer argument expected, got {}'
+        raise TypeError(msg.format(name, type(value)))
+    if not (min_ <= value <= max_):
+        msg = '__init__() {} must be in {}..{}'
+        raise ValueError(msg.format(name, min_, max_))
+
+def _argcheck_day(day, month, year):
+    if not isinstance(day, int):
+        msg = '__init__() day: Integer argument expected, got {}'
+        raise TypeError(msg.format(type(day)))
+    if not 1 <= day <= calendar.monthrange(year, month)[1]:
+        msg = '__init__() day must be in 1..{}'
+        raise ValueError(msg.format(calendar.monthrange(year, month)[1]))
+
+def _argcheck_second(second):
+    if not isinstance(second, numbers.Real):
+        msg = '__init__() second: int or float argument expected, got {}'
+        raise TypeError(msg.format(type(second)))
+    if not 0 <= second < 60:
+        msg = '__init__() 0 <= second < 60 expected, got {}'
+        raise ValueError(msg.format(second))
+
+
 @functools.total_ordering
 class Time(numbers.Real):
+    _ARGCHECKS = [
+        ('year', lambda x, y, z: _argcheck_basic(1900, 9999, 'year', x)),
+        ('month', lambda x, y, z: _argcheck_basic(1, 12, 'month', x)),
+        ('day', lambda x, y, z: _argcheck_day(x, y, z)),
+        ('hour', lambda x, y, z: _argcheck_basic(0, 23, 'hour', x)),
+        ('minute', lambda x, y, z: _argcheck_basic(0, 59, 'minute', x)),
+        ('second', lambda x, y, z: _argcheck_second(x))]
+
     def __init__(self, year=1970, month=1, day=1, hour=0, minute=0, second=0):
         super(Time, self).__init__()
-        #TODO allow kwargs
-        #TODO check arg ranges
-        #FIXME limit ranges and types
+        mapping = locals()
+        #print mapping
+        for name, func in Time._ARGCHECKS:
+            value = mapping[name]
+            func(value, month, year)
         self._value = calendar.timegm([year, month, day, hour, minute, 0, 0, 0,
             -1]) + second
 
@@ -26,10 +62,15 @@ class Time(numbers.Real):
     @classmethod
     def fromposix(cls, t):
         tmp = time.gmtime(t)
-        return cls(*tmp[:5], second=tmp[5] + (t - int(t)))
+        tmpfuncs , Time._ARGCHECKS = Time._ARGCHECKS, {} # Hax! to avoid unnecessary type checking
+        instance = cls(*tmp[:5], second=tmp[5] + (t - int(t)))
+        Time._ARGCHECKS = tmpfuncs
+        return instance
 
     @classmethod
     def fromydoy(cls, year, doy):
+        if not doy < 364 + calendar.isleap(year):
+            raise ValueError('fromydoy() doy out of range, got {}'.format(doy))
         seconds = doy * 86400
         new = cls(year)
         new._value += seconds
@@ -37,8 +78,10 @@ class Time(numbers.Real):
 
     @classmethod
     def fromdatetime(cls, dt):
-        return cls(*dt.utctimetuple()[:5],
+        tmpfuncs , Time._ARGCHECKS = Time._ARGCHECKS, {} # Hax! to avoid unnecessary type checking
+        instance = cls(*dt.utctimetuple()[:5],
             second=dt.second + dt.microsecond / 1000.0)
+        Time._ARGCHECKS = tmpfuncs
 
     ### Real-type stuff###
     @property
@@ -57,7 +100,9 @@ class Time(numbers.Real):
             return self.real == calendar.timegm(other.utctimetuple())
         try:
             return self.real == float(other)
-        except AttributeError:
+        except TypeError:
+            return NotImplemented
+        except ValueError:
             return NotImplemented
 
     def __lt__(self, other):
@@ -67,7 +112,9 @@ class Time(numbers.Real):
             return self.real < calendar.timegm(other.utctimetuple())
         try:
             return self.real < float(other)
-        except AttributeError:
+        except TypeError:
+            return NotImplemented
+        except ValueError:
             return NotImplemented
 
     def __le__(self, other):
@@ -77,7 +124,9 @@ class Time(numbers.Real):
             return self.real <= calendar.timegm(other.utctimetuple())
         try:
             return self.real <= float(other)
-        except AttributeError:
+        except TypeError:
+            return NotImplemented
+        except ValueError:
             return NotImplemented
 
     ### Math ###
@@ -184,7 +233,7 @@ class Time(numbers.Real):
     def second(self):
         return self.timetuple()[5] + (self.real - int(self.real))
     @property
-    def day_of_year(self):
+    def doy(self):
         tmp = self.timetuple()
         fraction = (tmp[3] * 3600 + tmp[4] * 60 + tmp[5] + (self.real - int(self.real))) / 86400.0
         return tmp[7] + fraction

@@ -49,7 +49,8 @@ metadata = {
     'license': license,
     'packages': ['spiceminer'],
     'ext_modules': [cwrapper],
-    'requires': ['numpy']
+    'requires': ['numpy'],
+    'test_require': ['nose']
 }
 
 if __name__ == '__main__':

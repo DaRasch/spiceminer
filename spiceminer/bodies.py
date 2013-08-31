@@ -105,6 +105,7 @@ class Body(object):
         return []
 
     def state(self, times, observer='SUN', frame='ECLIPJ2000', abcorr=None):
+        #TODO add rotation
         if isinstance(observer, Body):
             observer = observer.name
         if isinstance(times, numbers.Real):
@@ -137,7 +138,7 @@ class Body(object):
         raise TypeError(msg.format(type(times)))
 
     def speed(self, times, observer='SUN', frame='ECLIPJ2000', abcorr=None):
-        data = self.state(times, observer, frame, abcorr)[0]
+        data = self.state(times, observer, frame, abcorr)
         return data[numpy.array([True] + [False] * 3 + [True] * 3)]
 
 
