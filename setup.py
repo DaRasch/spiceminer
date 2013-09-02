@@ -50,7 +50,16 @@ metadata = {
     'packages': ['spiceminer'],
     'ext_modules': [cwrapper],
     'requires': ['numpy'],
-    'tests_require': ['nose']
+    'tests_require': ['nose'],
+    'classifiers' : ('Intended Audience :: Developers',
+                     'Intended Audience :: Science/Research',
+                     'License :: OSI Approved :: MIT License',
+                     'Natural Language :: English',
+                     'Operating System :: OS Independent',
+                     'Programming Language :: Python',
+                     'Programming Language :: Python :: 2.7',
+                     'Topic :: Database',
+                     'Topic :: Scientific/Engineering :: Information Analysis')
 }
 
 if __name__ == '__main__':
