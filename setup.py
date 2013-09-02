@@ -50,7 +50,7 @@ metadata = {
     'packages': ['spiceminer'],
     'ext_modules': [cwrapper],
     'requires': ['numpy'],
-    'test_require': ['nose']
+    'tests_require': ['nose']
 }
 
 if __name__ == '__main__':

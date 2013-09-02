@@ -1,26 +1,3 @@
-spiceminer
-==========
-
-What is it?
------------
-This module is a high level python wrapper around the SPICE c-library provided by NASA to store and analyse operational data from several space missions. It concentrates on an easy to use API for analysing the data.
-
-Installation:
--------------
-**Dependencies:** numpy
-
-**Building:** Run `python getspice.py` from the project root to automatically
-download and unpack the correct version of the c-SPICE source code.
-If you'd rather do that manually or have an existing version already available
-you can simply set an environment variable named `CPICEPATH` to its path.
-After that just use `python setup.py build` to build all necessary
-extensions.
-
-**Installing:** If building was successfull, just run `python setup.py install` and all should be good to go.
-
-Basic usage:
-------
-```python
 # This example will show the basic usage of the spiceminer module.
 from spiceminer import frange, dtrange, Time, kernel
 # Or simply from spiceminer import *. I just like to be explicit.
@@ -68,29 +45,3 @@ print data2
 # [z_speed, z_speed, z_speed, z_speed, z_speed, z_speed, z_speed, z_speed]
 
 # For a real tutorial consult the documentation.
-```
-
-Other stuff:
-------------
-Dependency graph:
-```
-    +------------+
-    | spiceminer |----------+
-    +------------+          |
-        |      |            |
-    +--------+ |            |
-  +-| kernel |--------------+
-  | +--------+ |            |
-  |     |      |            |
-  | +--------+ |            |
-  +-| bodies |--------------+
-  | +--------+ |            |
-  |     |      |            |
-  | +-------+  |      +----------+
-  +-| time_ |--+      | _helpers |
-  | +-------+         +----------+
-  |
-+---------------+
-| _spicewrapper |
-+---------------+
-```
