@@ -19,7 +19,7 @@ def _basicrange(args, mutator, fname):
     argc = len(args)
     args = mutator(args)
     if argc < 1:
-        msg = '{} expects at least 1 argument, got {}'.format(fname, argc)
+        msg = '{} expects at least 1 argument, got {}.'.format(fname, argc)
         raise TypeError(msg)
     elif argc == 1:
         start, stop, step = 0, next(args), 1
@@ -28,7 +28,7 @@ def _basicrange(args, mutator, fname):
     elif argc == 3:
         start, stop, step = next(args), next(args), next(args)
     else:
-        msg = '{} expects at most 3 arguments, got {}'.format(fname, argc)
+        msg = '{} expects at most 3 arguments, got {}.'.format(fname, argc)
         raise TypeError(msg)
     if (start < stop and step > 0):
         while start < stop:

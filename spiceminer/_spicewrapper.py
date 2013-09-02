@@ -121,7 +121,7 @@ cspice.pxform_custom.errcheck = errcheck
 def pxform(from_, to, et):
     output = (c_double * 9)()
     cspice.pxform_custom(from_, to, et, byref(output))
-    return numpy.array(output[:]).reshape(3, 3)
+    return output[:]
 
 cspice.ckgp_custom.argtypes = [c_int, c_int, c_double, c_double, c_char_p,
     POINTER(c_double * 9), POINTER(c_double), POINTER(c_int)]

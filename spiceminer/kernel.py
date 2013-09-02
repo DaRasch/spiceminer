@@ -95,8 +95,8 @@ def get(body):
         body_id = spice.bodn2c(body)
         if body_id is not None:
             return bodies.Body(body_id)
-        raise ValueError('get() got invalid name {}'.format(body))
+        raise ValueError('get() got invalid name {}.'.format(body))
     with ignored(TypeError):
         return bodies.Body(body)
-    msg = 'get() integer or str argument expected, got {}'
+    msg = 'get() integer or str argument expected, got {}.'
     raise TypeError(msg.format(type(body)))

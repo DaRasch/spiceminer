@@ -44,7 +44,7 @@ class Body(object):
 
     def __new__(cls, body_id, *args, **kwargs):
         if not isinstance(body_id, numbers.Integral):
-            msg = 'Body() integer argument expected, got {}'
+            msg = 'Body() integer argument expected, got {}.'
             raise TypeError(msg.format(type(body_id)))
         ### factory function ###
         if body_id in Body._CACHE:
@@ -76,7 +76,7 @@ class Body(object):
         self._id = body_id
         self._name = spice.bodc2n(body_id)
         if self._name is None:
-            msg = 'Body() {} is not a valid ID'
+            msg = 'Body() {} is not a valid ID.'
             raise ValueError(msg.format(body_id))
         Body._CACHE[body_id] = self
 
@@ -118,7 +118,7 @@ class Body(object):
                         frame, abcorr or Body._ABCORR, observer)
                     result.append([time] + data[0] + [data[1]])
             return numpy.array(result).transpose()
-        msg = 'state() Real or Iterable argument expected, got {}'
+        msg = 'state() Real or Iterable argument expected, got {}.'
         raise TypeError(msg.format(type(times)))
 
     def position(self, times, observer='SUN', frame='ECLIPJ2000', abcorr=None):
@@ -129,30 +129,43 @@ class Body(object):
         if isinstance(times, collections.Iterable):
             result = []
             for time in times:
-                with ignored(spice.SpiceError):
-                    result.append([time] + spice.spkpos(self.name,
+                #with ignored(spice.SpiceError):
+                result.append([time] + spice.spkpos(self.name,
                 Time.fromposix(time).et(), frame, abcorr or Body._ABCORR,
                 observer)[0])
             return numpy.array(result).transpose()
-        msg = 'position() Real or Iterable argument expected, got {}'
+        msg = 'position() Real or Iterable argument expected, got {}.'
         raise TypeError(msg.format(type(times)))
 
     def speed(self, times, observer='SUN', frame='ECLIPJ2000', abcorr=None):
         data = self.state(times, observer, frame, abcorr)
         return data[numpy.array([True] + [False] * 3 + [True] * 3)]
 
+    def rotation(self, times, observer='ECLIPJ2000'):
+        if isinstance(observer, Body):
+            observer = observer.name
+        if isinstance(times, numbers.Real):
+            times = [float(times)]
+        if isinstance(times, collections.Iterable):
+            result = []
+            for time in times:
+                result.append(spice.pxform(self.name, observer, Time.fromposix(time).et()))
+            return [numpy.array(item).reshape(3, 3) for item in result]
+        msg = 'rotation() Real or Iterable argument expected, got {}.'
+        raise TypeError(msg.format(type(times)))
+
 
     def get_pointing(self, times, observer='SUN', frame='ECLIPJ2000',
         abcorr=None):
-        if isinstance(observer, basestring):
-            observer = Body(spice.bodn2c(observer))
+        if isinstance(observer, Body):
+            observer = observer.id
         elif isinstance(observer, numbers.Real):
             observer = Body(observer)
         if isinstance(times, numbers.Real):
             times = [float(times)]
         if isinstance(times, collections.Iterable):
             for time in times:
-                yield spice.ckgp(self.id, observer.id, Time.fromposix(time).et() , 3600, frame)
+                yield spice.ckgp(self.id, observer, Time.fromposix(time).et() , 3600, frame)
 
 
 class Asteroid(Body):

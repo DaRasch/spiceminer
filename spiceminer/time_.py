@@ -15,15 +15,15 @@ __all__ = ['Time']
 ### Helpers for argument checking ###
 def _argcheck_basic(min_, max_, name, value):
     if not isinstance(value, int):
-        msg = '__init__() {}: Integer argument expected, got {}'
+        msg = '__init__() {}: Integer argument expected, got {}.'
         raise TypeError(msg.format(name, type(value)))
     if not (min_ <= value <= max_):
-        msg = '__init__() {} must be in {}..{}'
+        msg = '__init__() {} must be in {}..{}.'
         raise ValueError(msg.format(name, min_, max_))
 
 def _argcheck_day(day, month, year):
     if not isinstance(day, int):
-        msg = '__init__() day: Integer argument expected, got {}'
+        msg = '__init__() day: Integer argument expected, got {}.'
         raise TypeError(msg.format(type(day)))
     if not 1 <= day <= calendar.monthrange(year, month)[1]:
         msg = '__init__() day must be in 1..{}'
@@ -31,10 +31,10 @@ def _argcheck_day(day, month, year):
 
 def _argcheck_second(second):
     if not isinstance(second, numbers.Real):
-        msg = '__init__() second: int or float argument expected, got {}'
+        msg = '__init__() second: int or float argument expected, got {}.'
         raise TypeError(msg.format(type(second)))
     if not 0 <= second < 60:
-        msg = '__init__() 0 <= second < 60 expected, got {}'
+        msg = '__init__() 0 <= second < 60 expected, got {}.'
         raise ValueError(msg.format(second))
 
 
@@ -47,6 +47,10 @@ class Time(numbers.Real):
         ('hour', lambda x, y, z: _argcheck_basic(0, 23, 'hour', x)),
         ('minute', lambda x, y, z: _argcheck_basic(0, 59, 'minute', x)),
         ('second', lambda x, y, z: _argcheck_second(x))]
+
+    MINUTE = 60
+    HOUR = 3600
+    DAY = 86400
 
     def __init__(self, year=1970, month=1, day=1, hour=0, minute=0, second=0):
         super(Time, self).__init__()
@@ -70,7 +74,8 @@ class Time(numbers.Real):
     @classmethod
     def fromydoy(cls, year, doy):
         if not doy < 364 + calendar.isleap(year):
-            raise ValueError('fromydoy() doy out of range, got {}'.format(doy))
+            msg = 'fromydoy() doy out of range, got {}.'
+            raise ValueError(msg.format(doy))
         seconds = doy * 86400
         new = cls(year)
         new._value += seconds
