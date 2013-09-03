@@ -6,14 +6,19 @@ import sys
 import argparse
 
 import re
+import pickle
 import urllib
 import datetime as dt
 
 from operator import itemgetter
 
+# WARNING: This file contains some ugly hacks and is generally confusingly
+#written. Read on at your own risk.
+
 
 ### CONSTANTS ###
 NAMES = {'base': {'generic_kernels/spk/planets/': ['de[0-9]*\.bsp'],
+                  'generic_kernels/spk/satellites/': ['mar[0-9]*\.bsp'],
                   'generic_kernels/pck/': ['pck[0-9]*\.tpc'],
                   'generic_kernels/lsk/': ['naif[0-9]*\.tls']},
          'msl': {'MSL/kernels/ck/': ['msl_ra_toolsref_v[0-9]*\.bc',
@@ -41,6 +46,7 @@ NAMES = {'base': {'generic_kernels/spk/planets/': ['de[0-9]*\.bsp'],
 BASE_URL = 'http://naif.jpl.nasa.gov/pub/naif/'
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
+
 ### Evaluate command line ###
 def supported_data(arg):
     if arg.lower() not in NAMES:
@@ -60,8 +66,10 @@ parser.add_argument('--dir', '-d', nargs='?', type=valid_path,
     default=BASE_DIR, dest='path', help='Base directory for installation.')
 cmdline = parser.parse_args()
 
+
 ### Get data ###
 def find_newest(pattern, text):
+    '''Returns (name, datetime)'''
     regex_time = '[0-9a-zA-Z -]*:[0-9]*'
     regex_fill = '[a-zA-Z<> =/"]*'
     dt_format = '%d-%b-%Y %H:%M'
@@ -70,26 +78,39 @@ def find_newest(pattern, text):
         dt.datetime.strptime(re.search(regex_time, item).group(), dt_format))
         for item in choices]
     try:
-        return sorted(choices, key=itemgetter(1), reverse=True)[0][0]
+        return sorted(choices, key=itemgetter(1), reverse=True)[0]
     except IndexError:
         print 'Could not match pattern: {}'.format(pattern)
 
 def find_old(pattern, dir_path):
-    return [name for name in os.listdir(dir_path) if re.search(pattern, name)]
+    '''Returns (name, datetime)'''
+    time_ = dt.datetime(1970, 1, 1)
+    return [(name, time_) for name in os.listdir(dir_path)
+        if re.search(pattern, name)]
 
-def update(base_dir, name):
+for name in cmdline.data:
     # Prepare directories
-    data_dir = os.path.join(base_dir, 'data', name)
+    data_dir = os.path.join(cmdline.path, 'data', name)
     try:
         os.makedirs(data_dir)
     except OSError as e:
+        if e.errno != 17:
+            print e
+            continue
+    # Prepare cache
+    new_files = []
+    old_files = []
+    try:
+        with open(os.path.join(data_dir, 'metadata.pickle'), 'rb') as f:
+            old_files = pickle.load(f)
+    except Exception as e:
         print e
+        for patterns in NAMES[name].itervalues():
+            for pattern in patterns:
+                old_files += find_old(pattern, data_dir)
+    old_names = [item[0] for item in old_files]
     # Replace old or add new files
     for url, patterns in NAMES[name].iteritems():
-        # Get old file names
-        old_files = []
-        for pattern in patterns:
-            old_files += find_old(pattern, data_dir)
         # Get url source text
         site = urllib.urlopen(BASE_URL + url)
         text = site.read()
@@ -97,22 +118,32 @@ def update(base_dir, name):
         # Replace/add
         for pattern in patterns:
             newest = find_newest(pattern, text)
-            # Ignore files if old == new
-            if newest in old_files:
-                old_files.remove(newest)
+            new_files.append(newest)
+            # Handle old files:
+            if newest[0] in old_names:
+                print '{} exists'.format(newest[0])
+                # Ignore if old == new
+                if newest in old_files:
+                    print '{} is up to date'.format(newest[0])
+                    old_files.remove(newest)
+                # Remove if old != new
+                else:
+                    print '{} will be removed'.format(newest[0])
+                    try:
+                        os.remove(os.path.join(data_dir, newest[0]))
+                        old_names.remove(newest[0])
+                    except OSError as e:
+                        print e
             # Download new
-            else:
-                print '{} >> {}'.format(newest, data_dir)
-                with open(os.path.join(data_dir, newest), 'wb') as f:
-                    download = urllib.urlopen(BASE_URL + url + newest)
+            if newest[0] not in old_names:
+                print '{} >> {}'.format(newest[0], data_dir)
+                with open(os.path.join(data_dir, newest[0]), 'wb') as f:
+                    download = urllib.urlopen(BASE_URL + url + newest[0])
                     f.write(download.read())
                     download.close()
-        # Remove old
-        for f in old_files:
-            try:
-                os.remove(os.path.join(data_dir, f))
-            except OSError as e:
-                print e
-
-for name in cmdline.data:
-    update(cmdline.path, name)
+    # Save cache
+    with open(os.path.join(data_dir, 'metadata.pickle'), 'wb') as f:
+        try:
+            pickle.dump(new_files, f)
+        except Exception as e:
+            print e
