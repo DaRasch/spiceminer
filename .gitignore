@@ -32,7 +32,7 @@ pip-log.txt
 nosetests.xml
 
 # Documentation
-docs/_build/*
+docs/_build
 
 # Translations
 *.mo

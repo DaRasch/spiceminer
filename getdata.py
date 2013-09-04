@@ -12,8 +12,8 @@ import datetime as dt
 
 from operator import itemgetter
 
-# WARNING: This file contains some ugly hacks and is generally confusingly
-#written. Read on at your own risk.
+# WARNING: This file is ugly and very confusingly written.
+# Read on at your own risk.
 
 
 ### CONSTANTS ###
