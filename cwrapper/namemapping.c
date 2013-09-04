@@ -18,3 +18,11 @@ char* bodn2c_custom(char* name, int* code, int* found) {
     *found = (int)found_spice;
     FINALIZE
 }
+
+char* namfrm_custom(char* name, int* code) {
+    SpiceInt code_spice;
+    namfrm_c(name, &code_spice);
+    CHECK_EXCEPTION
+    *code = (int)code_spice;
+    FINALIZE
+}

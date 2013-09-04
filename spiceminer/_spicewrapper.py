@@ -30,7 +30,7 @@ def errcheck(result, func, args):
     return args[-1] #XXX is -1 always 'found'?
 
 
-### Kernel id <-> name ###
+### Kernel/Frame id <-> name ###
 cspice.bodn2c_custom.argtypes = [c_char_p, POINTER(c_int), POINTER(c_int)]
 cspice.bodn2c_custom.restype = c_char_p
 cspice.bodn2c_custom.errcheck = errcheck
@@ -52,6 +52,16 @@ def bodc2n(code):
     if not found:
         return None
     return name.value
+
+cspice.namfrm_custom.argtypes = [c_char_p, POINTER(c_int)]
+cspice.namfrm_custom.restype = c_char_p
+cspice.namfrm_custom.errcheck = errcheck
+def namfrm(name):
+    code = c_int()
+    cspice.namfrm_custom(name, byref(code))
+    if code == 0:
+        return None
+    return code.value
 
 ### Kernel (un)load ###
 cspice.furnsh_custom.argtypes = [c_char_p]

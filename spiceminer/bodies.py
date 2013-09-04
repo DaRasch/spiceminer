@@ -61,7 +61,8 @@ class Body(object):
             else:
                 body = object.__new__(Satellite, body_id, *args, **kwargs)
         elif body_id == 10:
-            body = object.__new__(cls, 10, *args, **kwargs)
+        #    body = object.__new__(cls, 10, *args, **kwargs)
+            body = object.__new__(Planet, body_id, *args, **kwargs)
         elif body_id >= 0:
             body = object.__new__(Barycenter, body_id, *args, **kwargs)
         elif body_id > -1000:
@@ -75,6 +76,7 @@ class Body(object):
     def __init__(self, body_id):
         self._id = body_id
         self._name = spice.bodc2n(body_id)
+        self._frame = None
         if self._name is None:
             msg = 'Body() {} is not a valid ID.'
             raise ValueError(msg.format(body_id))
@@ -105,7 +107,6 @@ class Body(object):
         return []
 
     def state(self, times, observer='SUN', frame='ECLIPJ2000', abcorr=None):
-        #TODO add rotation
         if isinstance(observer, Body):
             observer = observer.name
         if isinstance(times, numbers.Real):
@@ -141,31 +142,19 @@ class Body(object):
         data = self.state(times, observer, frame, abcorr)
         return data[numpy.array([True] + [False] * 3 + [True] * 3)]
 
-    def rotation(self, times, observer='ECLIPJ2000'):
+    def rotation(self, times, observer='SUN'):
         if isinstance(observer, Body):
-            observer = observer.name
+            observer = observer._frame or observer._name
         if isinstance(times, numbers.Real):
             times = [float(times)]
         if isinstance(times, collections.Iterable):
             result = []
             for time in times:
-                result.append(spice.pxform(self.name, observer, Time.fromposix(time).et()))
+                result.append(spice.pxform(self._frame or self.name, observer,
+                    Time.fromposix(time).et()))
             return [numpy.array(item).reshape(3, 3) for item in result]
         msg = 'rotation() Real or Iterable argument expected, got {}.'
         raise TypeError(msg.format(type(times)))
-
-
-    def get_pointing(self, times, observer='SUN', frame='ECLIPJ2000',
-        abcorr=None):
-        if isinstance(observer, Body):
-            observer = observer.id
-        elif isinstance(observer, numbers.Real):
-            observer = Body(observer)
-        if isinstance(times, numbers.Real):
-            times = [float(times)]
-        if isinstance(times, collections.Iterable):
-            for time in times:
-                yield spice.ckgp(self.id, observer, Time.fromposix(time).et() , 3600, frame)
 
 
 class Asteroid(Body):
@@ -219,6 +208,7 @@ class Planet(Body):
     '''
     def __init__(self, body_id):
         super(Planet, self).__init__(body_id)
+        self._frame = 'IAU_' + self._name
 
     def parent(self):
         return Body(10)
