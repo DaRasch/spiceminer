@@ -13,10 +13,12 @@
 
 import sys, os
 
+ROOT = os.path.realpath(os.path.join(__file__, '..', '..'))
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('/home/philipp/Dropbox/Uni/Hiwi/pyspice/src/spiceminer/build/lib.linux-x86_64-2.7'))
+sys.path.insert(0, ROOT)
 
 # -- General configuration -----------------------------------------------------
 
@@ -37,7 +39,7 @@ source_suffix = '.rst'
 #source_encoding = 'utf-8-sig'
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = '00index'
 
 # General information about the project.
 project = u'spiceminer'
@@ -48,7 +50,7 @@ copyright = u'2013, Philipp Rasch'
 # built documents.
 #
 # The full version, including alpha/beta/rc tags.
-with open(os.path.realpath(os.path.join(__file__, '..', '..', 'VERSION'))) as f:
+with open(os.path.join(ROOT, 'VERSION')) as f:
     release = f.readline().strip()
 # The short X.Y version.
 version = release.split('.')[0]
