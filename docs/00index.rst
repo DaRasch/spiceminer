@@ -23,6 +23,7 @@ Contents:
 Indices and tables
 ==================
 
+.. * :ref:`modindex`
+
 * :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`

@@ -40,6 +40,28 @@ def _argcheck_second(second):
 
 @functools.total_ordering
 class Time(numbers.Real):
+    '''A powerfull POSIX time representation that always references UTC. It is
+    a subclass of ``numbers.Real``, so it acts like a float.
+
+    :type year: ``int``
+    :arg year: 1900..9999
+    :type month: ``int``
+    :arg month: 1..12
+    :type day: ``int``
+    :arg day: 1..31
+    :type hour: ``int``
+    :arg hour: 0..23
+    :type minute: ``int``
+    :arg minute: 0..60
+    :type second: ``int``
+    :arg second: 0..<60
+    :return: (:py:class:`~spiceminer.time_.Time`) -- Time representation.
+    :raises:
+      (``ValueError``) -- If an argument is out of bounds.
+
+      (``TypeError``) -- If an argument has the wrong type.
+    '''
+
     _ARGCHECKS = [
         ('year', lambda x, y, z: _argcheck_basic(1900, 9999, 'year', x)),
         ('month', lambda x, y, z: _argcheck_basic(1, 12, 'month', x)),
@@ -48,8 +70,11 @@ class Time(numbers.Real):
         ('minute', lambda x, y, z: _argcheck_basic(0, 59, 'minute', x)),
         ('second', lambda x, y, z: _argcheck_second(x))]
 
+    #: One minute in seconds.
     MINUTE = 60
+    #: One hour in seconds.
     HOUR = 3600
+    #: One day in seconds.
     DAY = 86400
 
     def __init__(self, year=1970, month=1, day=1, hour=0, minute=0, second=0):
@@ -65,6 +90,13 @@ class Time(numbers.Real):
     ### Additional constructors ###
     @classmethod
     def fromposix(cls, t):
+        '''Generate a :py:class:`~spiceminer.time_.Time` instance from a float.
+
+        :type t: ``float``
+        :arg t: A number representing a point in time.
+        :return: (:py:class:`~spiceminer.time_.Time`)
+        :raises: Nothing.
+        '''
         tmp = time.gmtime(t)
         tmpfuncs , Time._ARGCHECKS = Time._ARGCHECKS, {} # Hax! to avoid unnecessary type checking
         instance = cls(*tmp[:5], second=tmp[5] + (t - int(t)))
@@ -73,7 +105,19 @@ class Time(numbers.Real):
 
     @classmethod
     def fromydoy(cls, year, doy):
-        if not doy < 364 + calendar.isleap(year):
+        '''Generate a :py:class:`~spiceminer.time_.Time` instance from two
+        numbers representing a year and a day in that year.
+
+        :type year: ``int``
+        :arg year: The year to convert.
+        :type doy: ``float``
+        :arg doy: The day od year to convert. Can be a ``float`` to allow for
+          hour, minute, etc. measurement.
+
+        :return: (:py:class:`~spiceminer.time_.Time`)
+        :raises: (``ValueError``) -- If ``0 <= doy < (364 or 365)``
+        '''
+        if not 0 <= doy < 364 + calendar.isleap(year):
             msg = 'fromydoy() doy out of range, got {}.'
             raise ValueError(msg.format(doy))
         seconds = doy * 86400
@@ -83,6 +127,15 @@ class Time(numbers.Real):
 
     @classmethod
     def fromdatetime(cls, dt):
+        '''Generate a :py:class:`~spiceminer.time_.Time` instance from a
+        ``datetime`` object.
+
+        :type dt: ``datetime``
+        :arg dt: The object to convert.
+
+        :return: (:py:class:`~spiceminer.time_.Time`)
+        :raises: Nothing.
+        '''
         tmpfuncs , Time._ARGCHECKS = Time._ARGCHECKS, {} # Hax! to avoid unnecessary type checking
         instance = cls(*dt.utctimetuple()[:5],
             second=dt.second + dt.microsecond / 1000.0)
@@ -91,6 +144,9 @@ class Time(numbers.Real):
     ### Real-type stuff###
     @property
     def real(self):
+        '''The value of the POSIX representation of an object. Required by the
+        ``numbers.Real`` interface.
+        '''
         return float(self._value)
 
     def __float__(self):

@@ -13,13 +13,8 @@ from spiceminer._helpers import ignored
 __all__ = ['Body', 'Asteroid', 'Barycenter', 'Comet', 'Instrument', 'Planet',
            'Satellite', 'Spacecraft']
 
-### Helper ###
-def _data_generator(name, times, frame, abcorr, observer):
-    for time in times:
-        with ignored(spice.SpiceError): #XXX good practice to ignore errors?
-            yield [time] + spice.spkezr(name, Time.fromposix(time).et(),
-                frame, abcorr, observer)[0]
 
+### Helper ###
 def _iterbodies(start, stop, step=1):
     for i in xrange(start, stop, step):
         with ignored(ValueError):
@@ -90,23 +85,49 @@ class Body(object):
 
     @property
     def id(self):
+        '''The ID of this object.'''
         return self._id
     @property
     def name(self):
+        '''The name of this object.'''
         return self._name
 
     def parent(self):
-        '''Get entity, this :py:class:`~spiceminer.bodies.Body` is bound to (be
+        '''Get object, this :py:class:`~spiceminer.bodies.Body` is bound to (be
             it orbiting or physical attachment).
         '''
         return None
 
     def children(self):
-        '''Get enteties bound to this :py:class:`~spiceminer.bodies.Body`.
+        '''Get objects bound to this :py:class:`~spiceminer.bodies.Body`.
         '''
         return []
 
     def state(self, times, observer='SUN', frame='ECLIPJ2000', abcorr=None):
+        '''Get the position and speed of this object relative to the observer
+        in a specific reference frame.
+
+        :type times: ``Iterable`` | has ``__float__()``
+        :arg times: The point(s) in time for which to calculate the
+          position/speed.
+
+        :type observer: :py:class:`~spiceminer.bodies.Body` | ``str``
+        :arg observer: Object to use as (0,0,0).
+
+        :type abcorr: ``str``
+        :arg abcorr: Aberration correction to be applied. May be one of LT,
+          LT+S, CN, CN+S, XLT, XLT+S, XCN, XCN+S. For explanation of these see
+          `here <http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkez_c.html#Detailed_Input>`_.
+
+        :return: (``ndarray``) -- The nx7 array containing time and
+          (x, y, z)-position/speed.
+        :raises:
+          (``TypeError``) -- If an argument doesn't conform to the type
+          requirements.
+
+          (:py:class:`~spiceminer._spicewrapper.SpiceError`) -- If there is
+          necessary information missing.
+        '''
         if isinstance(observer, Body):
             observer = observer.name
         if isinstance(times, numbers.Real):
@@ -123,6 +144,29 @@ class Body(object):
         raise TypeError(msg.format(type(times)))
 
     def position(self, times, observer='SUN', frame='ECLIPJ2000', abcorr=None):
+        '''Get the position of this object relative to the observer in a
+        specific reference frame.
+
+        :type times: ``Iterable`` | has ``__float__()``
+        :arg times: The point(s) in time for which to calculate the position.
+
+        :type observer: :py:class:`~spiceminer.bodies.Body` | ``str``
+        :arg observer: Object to use as (0,0,0).
+
+        :type abcorr: ``str``
+        :arg abcorr: Aberration correction to be applied. May be one of LT,
+          LT+S, CN, CN+S, XLT, XLT+S, XCN, XCN+S. For explanation of these see
+          `here <http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkez_c.html#Detailed_Input>`_.
+
+        :return: (``ndarray``) -- The nx4 array containing time and
+          (x, y, z)-position.
+        :raises:
+          (``TypeError``) -- If an argument doesn't conform to the type
+          requirements.
+
+          (:py:class:`~spiceminer._spicewrapper.SpiceError`) -- If there is
+          necessary information missing.
+        '''
         if isinstance(observer, Body):
             observer = observer.name
         if isinstance(times, numbers.Real):
@@ -139,10 +183,57 @@ class Body(object):
         raise TypeError(msg.format(type(times)))
 
     def speed(self, times, observer='SUN', frame='ECLIPJ2000', abcorr=None):
-        data = self.state(times, observer, frame, abcorr)
-        return data[numpy.array([True] + [False] * 3 + [True] * 3)]
+        '''Get the speed of this object relative to the observer in a specific
+        reference frame.
+
+        :type times: ``Iterable`` | has ``__float__()``
+        :arg times: The point(s) in time for which to calculate the speed.
+
+        :type observer: :py:class:`~spiceminer.bodies.Body` | ``str``
+        :arg observer: Object relative to which movement happens.
+
+        :type abcorr: ``str``
+        :arg abcorr: Aberration correction to be applied. May be one of LT,
+          LT+S, CN, CN+S, XLT, XLT+S, XCN, XCN+S. For explanation of these see
+          `here <http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkez_c.html#Detailed_Input>`_.
+
+        :return: (``ndarray``) -- The nx4 array containing time and
+          (x, y, z)-speed.
+        :raises:
+          (``TypeError``) -- If an argument doesn't conform to the type
+          requirements.
+
+          (:py:class:`~spiceminer._spicewrapper.SpiceError`) -- If there is
+          necessary information missing.
+        '''
+        if isinstance(observer, Body):
+            observer = observer.name
+        if isinstance(times, numbers.Real):
+            times = [float(times)]
+        if isinstance(times, collections.Iterable):
+            data = self.state(times, observer, frame, abcorr)
+            return data[numpy.array([True] + [False] * 3 + [True] * 3)]
+        msg = 'speed() Real or Iterable argument expected, got {}.'
+        raise TypeError(msg.format(type(times)))
 
     def rotation(self, times, observer='SUN'):
+        '''Get the rotation matrix for rotating this object from its own
+        reference frame to that of the observer.
+
+        :type times: ``Iterable`` | has ``__float__()``
+        :arg times: The point(s) in time for which to calculate rotations.
+
+        :type observer: :py:class:`~spiceminer.bodies.Body` | ``str``
+        :arg observer: Object/reference frame to transform to.
+
+        :return: (``list``) -- The list of 3x3 rotation matrizes.
+        :raises:
+          (``TypeError``) -- If an argument doesn't conform to the type
+          requirements.
+
+          (:py:class:`~spiceminer._spicewrapper.SpiceError`) -- If there is
+          necessary information missing.
+        '''
         if isinstance(observer, Body):
             observer = observer._frame or observer._name
         if isinstance(times, numbers.Real):
