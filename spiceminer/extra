@@ -1,0 +1,9 @@
+#-*- coding:utf-8 -*-
+
+import numpy as np
+
+def angle(v0, v1):
+    v0, v1 = v0.T[0], v1.T[0]
+    unit_v0 = v0 / np.sqrt(np.dot(v0, v0))
+    unit_v1 = v1 / np.sqrt(np.dot(v1, v1))
+    return np.arccos(np.dot(unit_v0, unit_v1))
