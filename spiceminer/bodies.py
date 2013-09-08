@@ -143,6 +143,14 @@ class Body(object):
         msg = 'state() Real or Iterable argument expected, got {}.'
         raise TypeError(msg.format(type(times)))
 
+    def state2(self, times, observer='SUN', frame='ECLIPJ2000', abcorr=None):
+        if isinstance(observer, Body):
+            observer = observer.name
+        if isinstance(frame, Body):
+            frame = frame._frame or frame.name
+        return numpy.array(spice.spkezr(self.name, Time.fromposix(time).et(),
+            frame, abcorr or Body._ABCORR, observer)).reshape(6, 1)
+
     def position(self, times, observer='SUN', frame='ECLIPJ2000', abcorr=None):
         '''Get the position of this object relative to the observer in a
         specific reference frame.
@@ -174,13 +182,21 @@ class Body(object):
         if isinstance(times, collections.Iterable):
             result = []
             for time in times:
-                #with ignored(spice.SpiceError):
-                result.append([time] + spice.spkpos(self.name,
-                Time.fromposix(time).et(), frame, abcorr or Body._ABCORR,
-                observer)[0])
+                with ignored(spice.SpiceError):
+                    result.append([time] + spice.spkpos(self.name,
+                    Time.fromposix(time).et(), frame, abcorr or Body._ABCORR,
+                    observer)[0])
             return numpy.array(result).transpose()
         msg = 'position() Real or Iterable argument expected, got {}.'
         raise TypeError(msg.format(type(times)))
+
+    def position2(self, times, observer='SUN', frame='ECLIPJ2000', abcorr=None):
+        if isinstance(observer, Body):
+            observer = observer.name
+        if isinstance(frame, Body):
+            frame = frame._frame or frame.name
+        return numpy.array(spice.spkpos(self.name, Time.fromposix(time).et(),
+            frame, abcorr or Body._ABCORR, observer)).reshape(3, 1)
 
     def speed(self, times, observer='SUN', frame='ECLIPJ2000', abcorr=None):
         '''Get the speed of this object relative to the observer in a specific
@@ -216,6 +232,9 @@ class Body(object):
         msg = 'speed() Real or Iterable argument expected, got {}.'
         raise TypeError(msg.format(type(times)))
 
+    def speed2(self, times, observer='SUN', frame='ECLIPJ2000', abcorr=None):
+        return self.state2(times, observer, frame, abcorr)[3:]
+
     def rotation(self, times, observer='SUN'):
         '''Get the rotation matrix for rotating this object from its own
         reference frame to that of the observer.
@@ -241,11 +260,18 @@ class Body(object):
         if isinstance(times, collections.Iterable):
             result = []
             for time in times:
-                result.append(spice.pxform(self._frame or self.name, observer,
-                    Time.fromposix(time).et()))
+                with ignored(spice.SpiceError):
+                    result.append(spice.pxform(self._frame or self.name,
+                        observer, Time.fromposix(time).et()))
             return [numpy.array(item).reshape(3, 3) for item in result]
         msg = 'rotation() Real or Iterable argument expected, got {}.'
         raise TypeError(msg.format(type(times)))
+
+    def rotation2(self, times, observer='SUN_IAU'):
+        if isinstance(observer, Body):
+            observer = observer.name
+        return numpy.array(sspice.pxform(self._frame or self.name, observer,
+            Time.fromposix(time).et())).reshape(3, 3)
 
 
 class Asteroid(Body):

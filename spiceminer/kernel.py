@@ -68,8 +68,8 @@ def unload(path):
     '''
     def _unloader(path):
         #FIXME fails if different representations of a path are used on load/unload
-        LOADED_KERNELS.remove(path)
         path = os.path.realpath(path)
+        LOADED_KERNELS.remove(path)
         spice.unload(path)
         return 1
     try:

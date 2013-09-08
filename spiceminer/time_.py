@@ -53,9 +53,9 @@ class Time(numbers.Real):
     :arg hour: 0..23
     :type minute: ``int``
     :arg minute: 0..60
-    :type second: ``int``
+    :type second: ``float``
     :arg second: 0..<60
-    :return: (:py:class:`~spiceminer.time_.Time`) -- Time representation.
+    :return: (:py:class:`~spiceminer.time_.Time`) -- New POSX timestamp.
     :raises:
       (``ValueError``) -- If an argument is out of bounds.
 
@@ -94,7 +94,7 @@ class Time(numbers.Real):
 
         :type t: ``float``
         :arg t: A number representing a point in time.
-        :return: (:py:class:`~spiceminer.time_.Time`)
+        :return: (:py:class:`~spiceminer.time_.Time`) -- New POSIX timestamp.
         :raises: Nothing.
         '''
         tmp = time.gmtime(t)
@@ -114,7 +114,7 @@ class Time(numbers.Real):
         :arg doy: The day od year to convert. Can be a ``float`` to allow for
           hour, minute, etc. measurement.
 
-        :return: (:py:class:`~spiceminer.time_.Time`)
+        :return: (:py:class:`~spiceminer.time_.Time`) -- New POSIX timestamp.
         :raises: (``ValueError``) -- If ``0 <= doy < (364 or 365)``
         '''
         if not 0 <= doy < 364 + calendar.isleap(year):
@@ -133,7 +133,7 @@ class Time(numbers.Real):
         :type dt: ``datetime``
         :arg dt: The object to convert.
 
-        :return: (:py:class:`~spiceminer.time_.Time`)
+        :return: (:py:class:`~spiceminer.time_.Time`) -- New POSIX timestamp.
         :raises: Nothing.
         '''
         tmpfuncs , Time._ARGCHECKS = Time._ARGCHECKS, {} # Hax! to avoid unnecessary type checking
@@ -207,9 +207,7 @@ class Time(numbers.Real):
         return new
 
     def __trunc__(self):
-        new = Time()
-        new._value = self.real.__trunc__()
-        return new
+        return int(self.real)
 
     ### Self is left operand ###
     #Supported: int, float
@@ -277,30 +275,38 @@ class Time(numbers.Real):
     ### Protected fields ###
     @property
     def year(self):
+        '''Year represented by the timestamp.'''
         return self.timetuple()[0]
     @property
     def month(self):
+        '''Month represented by the timestamp.'''
         return self.timetuple()[1]
     @property
     def day(self):
+        '''Day represented by the timestamp.'''
         return self.timetuple()[2]
     @property
     def hour(self):
+        '''Hour represented by the timestamp.'''
         return self.timetuple()[3]
     @property
     def minute(self):
+        '''Minute represented by the timestamp.'''
         return self.timetuple()[4]
     @property
     def second(self):
+        '''Second represented by the timestamp.'''
         return self.timetuple()[5] + (self.real - int(self.real))
     @property
     def doy(self):
+        '''Day of year represented by the timestamp.'''
         tmp = self.timetuple()
         fraction = (tmp[3] * 3600 + tmp[4] * 60 + tmp[5] + (self.real - int(self.real))) / 86400.0
         return tmp[7] + fraction
 
     ### Additional methods ###
     def timetuple(self):
+        '''Struct representation as produced by ``time.gmtime()``.'''
         return time.gmtime(self.real)
 
     def et(self):

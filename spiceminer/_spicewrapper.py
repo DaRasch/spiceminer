@@ -20,6 +20,7 @@ del os, glob
 
 ### Exceptions ###
 class SpiceError(Exception):
+    '''Special exception only raised by the low level c-API.'''
     pass
 
 
