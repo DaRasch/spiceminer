@@ -130,6 +130,8 @@ class Body(object):
         '''
         if isinstance(observer, Body):
             observer = observer.name
+        if isinstance(frame, Body):
+            frame = frame._frame or frame.name
         if isinstance(times, numbers.Real):
             times = [float(times)]
         if isinstance(times, collections.Iterable):
@@ -143,13 +145,13 @@ class Body(object):
         msg = 'state() Real or Iterable argument expected, got {}.'
         raise TypeError(msg.format(type(times)))
 
-    def state2(self, times, observer='SUN', frame='ECLIPJ2000', abcorr=None):
+    def single_state(self, time, observer='SUN', frame='ECLIPJ2000', abcorr=None):
         if isinstance(observer, Body):
             observer = observer.name
         if isinstance(frame, Body):
             frame = frame._frame or frame.name
         return numpy.array(spice.spkezr(self.name, Time.fromposix(time).et(),
-            frame, abcorr or Body._ABCORR, observer)).reshape(6, 1)
+            frame, abcorr or Body._ABCORR, observer))
 
     def position(self, times, observer='SUN', frame='ECLIPJ2000', abcorr=None):
         '''Get the position of this object relative to the observer in a
@@ -177,6 +179,8 @@ class Body(object):
         '''
         if isinstance(observer, Body):
             observer = observer.name
+        if isinstance(frame, Body):
+            frame = frame._frame or frame.name
         if isinstance(times, numbers.Real):
             times = [float(times)]
         if isinstance(times, collections.Iterable):
@@ -190,13 +194,13 @@ class Body(object):
         msg = 'position() Real or Iterable argument expected, got {}.'
         raise TypeError(msg.format(type(times)))
 
-    def position2(self, times, observer='SUN', frame='ECLIPJ2000', abcorr=None):
+    def single_position(self, times, observer='SUN', frame='ECLIPJ2000', abcorr=None):
         if isinstance(observer, Body):
             observer = observer.name
         if isinstance(frame, Body):
             frame = frame._frame or frame.name
         return numpy.array(spice.spkpos(self.name, Time.fromposix(time).et(),
-            frame, abcorr or Body._ABCORR, observer)).reshape(3, 1)
+            frame, abcorr or Body._ABCORR, observer))
 
     def speed(self, times, observer='SUN', frame='ECLIPJ2000', abcorr=None):
         '''Get the speed of this object relative to the observer in a specific
@@ -224,6 +228,8 @@ class Body(object):
         '''
         if isinstance(observer, Body):
             observer = observer.name
+        if isinstance(frame, Body):
+            frame = frame._frame or frame.name
         if isinstance(times, numbers.Real):
             times = [float(times)]
         if isinstance(times, collections.Iterable):
@@ -232,8 +238,8 @@ class Body(object):
         msg = 'speed() Real or Iterable argument expected, got {}.'
         raise TypeError(msg.format(type(times)))
 
-    def speed2(self, times, observer='SUN', frame='ECLIPJ2000', abcorr=None):
-        return self.state2(times, observer, frame, abcorr)[3:]
+    def single_speed(self, time, observer='SUN', frame='ECLIPJ2000', abcorr=None):
+        return self.single_state(time, observer, frame, abcorr)[3:]
 
     def rotation(self, times, observer='SUN'):
         '''Get the rotation matrix for rotating this object from its own
@@ -254,7 +260,7 @@ class Body(object):
           necessary information missing.
         '''
         if isinstance(observer, Body):
-            observer = observer._frame or observer._name
+            observer = observer._frame or observer.name
         if isinstance(times, numbers.Real):
             times = [float(times)]
         if isinstance(times, collections.Iterable):
@@ -267,10 +273,10 @@ class Body(object):
         msg = 'rotation() Real or Iterable argument expected, got {}.'
         raise TypeError(msg.format(type(times)))
 
-    def rotation2(self, times, observer='SUN_IAU'):
+    def single_rotation(self, times, observer='SUN_IAU'):
         if isinstance(observer, Body):
             observer = observer.name
-        return numpy.array(sspice.pxform(self._frame or self.name, observer,
+        return numpy.array(spice.pxform(self._frame or self.name, observer,
             Time.fromposix(time).et())).reshape(3, 3)
 
 

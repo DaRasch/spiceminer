@@ -41,8 +41,8 @@ def load(path='.', recursive=True, followlinks=False):
     '''
     def _loader(path):
         with ignored(spice.SpiceError):
-            spice.furnsh(path)
             path = os.path.realpath(path)
+            spice.furnsh(path)
             LOADED_KERNELS.add(path)
             return 1
         return 0
