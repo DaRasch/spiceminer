@@ -273,10 +273,10 @@ class Body(object):
         msg = 'rotation() Real or Iterable argument expected, got {}.'
         raise TypeError(msg.format(type(times)))
 
-    def single_rotation(self, times, observer='SUN_IAU'):
+    def single_rotation(self, time, destination='ECLIPJ2000'):
         if isinstance(observer, Body):
             observer = observer.name
-        return numpy.array(spice.pxform(self._frame or self.name, observer,
+        return numpy.array(spice.pxform(self._frame or self.name, destination,
             Time.fromposix(time).et())).reshape(3, 3)
 
 

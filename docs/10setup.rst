@@ -12,7 +12,7 @@ hope.
 
 Preparation
 ===========
-Run ``python getspice.py`` from the project root to automatically download and
+Run ``python getcspice.py`` from the project root to automatically download and
 unpack the correct version of the c-SPICE source code. If you'd rather do that
 manually or have an existing version already available you can simply set an
 environment variable named ``CSPICEPATH`` to its path.
