@@ -241,7 +241,7 @@ class Body(object):
     def single_speed(self, time, observer='SUN', frame='ECLIPJ2000', abcorr=None):
         return self.single_state(time, observer, frame, abcorr)[3:]
 
-    def rotation(self, times, observer='SUN'):
+    def rotation(self, times, observer='ECLIPJ2000'):
         '''Get the rotation matrix for rotating this object from its own
         reference frame to that of the observer.
 
@@ -274,8 +274,8 @@ class Body(object):
         raise TypeError(msg.format(type(times)))
 
     def single_rotation(self, time, destination='ECLIPJ2000'):
-        if isinstance(observer, Body):
-            observer = observer.name
+        if isinstance(destination, Body):
+            destination = destination.name
         return numpy.array(spice.pxform(self._frame or self.name, destination,
             Time.fromposix(time).et())).reshape(3, 3)
 
