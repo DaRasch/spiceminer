@@ -13,3 +13,10 @@ char* unload_custom(char* path) {
     CHECK_EXCEPTION
     FINALIZE
 }
+
+/* Find all IDs in an spk file */
+char* spkobj_custom(char* path, SpiceCell* ids) {
+    spkobj_c(path, ids);
+    CHECK_EXCEPTION
+    FINALIZE
+}

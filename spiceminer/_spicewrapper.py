@@ -4,10 +4,10 @@
 import os
 import glob
 import ctypes
-import functools
+
 import numpy
 
-from ctypes import c_int, c_double, c_char_p, byref, POINTER
+from ctypes import c_void_p, c_int, c_double, c_char_p, cast, sizeof, byref, POINTER, Structure
 
 cwrapper = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'libspice.*')
 cwrapper = next(glob.iglob(cwrapper)) #TODO find better system independant alternative for glob
@@ -24,7 +24,85 @@ class SpiceError(Exception):
     pass
 
 
-### helper functions ###
+### helper classes/functions ###
+class SpiceCell(Structure):
+    DATATYPES_ENUM = {'char': 0, 'double': 1, 'int': 2, 'time': 3, 'bool': 4}
+    DATATYPES_CLS = [c_char_p, c_double, c_int, c_int, c_int]
+    CTRLBLOCK = 6
+
+    _fields_ = [('dtype', c_int),
+                ('length', c_int),
+                ('size', c_int),
+                ('card', c_int),
+                ('isSet', c_int),
+                ('adjust', c_int),
+                ('init', c_int),
+                ('base', c_void_p),
+                ('data', c_void_p)]
+
+    def __init__(self, dtype, length, size, card, isSet, init, base, data):
+        self.dtype = dtype
+        self.length = length
+        self.size = size
+        self.card = card
+        self.isSet = isSet
+        self.adjust = 0 # Always False, because not implemented
+        self.init = init
+        self.base = base
+        self.data = data
+
+    @classmethod
+    def integer(cls, size):
+        base = (c_int * (cls.CTRLBLOCK + size))()
+        data = (c_int * size).from_buffer(base, cls.CTRLBLOCK * 4)
+        instance = cls(cls.DATATYPES_ENUM['int'], 0, size, 0, 1, 0,
+                       cast(base, c_void_p),
+                       cast(data, c_void_p))
+        return instance
+
+    @classmethod
+    def double(cls, size):
+        base = (c_double * (cls.CTRLBLOCK + size))()
+        data = (c_double * size).from_buffer(base, cls.CTRLBLOCK * 8)
+        instance = cls(cls.DATATYPES_ENUM['double'], 0, size, 0, 1, 0,
+                       cast(base, c_void_p),
+                       cast(data, c_void_p))
+        return instance
+
+    def __len__(self):
+        return self.card
+
+    def __iter__(self):
+        bytesize = sizeof(self.DATATYPES_CLS[self.dtype])
+        resfunc = self.DATATYPES_CLS[self.dtype].from_address
+        card, data = self.card or 1, self.data
+        for i in xrange(card):
+            yield resfunc(data + (i % card) * bytesize).value
+
+    def __contains__(self, key):
+        return key in self.__iter__()
+
+    def __getitem__(self, key):
+        bytesize = sizeof(self.DATATYPES_CLS[self.dtype])
+        resfunc = self.DATATYPES_CLS[self.dtype].from_address
+        card, data = self.card, self.data
+        if isinstance(key, slice):
+            start, stop, step = key.start or 0, key.stop or -1, key.step or 1
+            #TODO Typechecking
+            if card == 0:
+                return []
+            else:
+                return list(resfunc(data + i * bytesize).value
+                    for i in xrange(start % card, stop % card + 1, step))
+        if key in xrange(-card, card):
+            return resfunc(data + (key % card) * bytesize).value
+        elif not isinstance(key, int):
+            'SpiceCell inices must be integers, not {}'.format(type(key))
+            raise TypeError(msg)
+        else:
+            raise IndexError('SpiceCell index out of range')
+
+
 def errcheck(result, func, args):
     if result:
         raise SpiceError(result)
@@ -76,6 +154,12 @@ cspice.unload_custom.restype = c_char_p
 cspice.unload_custom.errcheck = errcheck
 def unload(path):
     cspice.unload_custom(path)
+
+cspice.spkobj_custom.argtypes = [c_char_p, POINTER(SpiceCell)]
+cspice.spkobj_custom.restype = c_char_p
+cspice.spkobj_custom.errcheck = errcheck
+def spkobj(path, cell):
+    cspice.spkobj_custom(path, byref(cell))
 
 ### Time conversion ###
 cspice.utc2et_custom.argtypes = [c_char_p, POINTER(c_double)]

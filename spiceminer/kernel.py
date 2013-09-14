@@ -27,8 +27,8 @@ def load(path='.', recursive=True, followlinks=False):
       ``followlinks`` are both ``True``, symlinked directories further up the
       directory tree will also be traversed.
 
-    .. WARNING:: Setting followlinks to ``True`` may lead to infinite
-       recursion.
+      .. WARNING:: Setting followlinks to ``True`` may lead to infinite
+         recursion.
 
     :return: (``int``) -- The number of loaded files.
     :raise: Nothing.
