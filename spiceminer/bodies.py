@@ -194,13 +194,13 @@ class Body(object):
         msg = 'position() Real or Iterable argument expected, got {}.'
         raise TypeError(msg.format(type(times)))
 
-    def single_position(self, times, observer='SUN', frame='ECLIPJ2000', abcorr=None):
+    def single_position(self, time, observer='SUN', frame='ECLIPJ2000', abcorr=None):
         if isinstance(observer, Body):
             observer = observer.name
         if isinstance(frame, Body):
             frame = frame._frame or frame.name
         return numpy.array(spice.spkpos(self.name, Time.fromposix(time).et(),
-            frame, abcorr or Body._ABCORR, observer))
+            frame, abcorr or Body._ABCORR, observer)[0])
 
     def speed(self, times, observer='SUN', frame='ECLIPJ2000', abcorr=None):
         '''Get the speed of this object relative to the observer in a specific
@@ -265,17 +265,20 @@ class Body(object):
             times = [float(times)]
         if isinstance(times, collections.Iterable):
             result = []
+            valid_times = []
             for time in times:
                 with ignored(spice.SpiceError):
                     result.append(spice.pxform(self._frame or self.name,
                         observer, Time.fromposix(time).et()))
-            return [numpy.array(item).reshape(3, 3) for item in result]
+                    valid_times.append(time)
+            return [(time, numpy.array(item).reshape(3, 3))
+                for time, item in zip(valid_times, result)]
         msg = 'rotation() Real or Iterable argument expected, got {}.'
         raise TypeError(msg.format(type(times)))
 
     def single_rotation(self, time, destination='ECLIPJ2000'):
         if isinstance(destination, Body):
-            destination = destination.name
+            destination = detination._frame or destination.name
         return numpy.array(spice.pxform(self._frame or self.name, destination,
             Time.fromposix(time).et())).reshape(3, 3)
 
