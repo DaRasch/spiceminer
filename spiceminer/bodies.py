@@ -271,8 +271,8 @@ class Body(object):
                     result.append(spice.pxform(self._frame or self.name,
                         observer, Time.fromposix(time).et()))
                     valid_times.append(time)
-            return [(time, numpy.array(item).reshape(3, 3))
-                for time, item in zip(valid_times, result)]
+            return numpy.array(valid_times), [numpy.array(item).reshape(3, 3)
+                for item in result]
         msg = 'rotation() Real or Iterable argument expected, got {}.'
         raise TypeError(msg.format(type(times)))
 
