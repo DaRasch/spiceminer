@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #-*- coding:utf-8 -*-
 
 import os
@@ -10,13 +9,15 @@ import numpy
 from ctypes import c_void_p, c_int, c_double, c_char, c_char_p
 from ctypes import cast, sizeof, byref, POINTER, Structure
 
-cwrapper = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'libspice.*')
+cwrapper = os.path.realpath(os.path.join(__file__, '..', 'libspice.*'))
 cwrapper = next(glob.iglob(cwrapper)) #TODO find better system independant alternative for glob
+del os, glob
 cspice = ctypes.CDLL(cwrapper)
+del cwrapper
+BITSIZE = {'char': sizeof(c_char), 'int': sizeof(c_int), 'double': sizeof(c_double)}
+del sizeof
 cspice.erract_custom('SET', 'RETURN')
 cspice.errdev_custom('SET', 'NULL')
-del cwrapper
-del os, glob
 
 
 ### Exceptions ###
@@ -27,11 +28,11 @@ class SpiceError(Exception):
 
 ### helper classes/functions ###
 def _char_getter(data_p, index, length):
-    return (c_char * length).from_address(data_p + index * 1).value
+    return (c_char * length).from_address(data_p + index * BITSIZE['char']).value
 def _double_getter(data_p, index, length):
-    return c_double.from_address(data_p + index * 8).value
+    return c_double.from_address(data_p + index * BITSIZE['double']).value
 def _int_getter(data_p, index, length):
-    return c_int.from_address(data_p + index * 4).value
+    return c_int.from_address(data_p + index * BITSIZE['int']).value
 
 class SpiceCell(Structure):
     DATATYPES_ENUM = {'char': 0, 'double': 1, 'int': 2, 'time': 3, 'bool': 4}
@@ -48,22 +49,23 @@ class SpiceCell(Structure):
                 ('base', c_void_p),
                 ('data', c_void_p)]
 
-    def __init__(self, dtype, length, size, card, isSet, init, base, data):
+    def __init__(self, dtype, length, size, card, isSet, base, data):
         self.dtype = dtype
         self.length = length
         self.size = size
         self.card = card
         self.isSet = isSet
         self.adjust = 0 # Always False, because not implemented
-        self.init = init
+        self.init = 0 # Always False, because this is the constructor
         self.base = base
         self.data = data
 
     @classmethod
     def character(cls, size, length):
         base = (c_char * ((cls.CTRLBLOCK + size) * length))()
-        data = (c_char * (size * length)).from_buffer(base, cls.CTRLBLOCK * length)
-        instance = cls(cls.DATATYPES_ENUM['char'], length, size, 0, 1, 0,
+        data = (c_char * (size * length)).from_buffer(
+            base, cls.CTRLBLOCK * BITSIZE['char'] * length)
+        instance = cls(cls.DATATYPES_ENUM['char'], length, size, 0, 1,
                        cast(base, c_void_p),
                        cast(data, c_void_p))
         return instance
@@ -71,8 +73,9 @@ class SpiceCell(Structure):
     @classmethod
     def integer(cls, size):
         base = (c_int * (cls.CTRLBLOCK + size))()
-        data = (c_int * size).from_buffer(base, cls.CTRLBLOCK * 4)
-        instance = cls(cls.DATATYPES_ENUM['int'], 0, size, 0, 1, 0,
+        data = (c_int * size).from_buffer(
+            base, cls.CTRLBLOCK * BITSIZE['int'])
+        instance = cls(cls.DATATYPES_ENUM['int'], 0, size, 0, 1,
                        cast(base, c_void_p),
                        cast(data, c_void_p))
         return instance
@@ -80,8 +83,9 @@ class SpiceCell(Structure):
     @classmethod
     def double(cls, size):
         base = (c_double * (cls.CTRLBLOCK + size))()
-        data = (c_double * size).from_buffer(base, cls.CTRLBLOCK * 8)
-        instance = cls(cls.DATATYPES_ENUM['double'], 0, size, 0, 1, 0,
+        data = (c_double * size).from_buffer(
+            base, cls.CTRLBLOCK * BITSIZE['double'])
+        instance = cls(cls.DATATYPES_ENUM['double'], 0, size, 0, 1,
                        cast(base, c_void_p),
                        cast(data, c_void_p))
         return instance
@@ -107,10 +111,10 @@ class SpiceCell(Structure):
             if card == 0:
                 return []
             else:
-                return list(getter(data, i, length).value
+                return list(getter(data, i, length)
                     for i in xrange(start % card, stop % card + 1, step))
         if key in xrange(-card, card):
-            return getter(data, key, length).value
+            return getter(data, key, length)
         elif not isinstance(key, int):
             'SpiceCell inices must be integers, not {}'.format(type(key))
             raise TypeError(msg)

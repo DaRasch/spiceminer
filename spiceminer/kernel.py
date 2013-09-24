@@ -1,19 +1,84 @@
-#!/usr/bin/env python
 #-*- coding:utf-8 -*-
 
 import os
+import re
+
+from collections import defaultdict
 
 import spiceminer._spicewrapper as spice
-import spiceminer.bodies as bodies
 
-from spiceminer._helpers import ignored
+from .bodies import Body
+from .time_ import Time
+from ._helpers import ignored
 
-__all__ = ['load', 'unload', 'get', 'LOADED_KERNELS']
+__all__ = ['load', 'unload', 'get']
 
 
-LOADED_KERNELS = set()
+LOADED_KERNELS = defaultdict(set)
+POS_WINDOWS = defaultdict(list)
+ROT_WINDOWS = defaultdict(list)
 
-#TODO enforce resolution of symlinks at all times
+_IDs = spice.SpiceCell.integer(1000)
+_WINDOWS = spice.SpiceCell.double(100)
+
+
+### Helpers for load function ###
+def _filter_extensions(filename):
+    '''Check for correct extension and return kernel type.'''
+    extension = filename.rsplit('.', 1)[1]
+    match = re.match('(b|t)(s?c|sp|f|ls|pc)$', extension)
+    if match:
+        return match.string[1:]
+    raise ValueError('Invalid file extension, got {}'.format(extension))
+
+def _merge_windows(lst):
+    '''Return a sorted list of non-overlapping start-end-tuples.'''
+    if not lst:
+        return lst
+    lst = sorted(lst)
+    tmp = []
+    iterator = iter(lst)
+    old = next(iterator)
+    for new in iterator:
+        if new[0] > old[1]:
+            tmp.append(old)
+            old = new
+        else:
+            old = (old[0], max(old[1], new[1]))
+    tmp.append(old)
+    return tmp
+
+def _load_sp(path):
+    '''Load sp kernel and associated windows.'''
+    _IDs.reset()
+    spice.spkobj(path, _IDs)
+    for idcode in _IDs:
+        _WINDOWS.reset()
+        spice.spkcov(path, idcode, _WINDOWS)
+        # Merge new windows and exsiting windows
+        new_windows = [(Time.fromet(et0), Time.fromet(et1))
+            for et0, et1 in zip(_WINDOWS[::2], _WINDOWS[1::2])]
+        POS_WINDOWS[idcode] = _merge_windows(POS_WINDOWS[idcode] + new_windows)
+
+def _load_c(path):
+    pass
+
+def _load_pc(path):
+    pass
+
+def _load_any(path, extension):
+    '''Load **any** file and associated windows if necessary.'''
+    loaders = {
+        'sp': _load_sp,
+        'c': _load_c,
+        'pc': _load_pc,
+    }
+    with ignored(KeyError):
+        loaders[extension](path)
+    spice.furnsh(path)
+    LOADED_KERNELS[extension].add(path)
+
+
 def load(path='.', recursive=True, followlinks=False):
     '''Load a kernel file or a directory containing kernel files.
 
@@ -39,20 +104,37 @@ def load(path='.', recursive=True, followlinks=False):
     The return value will also be impacted by this, actually showing the number
     of encountered files, not only kernels.
     '''
-    def _loader(path):
-        with ignored(spice.SpiceError):
-            path = os.path.realpath(path)
-            spice.furnsh(path)
-            LOADED_KERNELS.add(path)
-            return 1
-        return 0
+    path = os.path.realpath(path)
+    count_loaded = 0
     if os.path.isfile(path):
-        return _loader(path)
-    if not recursive:
-        return sum(_loader(os.path.join(path, f))
-            for f in next(os.walk(path))[2])
-    return sum(sum(_loader(os.path.join(item[0], f)) for f in item[2])
-        for item in os.walk(path, followlinks=followlinks))
+        dirname, basename = os.path.split(path)
+        walker = [[dirname, [], [basename]]]
+    elif recursive:
+        walker = os.walk(path, followlinks=followlinks)
+    else:
+        walker = [next(os.walk(path, followlinks=followlinks))]
+    queue = []
+    for curdir, dirs, fnames in walker:
+        for name in fnames:
+            with ignored(ValueError):
+                extension = _filter_extensions(name)
+                filepath = os.path.join(curdir, name)
+                # load sp, c, pc later
+                if extension in ('sp', 'c', 'pc'):
+                    queue.append((filepath, extension))
+                else:
+                    spice.furnsh(filepath)
+                    LOADED_KERNELS[extension].add(filepath)
+                    count_loaded += 1
+    for filepath, extension in queue:
+        _load_any(filepath, extension)
+        count_loaded += 1
+    return count_loaded
+
+
+
+
+
 
 #TODO enforce resolution of symlinks at all times
 def unload(path):
@@ -94,9 +176,9 @@ def get(body):
     if isinstance(body, basestring):
         body_id = spice.bodn2c(body)
         if body_id is not None:
-            return bodies.Body(body_id)
+            return Body(body_id)
         raise ValueError('get() got invalid name {}.'.format(body))
     with ignored(TypeError):
-        return bodies.Body(body)
+        return Body(body)
     msg = 'get() integer or str argument expected, got {}.'
     raise TypeError(msg.format(type(body)))

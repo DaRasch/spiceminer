@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #-*- coding:utf-8 -*-
 
 import functools
@@ -7,23 +6,36 @@ import time
 import calendar
 import datetime
 
+from contextlib import contextmanager
+
 import spiceminer._spicewrapper as spice
 
 __all__ = ['Time']
 
 
+### Miscelanuos helpers ###
+@contextmanager
+def _no_argcheck():
+    # Hax! avoid unnecessary type checking
+    _tmpfuncs, Time._ARGCHECKS = Time._ARGCHECKS, []
+    try:
+        yield
+    finally:
+        Time._ARGCHECKS = _tmpfuncs
+
+
 ### Helpers for argument checking ###
 def _argcheck_basic(min_, max_, name, value):
-    if not isinstance(value, int):
-        msg = '__init__() {}: Integer argument expected, got {}.'
+    if not isinstance(value, numbers.Integral):
+        msg = '__init__() {}: Integer argument expected, got {}'
         raise TypeError(msg.format(name, type(value)))
     if not (min_ <= value <= max_):
-        msg = '__init__() {} must be in {}..{}.'
+        msg = '__init__() {} must be in {}..{}'
         raise ValueError(msg.format(name, min_, max_))
 
 def _argcheck_day(day, month, year):
-    if not isinstance(day, int):
-        msg = '__init__() day: Integer argument expected, got {}.'
+    if not isinstance(day, numbers.Integral):
+        msg = '__init__() day: Integer argument expected, got {}'
         raise TypeError(msg.format(type(day)))
     if not 1 <= day <= calendar.monthrange(year, month)[1]:
         msg = '__init__() day must be in 1..{}'
@@ -31,10 +43,10 @@ def _argcheck_day(day, month, year):
 
 def _argcheck_second(second):
     if not isinstance(second, numbers.Real):
-        msg = '__init__() second: int or float argument expected, got {}.'
+        msg = '__init__() second: int or float argument expected, got {}'
         raise TypeError(msg.format(type(second)))
     if not 0 <= second < 60:
-        msg = '__init__() 0 <= second < 60 expected, got {}.'
+        msg = '__init__() 0 <= second < 60 expected, got {}'
         raise ValueError(msg.format(second))
 
 
@@ -44,7 +56,7 @@ class Time(numbers.Real):
     a subclass of ``numbers.Real``, so it acts like a float.
 
     :type year: ``int``
-    :arg year: 1900..9999
+    :arg year: 1..9999
     :type month: ``int``
     :arg month: 1..12
     :type day: ``int``
@@ -52,7 +64,7 @@ class Time(numbers.Real):
     :type hour: ``int``
     :arg hour: 0..23
     :type minute: ``int``
-    :arg minute: 0..60
+    :arg minute: 0..59
     :type second: ``float``
     :arg second: 0..<60
     :return: (:py:class:`~spiceminer.time_.Time`) -- New POSX timestamp.
@@ -63,7 +75,7 @@ class Time(numbers.Real):
     '''
 
     _ARGCHECKS = [
-        ('year', lambda x, y, z: _argcheck_basic(1900, 9999, 'year', x)),
+        ('year', lambda x, y, z: _argcheck_basic(1, 9999, 'year', x)),
         ('month', lambda x, y, z: _argcheck_basic(1, 12, 'month', x)),
         ('day', lambda x, y, z: _argcheck_day(x, y, z)),
         ('hour', lambda x, y, z: _argcheck_basic(0, 23, 'hour', x)),
@@ -79,17 +91,16 @@ class Time(numbers.Real):
 
     def __init__(self, year=1970, month=1, day=1, hour=0, minute=0, second=0):
         super(Time, self).__init__()
-        mapping = locals()
-        #print mapping
+        args = locals()
         for name, func in Time._ARGCHECKS:
-            value = mapping[name]
+            value = args[name]
             func(value, month, year)
         self._value = calendar.timegm([year, month, day, hour, minute, 0, 0, 0,
             -1]) + second
 
     ### Additional constructors ###
     @classmethod
-    def fromposix(cls, t):
+    def fromposix(cls, timestamp):
         '''Generate a :py:class:`~spiceminer.time_.Time` instance from a float.
 
         :type t: ``float``
@@ -97,10 +108,8 @@ class Time(numbers.Real):
         :return: (:py:class:`~spiceminer.time_.Time`) -- New POSIX timestamp.
         :raises: Nothing.
         '''
-        tmp = time.gmtime(t)
-        tmpfuncs , Time._ARGCHECKS = Time._ARGCHECKS, {} # Hax! to avoid unnecessary type checking
-        instance = cls(*tmp[:5], second=tmp[5] + (t - int(t)))
-        Time._ARGCHECKS = tmpfuncs
+        with _no_argcheck():
+            instance = cls(second=float(timestamp))
         return instance
 
     @classmethod
@@ -118,12 +127,12 @@ class Time(numbers.Real):
         :raises: (``ValueError``) -- If ``0 <= doy < (364 or 365)``
         '''
         if not 0 <= doy < 364 + calendar.isleap(year):
-            msg = 'fromydoy() doy out of range, got {}.'
+            msg = 'fromydoy() doy out of range, got {}'
             raise ValueError(msg.format(doy))
-        seconds = doy * 86400
-        new = cls(year)
-        new._value += seconds
-        return new
+        seconds = float(doy) * 86400
+        with _no_argcheck():
+            instance = cls(int(year), second=seconds)
+        return instance
 
     @classmethod
     def fromdatetime(cls, dt):
@@ -136,10 +145,17 @@ class Time(numbers.Real):
         :return: (:py:class:`~spiceminer.time_.Time`) -- New POSIX timestamp.
         :raises: Nothing.
         '''
-        tmpfuncs , Time._ARGCHECKS = Time._ARGCHECKS, {} # Hax! to avoid unnecessary type checking
-        instance = cls(*dt.utctimetuple()[:5],
-            second=dt.second + dt.microsecond / 1000.0)
-        Time._ARGCHECKS = tmpfuncs
+        with _no_argcheck():
+            instance = cls(*dt.utctimetuple()[:5],
+                second=dt.second + dt.microsecond / 1000000.0)
+        return instance
+
+    @classmethod
+    def fromet(cls, et):
+        et = float(et)
+        with _no_argcheck():
+            instance = cls(second=et + 946728000 + spice.deltet(et, 'UTC'))
+        return instance
 
     ### Real-type stuff###
     @property
@@ -153,12 +169,13 @@ class Time(numbers.Real):
         return float(self._value)
 
     ### Comparisons ###
-    #Supported: int, float, complex, datetime, date
+    #Supported: int, float, datetime, date, Time
     def __eq__(self, other):
         if isinstance(other, datetime.datetime):
-            return self.real == calendar.timegm(other.utctimetuple())
+            return self.real == calendar.timegm(
+                other.utctimetuple()) + (other.microsecond / 1000000.0)
         if isinstance(other, datetime.date):
-            return self.real == calendar.timegm(other.utctimetuple())
+            return self.real == calendar.timegm(other.timetuple())
         try:
             return self.real == float(other)
         except TypeError:
@@ -168,9 +185,10 @@ class Time(numbers.Real):
 
     def __lt__(self, other):
         if isinstance(other, datetime.datetime):
-            return self.real < calendar.timegm(other.utctimetuple())
+            return self.real < calendar.timegm(
+                other.utctimetuple()) + (other.microsecond / 1000000.0)
         if isinstance(other, datetime.date):
-            return self.real < calendar.timegm(other.utctimetuple())
+            return self.real < calendar.timegm(other.timetuple())
         try:
             return self.real < float(other)
         except TypeError:
@@ -179,10 +197,12 @@ class Time(numbers.Real):
             return NotImplemented
 
     def __le__(self, other):
+        # TODO replace with __lt__ or __eq__
         if isinstance(other, datetime.datetime):
-            return self.real <= calendar.timegm(other.utctimetuple())
+            return self.real <= calendar.timegm(
+                other.utctimetuple()) + (other.microsecond / 1000000.0)
         if isinstance(other, datetime.date):
-            return self.real <= calendar.timegm(other.utctimetuple())
+            return self.real <= calendar.timegm(other.timetuple())
         try:
             return self.real <= float(other)
         except TypeError:
@@ -192,42 +212,55 @@ class Time(numbers.Real):
 
     ### Math ###
     def __abs__(self):
-        new = Time()
-        new._value = abs(self.real)
+        with _no_argcheck():
+            new = Time(second=abs(self.real))
         return new
 
     def __neg__(self):
-        new = Time()
-        new._value = self.real * -1
+        with _no_argcheck():
+            new = Time(second=-self.real)
         return new
 
     def __pos__(self):
-        new = Time()
-        new._value = self.real
+        with _no_argcheck():
+            new = Time(second=self.real)
         return new
 
     def __trunc__(self):
         return int(self.real)
 
     ### Self is left operand ###
-    #Supported: int, float
+    #Supported: int, float, timedelta, datetime, date, Time
     def __add__(self, other):
         if isinstance(other, Time):
             return NotImplemented
-        if isinstance(other, numbers.Real):
-            new = Time()
-            new._value = self.real + other.real
+        if isinstance(other, datetime.timedelta):
+            with _no_argcheck():
+                new = Time(second=self.real + other.total_seconds())
             return new
-        return NotImplemented
+        try:
+            with _no_argcheck():
+                new = Time(second=self.real + float(other))
+            return new
+        except TypeError:
+            return NotImplemented
+        except ValueError:
+            return NotImplemented
 
-    def __sub__(self, other): #XXX allow sub with datetime or timedelta?
+    def __sub__(self, other):
         if isinstance(other, Time):
             return self.real - other.real
-        if isinstance(other, numbers.Real):
-            new = Time()
-            new._value = self.real - other.real
+        if isinstance(other, datetime.datetime):
+            return self.real - calendar.timegm(
+                other.utctimetuple()) - (other.microsecond / 1000000.0)
+        try:
+            with _no_argcheck():
+                new = Time(second=self.real - float(other))
             return new
-        return NotImplemented
+        except TypeError:
+            return NotImplemented
+        except ValueError:
+            return NotImplemented
 
     def __mul__(self, other):
         return NotImplemented
@@ -243,9 +276,9 @@ class Time(numbers.Real):
         return NotImplemented
 
     ### Self is right operand ###
-    def __radd__(self, other): #XXX should returntype be Time?
+    def __radd__(self, other):
         try:
-            return self.real + other
+            return other + self.real
         except ValueError:
             return NotImplemented
 
@@ -264,13 +297,22 @@ class Time(numbers.Real):
 
     ### Representation ###
     def __str__(self):
-        fraction = float(self) - int(self.real)
-        return time.strftime("%Y-%m-%dT%H:%M:%S.",self.timetuple()) + str(fraction)[2:]
+        args = self.timetuple()
+        date = '-'.join(str(x).zfill(2) for x in args[:3])
+        time_ = ':'.join(str(x).zfill(2) for x in args[3:6])
+        fraction = str(self.real - int(self))[1:]
+        if self < 0:
+            fraction = fraction[1:]
+        return '{}T{}{}'.format(date, time_, fraction[:3])
 
     def __repr__(self):
-        tmp = self.timetuple()
-        argstr = '(year={1}, month={2}, day={3}, hour={4}, minute={5}, second={0})'
-        return self.__class__.__name__ + argstr.format(tmp[5] + self.real - int(self.real), *tmp[:5])
+        args = list(self.timetuple())
+        fraction = str(self.real - int(self))[1:]
+        if self < 0:
+            fraction = fraction[1:]
+        argstr = '(year={}, month={}, day={}, hour={}, minute={}, second={}{})'
+        argstr = argstr.format(*(args[:6] + [fraction[:3]]))
+        return self.__class__.__name__ + argstr
 
     ### Protected fields ###
     @property
@@ -296,13 +338,15 @@ class Time(numbers.Real):
     @property
     def second(self):
         '''Second represented by the timestamp.'''
-        return self.timetuple()[5] + (self.real - int(self.real))
+        fraction = self.real - int(self)
+        return self.timetuple()[5] + fraction
     @property
     def doy(self):
         '''Day of year represented by the timestamp.'''
-        tmp = self.timetuple()
-        fraction = (tmp[3] * 3600 + tmp[4] * 60 + tmp[5] + (self.real - int(self.real))) / 86400.0
-        return tmp[7] + fraction
+        args = self.timetuple()
+        seconds = args[3] * 3600 + args[4] * 60 + args[5]
+        fraction = self.real - int(self)
+        return args[7] + (seconds + fraction) / 86400.0
 
     ### Additional methods ###
     def timetuple(self):
