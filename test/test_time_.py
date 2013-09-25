@@ -1,101 +1,94 @@
-#!/usr/bin/env python
 #-*- coding:utf-8 -*-
-import datetime as dt
 
-import nose.tools as tools
+import pytest
+
+
+import datetime as dt
 
 from spiceminer.time_ import Time
 
 
-def test_constructor_valid():
+### Contructors ###
+def test_constructor_bounds():
+    # year
+    pytest.raises(ValueError, Time, year=0)
+    assert Time(year=1) == -62135596800.0
+    pytest.raises(ValueError, Time, year=10000)
+    assert Time(year=9999) == 253370764800.0
+    # month
+    pytest.raises(ValueError, Time, month=0)
+    assert Time(month=1) == 0.0
+    pytest.raises(ValueError, Time, month=13)
+    assert Time(month=12) == 28857600.0
+    # day
+    pytest.raises(ValueError, Time, day=0)
+    assert Time(day=1) == 0.0
+    pytest.raises(ValueError, Time, day=32)
+    assert Time(day=31) == 2592000.0
+    pytest.raises(ValueError, Time, month=2, day=29)
+    assert Time(month=2, day=28) == 5011200.0
+    # hour
+    pytest.raises(ValueError, Time, hour=-1)
+    assert Time(hour=0) == 0.0
+    pytest.raises(ValueError, Time, hour=24)
+    assert Time(hour=23) == 82800.0
+    # minute
+    pytest.raises(ValueError, Time, minute=-1)
+    assert Time(minute=0) == 0.0
+    pytest.raises(ValueError, Time, minute=60)
+    assert Time(minute=59) == 3540.0
+    # second
+    pytest.raises(ValueError, Time, second=-0.1)
+    assert Time(second=0) == 0.0
+    pytest.raises(ValueError, Time, second=60)
+    assert Time(second=59.9) == 59.9
+
+def test_constructor_types():
+    pytest.raises(TypeError, Time, year=0.1)
+    pytest.raises(TypeError, Time, month=0.1)
+    pytest.raises(TypeError, Time, day=0.1)
+    pytest.raises(TypeError, Time, hour=0.1)
+    pytest.raises(TypeError, Time, minute=0.1)
+    pytest.raises(TypeError, Time, second='a')
+
+def test_constructor_values():
     assert Time() == 0
     assert Time(2000, 1, 1) == 946684800
     assert Time(hour=22, minute=12, second=6.4568) == 79926.4568
 
-def test_bounds_valid_year():
-    assert Time(year=1900) == -2208988800.0
-    assert Time(year=9999) == 253370764800.0
-
-def test_bounds_valid_month():
-    assert Time(month=1) == 0.0
-    assert Time(month=12) == 28857600.0
-
-def test_bounds_valid_day():
-    assert Time(day=1) == 0.0
-    assert Time(day=30) == 2505600.0
-
-def test_bounds_valid_hour():
-    assert Time(hour=0) == 0.0
-    assert Time(hour=23) == 82800.0
-
-def test_bounds_valid_minute():
-    assert Time(minute=0) == 0.0
-    assert Time(minute=59) == 3540.0
-
-def test_bounds_valid_second():
-    assert Time(second=0) == 0.0
-    assert Time(second=59.9999999) == 59.9999999
-
-@tools.raises(ValueError)
-def test_bounds_fail_year_0():
-    Time(year=1899)
-@tools.raises(TypeError)
-def test_bounds_fail_year_float():
-    Time(year=0.1)
-@tools.raises(ValueError)
-def test_bounds_fail_year_10000():
-    Time(year=10000)
-@tools.raises(ValueError)
-def test_bounds_fail_month_0():
-    Time(month=0)
-@tools.raises(TypeError)
-def test_bounds_fail_month_float():
-    Time(month=0.1)
-@tools.raises(ValueError)
-def test_bounds_fail_month_13():
-    Time(month=13)
-@tools.raises(ValueError)
-def test_bounds_fail_day_0():
-    Time(day=0)
-@tools.raises(TypeError)
-def test_bounds_fail_day_float():
-    Time(day=0.1)
-@tools.raises(ValueError)
-def test_bounds_fail_day_32():
-    Time(day=32)
-@tools.raises(ValueError)
-def test_bounds_fail_hour_negative():
-    Time(hour=-1)
-@tools.raises(TypeError)
-def test_bounds_fail_hour_float():
-    Time(hour=0.1)
-@tools.raises(ValueError)
-def test_bounds_fail_hour_24():
-    Time(hour=24)
-@tools.raises(ValueError)
-def test_bounds_fail_minute_negative():
-    Time(minute=-1)
-@tools.raises(TypeError)
-def test_bounds_fail_minute_float():
-    Time(minute=0.1)
-@tools.raises(ValueError)
-def test_bounds_fail_minute_60():
-    Time(minute=60)
-@tools.raises(ValueError)
-def test_bounds_fail_second_negative():
-    Time(second=-0.1)
-@tools.raises(ValueError)
-def test_bounds_fail_second_60():
-    Time(second=60)
-@tools.raises(TypeError)
-def test_bounds_fail_second_str():
-    Time(second='60')
-
-def test_clsmeth_fromposix_valid():
+def test_clsmeth_fromposix():
+    pytest.raises(TypeError, Time.fromposix, None)
     assert Time.fromposix(0) == Time()
 
-def test_clsmeth_fromydoy_valid():
+def test_clsmeth_fromydoy():
+    pytest.raises(ValueError, Time.fromydoy, 2000, -0.1)
+    pytest.raises(ValueError, Time.fromydoy, 2000, 365)
+    pytest.raises(TypeError, Time.fromydoy, None, 200)
     assert Time.fromydoy(2000, 200) == Time(2000, 7, 19)
 
-def test_clsmeth_fromdatetime_valid():
-    assert Time.fromdatetime(dt.datetime(2000, 1, 1)) == Time(2000)
+def test_clsmeth_fromdatetime():
+    pytest.raises(AttributeError, Time.fromdatetime, None)
+    assert Time.fromdatetime(dt.datetime(2000, 1, 1) + dt.timedelta(0, 0.4)) == Time(2000, second=0.4)
+
+
+### Comparisons ###
+@pytest.fixture(scope='module')
+def times():
+    return (Time(), Time(2000), dt.datetime(1970, 1, 1),
+        dt.datetime(2000, 1, 1), dt.date(1970, 1, 1), dt.date(2000, 1, 1))
+
+def test_eq(times):
+    time, dtime, ddate = times[::2]
+    assert time == Time()
+    assert time == dtime
+    assert dtime == time
+    assert time == ddate
+    assert ddate == time
+
+def test_lt(times):
+    time0, time1, dtime0, dtime1, ddate0, ddate1 = times
+    assert time0 < time1
+    assert time0 < dtime1
+    assert dtime0 < time1
+    assert time0 < ddate1
+    assert ddate0 < time1

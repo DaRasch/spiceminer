@@ -7,11 +7,16 @@ import glob
 
 try:
     from setuptools import setup, Extension
+    from setuptools.command.test import test as Command
+    has_setuptools = True
 except ImportError:
-    from distutils.core import setup, Extension
+    from distutils.core import setup, Extension, Command
+    has_setuptools = False
 
 
 root_dir = os.path.dirname(os.path.realpath(__file__))
+
+
 ### BUILD C-EXTENSION ###
 cspice_root = os.getenv('CSPICEPATH', os.path.join(root_dir, 'cspice'))
 if not os.path.isdir(cspice_root):
@@ -24,6 +29,51 @@ src_files = glob.glob(os.path.join(root_dir, 'cwrapper', '*.c'))
 cwrapper = Extension('spiceminer.libspice', src_files,
     include_dirs=[cspice_include],
     extra_link_args=[cspice_lib])
+
+
+### UPDATE TEST BEHAVIOR ###
+try:
+    import pytest
+    has_pytest = True
+except ImportError:
+    has_pytest = False
+
+if has_setuptools:
+    class NewTestCommand(Command):
+        def finalize_options(self):
+            Command.finalize_options(self)
+            self.test_args = []
+            self.test_suite = True
+        def run_tests(self):
+            # import here, cause outside the eggs aren't loaded
+            import pytest
+            errno = pytest.main(self.test_args)
+            sys.exit(errno)
+else:
+    class NewTestCommand(Command):
+        user_options = []
+        def initialize_options(self):
+            pass
+        def finalize_options(self):
+            pass
+        def run_default(self):
+            import pytest
+            if pytest.__version__ < '2.3':
+                print 'WARNING: pytest version must be >= 2.3'
+                self.run_fallback()
+            errno = pytest.main(self.user_options)
+            sys.exit(errno)
+        def run_fallback(self):
+            import subprocess
+            test_script = os.path.join(root_dir, 'test', 'runtests.py')
+            #TODO call setup.py egg_info, setup.py build_ext --inplace
+            errno = subprocess.call([sys.executable, test_script])
+            raise SystemExit(errno)
+        def run(self):
+            try:
+                self.run_default()
+            except ImportError:
+                self.run_fallback()
 
 
 ### METADATA ###
@@ -50,8 +100,8 @@ metadata = {
     'packages': ['spiceminer'],
     'ext_modules': [cwrapper],
     'requires': ['numpy'],
-    'tests_require': ['nose'],
-    'classifiers' : ('Intended Audience :: Developers',
+    'cmdclass': {'test': NewTestCommand},
+    'classifiers': ('Intended Audience :: Developers',
                      'Intended Audience :: Science/Research',
                      'License :: OSI Approved :: MIT License',
                      'Natural Language :: English',
@@ -61,6 +111,13 @@ metadata = {
                      'Topic :: Database',
                      'Topic :: Scientific/Engineering :: Information Analysis')
 }
+
+# setuptools only arguments
+if has_setuptools:
+    metadata.update({
+    'tests_require': ['pytest>=2.3']
+})
+
 
 if __name__ == '__main__':
     setup(**metadata)

@@ -1,43 +1,46 @@
-#!/usr/bin/env python
 #-*- coding:utf-8 -*-
 
-from shared import load_base
-load_base()
+import pytest
+
 
 from spiceminer.bodies import Body
 
-import nose.tools as tools
 
-def test_constructor_valid():
-    x = Body(499)
-    tools.assert_equal(x.id, 499)
-    tools.assert_equal(x.name, 'MARS')
+### Fixtures ###
+@pytest.fixture(scope='function')
+def reset_cache():
+    Body._CACHE = {}
 
-def test_cache():
-    tools.assert_is(Body(499), Body(499))
 
-def test_meth_parent_valid():
-    x = Body(499)
-    tools.assert_is(x.parent(), Body(10))
+### No kernels needed ###
+def test_constructor():
+    body = Body(399)
+    assert body.id == 399
+    assert body.name == 'EARTH'
+    pytest.raises(ValueError, Body, 398)
+    pytest.raises(TypeError, Body, 399.5)
+    with pytest.raises(AttributeError):
+        body.id = 10
+    with pytest.raises(AttributeError):
+        body.name = 'MARS'
 
-def test_meth_children_valid():
-    x = Body(499)
-    tools.assert_equal(x.children(), [Body(401), Body(402)])
+def test_cache(reset_cache):
+    assert Body._CACHE == {}
+    assert Body(301) is Body(301)
 
-def test_meth_state_valid():
-    Body(499).state(0)
+def test_children():
+    assert Body(399).children() == [Body(301)]
 
-def test_meth_position_valid():
-    Body(499).position(0)
+def test_parent():
+    assert Body(301).parent() == Body(399)
 
-def test_meth_speed_valid():
-    Body(499).speed(0)
 
-@tools.raises(TypeError)
-def test_constructor_fail_type():
-    Body('499')
-    Body('MARS')
+### Kernels needed ###
+def test_state(kernels):
+    assert Body(399).state(0) is not None
 
-@tools.raises(ValueError)
-def test_construcotr_fail_value():
-    Body(403)
+def test_position():
+    assert Body(399).position(0) is not None
+
+def test_speed():
+    assert Body(399).speed(0) is not None
