@@ -10,6 +10,15 @@ __all__ = ['angle', 'frange', 'dtrange']
 
 
 def angle(v0, v1):
+    '''Calculates the angle between 2 Onedimensional arrays.
+
+    :type v0: ``numpy.ndarray``
+    :arg v0: A vector.
+    :type v1: ``numpy.ndarray``
+    :arg v1: A vector.
+    :return: (``float``) -- The angle between *v0* and *v1* in radians.
+    :raises: Nothing.
+    '''
     u_v0 = v0 / norm(v0)
     u_v1 = v1 / norm(v1)
     angle = arccos(dot(u_v0, u_v1))

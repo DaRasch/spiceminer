@@ -61,10 +61,30 @@ def _load_sp(path):
         POS_WINDOWS[idcode] = _merge_windows(POS_WINDOWS[idcode] + new_windows)
 
 def _load_c(path):
-    pass
+    '''Load c kernel and associated windows.'''
+    _IDs.reset()
+    spice.ckobj(path, _IDs)
+    for idcode in _IDs:
+        _WINDOWS.reset()
+        spice.ckcov(path, idcode, _WINDOWS)
+        # Merge new windows and exsiting windows
+        new_windows = [(Time.fromet(et0), Time.fromet(et1))
+            for et0, et1 in zip(_WINDOWS[::2], _WINDOWS[1::2])]
+        ROT_WINDOWS[idcode] = _merge_windows(ROT_WINDOWS[idcode] + new_windows)
 
 def _load_pc(path):
-    pass
+    '''Load pc kernel and associated windows.'''
+    return
+    #FIXME can not read tpc files
+    _IDs.reset()
+    spice.pckfrm(path, _IDs)
+    for idcode in _IDs:
+        _WINDOWS.reset()
+        spice.ckcov(path, idcode, _WINDOWS)
+        # Merge new windows and exsiting windows
+        new_windows = [(Time.fromet(et0), Time.fromet(et1))
+            for et0, et1 in zip(_WINDOWS[::2], _WINDOWS[1::2])]
+        ROT_WINDOWS[idcode] = _merge_windows(ROT_WINDOWS[idcode] + new_windows)
 
 def _load_any(path, extension):
     '''Load **any** file and associated windows if necessary.'''
@@ -97,12 +117,6 @@ def load(path='.', recursive=True, followlinks=False):
 
     :return: (``int``) -- The number of loaded files.
     :raise: Nothing.
-
-    This function will actually try to load **any** file encountered and not
-    only valid SPICE-kernel files, possibly slowing down the loading
-    process significantly if many and/or big non-kernel files are encountered.
-    The return value will also be impacted by this, actually showing the number
-    of encountered files, not only kernels.
     '''
     path = os.path.realpath(path)
     count_loaded = 0

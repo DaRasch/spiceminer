@@ -10,6 +10,8 @@ This package is a high level python wrapper around the SPICE c-library provided
 by NASA to store and analyse operational data from several space missions. It
 concentrates on an easy to use API for analysing the data.
 
+You can get the source code `here <https://github.com/DaRasch/spiceminer>`_.
+
 Contents:
 
 .. toctree::

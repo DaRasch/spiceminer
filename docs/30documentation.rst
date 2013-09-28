@@ -15,8 +15,8 @@ and modules:
 * :py:mod:`~spiceminer.kernel` -- Access to the database.
 * :py:class:`~spiceminer.time_.Time` -- Powerfull implementation of POSIX time.
 * :py:class:`~spiceminer._spicewrapper.SpiceError`
-* :py:func:`~spiceminer._helpers.frange` -- ``xrange()`` for ``float``.
-* :py:func:`~spiceminer._helpers.dtrange` -- ``xrange()`` for ``datetime``.
+* :py:func:`~spiceminer.extra.frange` -- ``xrange()`` for ``float``.
+* :py:func:`~spiceminer.extra.dtrange` -- ``xrange()`` for ``datetime``.
 
 To fully utilize the power of this package, you should of course also know
 about the abstraction used for the spice data.
@@ -33,4 +33,4 @@ Modules in detail
    31kernel
    32bodies
    33time_
-   35helpers
+   34extra
