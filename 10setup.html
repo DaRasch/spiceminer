@@ -58,17 +58,20 @@ its source) to be compiled first, that&#8217;s not as straight forward as one mi
 hope.</p>
 <div class="section" id="preparation">
 <span id="setup-preparation"></span><h2>Preparation<a class="headerlink" href="#preparation" title="Permalink to this headline">¶</a></h2>
-<p>Run <tt class="docutils literal"><span class="pre">python</span> <span class="pre">getspice.py</span></tt> from the project root to automatically download and
-unpack the correct version of the c-SPICE source code. If you&#8217;d rather do that
-manually or have an existing version already available you can simply set an
-environment variable named <tt class="docutils literal"><span class="pre">CSPICEPATH</span></tt> to its path.</p>
+<p>First get the source from <a class="reference external" href="https://github.com/DaRasch/spiceminer">here</a>, if
+you haven&#8217;t already.</p>
+<p>Now run <tt class="docutils literal"><span class="pre">python</span> <span class="pre">getcspice.py</span></tt> from the project root to automatically download
+and unpack the correct version of the c-SPICE source code. If you&#8217;d rather do
+that manually or have an existing version already available you can simply set
+an environment variable named <tt class="docutils literal"><span class="pre">CSPICEPATH</span></tt> to its path.</p>
 <p>After that just use <tt class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">build</span></tt> to build all necessary
 extensions.</p>
 </div>
 <div class="section" id="verification">
 <span id="setup-verification"></span><h2>Verification<a class="headerlink" href="#verification" title="Permalink to this headline">¶</a></h2>
 <p>To guarantee, that the version you grabbed is fully functional and compiled
-correctly, you should run the test suite.</p>
+correctly, you should run the test suite. It is not required, but strongly
+recommended.</p>
 <p>For that it is required to have at least the the newest base spice-data at
 hand. The <tt class="docutils literal"><span class="pre">getdata.py</span></tt> script will download those for you. Just use
 <tt class="docutils literal"><span class="pre">python</span> <span class="pre">getdata.py</span> <span class="pre">base</span></tt> to download all necessary data directly to the
@@ -83,13 +86,19 @@ different directory, you should set an environment variable named
 <tt class="docutils literal"><span class="pre">SPICEMINERDATA</span></tt> to that path.
 Alternatively you can just symlink that folder into the spiceminer root folder
 under the name <em>data</em>.</p>
-<p>Now run <tt class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">nosetests</span></tt>. If it reports no errors, continue.
+<p>Now run <tt class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">test</span></tt>. If it reports no errors, continue.
 Otherwise something went wrong. In that case best file a bug report.</p>
 </div>
 <div class="section" id="installation">
 <span id="setup-installation"></span><h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
 <p>If building and verification were successfull, just run
-<tt class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">install</span></tt> and all should be good to go.</p>
+<tt class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">install</span></tt> and all should be good to go. If you are not
+working with <a class="reference external" href="http://www.virtualenv.org">virtualenv</a> you may need to prepend
+<tt class="docutils literal"><span class="pre">sudo</span></tt> on unix machines.</p>
+<p>If you don&#8217;t want to install the package automatically, but want to copy it
+manually later on, you can susbstitute the <tt class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">build</span></tt> step for
+<tt class="docutils literal"><span class="pre">python</span> <span class="pre">build_ext</span> <span class="pre">--inplace</span></tt> to generate the c-library directly inside the
+source code directory.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">The download scripts will not be installed.</p>

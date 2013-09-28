@@ -63,38 +63,30 @@ get highlevel abstractions of the objects referenced by the kernels.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>path</strong> (<tt class="docutils literal"><span class="pre">str</span></tt>) &#8211; Relative or absolute path to the file/(root)directory to load.</li>
 <li><strong>recursive</strong> (<tt class="docutils literal"><span class="pre">bool</span></tt>) &#8211; If <tt class="docutils literal"><span class="pre">path</span></tt> is a directory and <tt class="docutils literal"><span class="pre">recursive</span></tt> is <tt class="docutils literal"><span class="pre">True</span></tt>,
 this will also search in child directories and not only the root.</li>
-<li><strong>followlinks</strong> (<tt class="docutils literal"><span class="pre">bool</span></tt>) &#8211; If <tt class="docutils literal"><span class="pre">path</span></tt> is a directory and <tt class="docutils literal"><span class="pre">recursive</span></tt> and
+<li><strong>followlinks</strong> (<tt class="docutils literal"><span class="pre">bool</span></tt>) &#8211; <p>If <tt class="docutils literal"><span class="pre">path</span></tt> is a directory and <tt class="docutils literal"><span class="pre">recursive</span></tt> and
 <tt class="docutils literal"><span class="pre">followlinks</span></tt> are both <tt class="docutils literal"><span class="pre">True</span></tt>, symlinked directories further up the
-directory tree will also be traversed.</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
+directory tree will also be traversed.</p>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
 <p class="last">Setting followlinks to <tt class="docutils literal"><span class="pre">True</span></tt> may lead to infinite
 recursion.</p>
 </div>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(<tt class="docutils literal"><span class="pre">int</span></tt>) &#8211; The number of loaded files.</td>
+</li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raise :</th><td class="field-body">Nothing.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">(<tt class="docutils literal"><span class="pre">int</span></tt>) &#8211; The number of loaded files.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raise :</th><td class="field-body"><p class="first last">Nothing.</p>
+</td>
 </tr>
 </tbody>
 </table>
-<p>This function will actually try to load <strong>any</strong> file encountered and not
-only valid SPICE-kernel files, possibly slowing down the loading
-process significantly if many and/or big non-kernel files are encountered.
-The return value will also be impacted by this, actually showing the number
-of encountered files, not only kernels.</p>
 </dd></dl>
 
 <dl class="function">
