@@ -1,0 +1,321 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>bodies &mdash; spiceminer 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/print.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/theme_extras.js"></script>
+    <link rel="top" title="spiceminer 0.0.1 documentation" href="../index.html" />
+    <link rel="up" title="Documentation" href="index.html" />
+    <link rel="next" title="time_" href="time_.html" />
+    <link rel="prev" title="kernel" href="kernel.html" /> 
+  </head>
+  <body>
+      <div class="header"><h1 class="heading"><a href="../index.html">
+          <span>spiceminer 0.0.1 documentation</span></a></h1>
+        <h2 class="heading"><span>bodies</span></h2>
+      </div>
+      <div class="topnav">
+      
+        <p>
+        «&#160;&#160;<a href="kernel.html">kernel</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="time_.html">time_</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="bodies">
+<span id="id1"></span><h1>bodies<a class="headerlink" href="#bodies" title="Permalink to this headline">¶</a></h1>
+<p>This module provides a high level data structure, representing entities such as
+planets, spacecraft or asteroids.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The constructor of <a class="reference internal" href="#spiceminer.bodies.Body" title="spiceminer.bodies.Body"><tt class="xref py py-class docutils literal"><span class="pre">Body</span></tt></a> (and all its
+subclasses) is actually a factory function and the <tt class="docutils literal"><span class="pre">type</span></tt> of the returned
+entity depends on the provided <cite>body_id</cite>.</p>
+</div>
+<div class="admonition-implementation-detail admonition">
+<p class="first admonition-title">Implementation Detail</p>
+<p class="last">Once created, entities are cached and treated as
+singletons. Because of this, they will not change if the underlying name &lt;-&gt; Id
+mapping is modified at runtime. At the moment there is no API to make changes
+to that mapping, but it&#8217;s still good to know.</p>
+</div>
+<span class="target" id="module-spiceminer.bodies"></span><dl class="class">
+<dt id="spiceminer.bodies.Body">
+<em class="property">class </em><tt class="descclassname">spiceminer.bodies.</tt><tt class="descname">Body</tt><big>(</big><em>body_id</em><big>)</big><a class="headerlink" href="#spiceminer.bodies.Body" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for representing ephimeres objects.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>body_id</strong> (<tt class="docutils literal"><span class="pre">int</span></tt>) &#8211; ID of the ephimeris object referenced by <tt class="docutils literal"><span class="pre">body_id</span></tt>.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">(<tt class="docutils literal"><span class="pre">Body</span></tt>) &#8211; Representation of the requested entity.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises :</th><td class="field-body"><p class="first">(<tt class="docutils literal"><span class="pre">ValueError</span></tt>) &#8211; If the provided <tt class="docutils literal"><span class="pre">body_id</span></tt> does not reference
+any entity.</p>
+<p class="last">(<tt class="docutils literal"><span class="pre">TypeError</span></tt>) &#8211; If the provided <tt class="docutils literal"><span class="pre">body_id</span></tt> is not of type <tt class="docutils literal"><span class="pre">int</span></tt>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="spiceminer.bodies.Body.children">
+<tt class="descname">children</tt><big>(</big><big>)</big><a class="headerlink" href="#spiceminer.bodies.Body.children" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get objects bound to this <a class="reference internal" href="#spiceminer.bodies.Body" title="spiceminer.bodies.Body"><tt class="xref py py-class docutils literal"><span class="pre">Body</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spiceminer.bodies.Body.id">
+<tt class="descname">id</tt><a class="headerlink" href="#spiceminer.bodies.Body.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>The ID of this object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spiceminer.bodies.Body.name">
+<tt class="descname">name</tt><a class="headerlink" href="#spiceminer.bodies.Body.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of this object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spiceminer.bodies.Body.parent">
+<tt class="descname">parent</tt><big>(</big><big>)</big><a class="headerlink" href="#spiceminer.bodies.Body.parent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get object, this <a class="reference internal" href="#spiceminer.bodies.Body" title="spiceminer.bodies.Body"><tt class="xref py py-class docutils literal"><span class="pre">Body</span></tt></a> is bound to (be
+it orbiting or physical attachment).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spiceminer.bodies.Body.position">
+<tt class="descname">position</tt><big>(</big><em>times</em>, <em>observer='SUN'</em>, <em>frame='ECLIPJ2000'</em>, <em>abcorr=None</em><big>)</big><a class="headerlink" href="#spiceminer.bodies.Body.position" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the position of this object relative to the observer in a
+specific reference frame.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>times</strong> (<tt class="docutils literal"><span class="pre">Iterable</span></tt> | has <tt class="docutils literal"><span class="pre">__float__()</span></tt>) &#8211; The point(s) in time for which to calculate the position.</li>
+<li><strong>observer</strong> (<a class="reference internal" href="#spiceminer.bodies.Body" title="spiceminer.bodies.Body"><tt class="xref py py-class docutils literal"><span class="pre">Body</span></tt></a> | <tt class="docutils literal"><span class="pre">str</span></tt>) &#8211; Object to use as (0,0,0).</li>
+<li><strong>abcorr</strong> (<tt class="docutils literal"><span class="pre">str</span></tt>) &#8211; Aberration correction to be applied. May be one of LT,
+LT+S, CN, CN+S, XLT, XLT+S, XCN, XCN+S. For explanation of these see
+<a class="reference external" href="http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkez_c.html#Detailed_Input">here</a>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">(<tt class="docutils literal"><span class="pre">ndarray</span></tt>) &#8211; The nx4 array containing time and
+(x, y, z)-position.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises :</th><td class="field-body"><p class="first">(<tt class="docutils literal"><span class="pre">TypeError</span></tt>) &#8211; If an argument doesn&#8217;t conform to the type
+requirements.</p>
+<p class="last">(<tt class="xref py py-class docutils literal"><span class="pre">SpiceError</span></tt>) &#8211; If there is
+necessary information missing.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spiceminer.bodies.Body.rotation">
+<tt class="descname">rotation</tt><big>(</big><em>times</em>, <em>observer='ECLIPJ2000'</em><big>)</big><a class="headerlink" href="#spiceminer.bodies.Body.rotation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the rotation matrix for rotating this object from its own
+reference frame to that of the observer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>times</strong> (<tt class="docutils literal"><span class="pre">Iterable</span></tt> | has <tt class="docutils literal"><span class="pre">__float__()</span></tt>) &#8211; The point(s) in time for which to calculate rotations.</li>
+<li><strong>observer</strong> (<a class="reference internal" href="#spiceminer.bodies.Body" title="spiceminer.bodies.Body"><tt class="xref py py-class docutils literal"><span class="pre">Body</span></tt></a> | <tt class="docutils literal"><span class="pre">str</span></tt>) &#8211; Object/reference frame to transform to.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">(<tt class="docutils literal"><span class="pre">list</span></tt>) &#8211; The list of 3x3 rotation matrizes.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises :</th><td class="field-body"><p class="first">(<tt class="docutils literal"><span class="pre">TypeError</span></tt>) &#8211; If an argument doesn&#8217;t conform to the type
+requirements.</p>
+<p class="last">(<tt class="xref py py-class docutils literal"><span class="pre">SpiceError</span></tt>) &#8211; If there is
+necessary information missing.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spiceminer.bodies.Body.speed">
+<tt class="descname">speed</tt><big>(</big><em>times</em>, <em>observer='SUN'</em>, <em>frame='ECLIPJ2000'</em>, <em>abcorr=None</em><big>)</big><a class="headerlink" href="#spiceminer.bodies.Body.speed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the speed of this object relative to the observer in a specific
+reference frame.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>times</strong> (<tt class="docutils literal"><span class="pre">Iterable</span></tt> | has <tt class="docutils literal"><span class="pre">__float__()</span></tt>) &#8211; The point(s) in time for which to calculate the speed.</li>
+<li><strong>observer</strong> (<a class="reference internal" href="#spiceminer.bodies.Body" title="spiceminer.bodies.Body"><tt class="xref py py-class docutils literal"><span class="pre">Body</span></tt></a> | <tt class="docutils literal"><span class="pre">str</span></tt>) &#8211; Object relative to which movement happens.</li>
+<li><strong>abcorr</strong> (<tt class="docutils literal"><span class="pre">str</span></tt>) &#8211; <p>Aberration correction to be applied. May be one of LT,
+LT+S, CN, CN+S, XLT, XLT+S, XCN, XCN+S. For explanation of these see
+<a class="reference external" href="http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkez_c.html#Detailed_Input">here</a>.</p>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">(<tt class="docutils literal"><span class="pre">ndarray</span></tt>) &#8211; The nx4 array containing time and
+(x, y, z)-speed.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises :</th><td class="field-body"><p class="first">(<tt class="docutils literal"><span class="pre">TypeError</span></tt>) &#8211; If an argument doesn&#8217;t conform to the type
+requirements.</p>
+<p class="last">(<tt class="xref py py-class docutils literal"><span class="pre">SpiceError</span></tt>) &#8211; If there is
+necessary information missing.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spiceminer.bodies.Body.state">
+<tt class="descname">state</tt><big>(</big><em>times</em>, <em>observer='SUN'</em>, <em>frame='ECLIPJ2000'</em>, <em>abcorr=None</em><big>)</big><a class="headerlink" href="#spiceminer.bodies.Body.state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the position and speed of this object relative to the observer
+in a specific reference frame.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>times</strong> (<tt class="docutils literal"><span class="pre">Iterable</span></tt> | has <tt class="docutils literal"><span class="pre">__float__()</span></tt>) &#8211; The point(s) in time for which to calculate the
+position/speed.</li>
+<li><strong>observer</strong> (<a class="reference internal" href="#spiceminer.bodies.Body" title="spiceminer.bodies.Body"><tt class="xref py py-class docutils literal"><span class="pre">Body</span></tt></a> | <tt class="docutils literal"><span class="pre">str</span></tt>) &#8211; Object to use as (0,0,0).</li>
+<li><strong>abcorr</strong> (<tt class="docutils literal"><span class="pre">str</span></tt>) &#8211; <p>Aberration correction to be applied. May be one of LT,
+LT+S, CN, CN+S, XLT, XLT+S, XCN, XCN+S. For explanation of these see
+<a class="reference external" href="http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkez_c.html#Detailed_Input">here</a>.</p>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">(<tt class="docutils literal"><span class="pre">ndarray</span></tt>) &#8211; The nx7 array containing time and
+(x, y, z)-position/speed.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises :</th><td class="field-body"><p class="first">(<tt class="docutils literal"><span class="pre">TypeError</span></tt>) &#8211; If an argument doesn&#8217;t conform to the type
+requirements.</p>
+<p class="last">(<tt class="xref py py-class docutils literal"><span class="pre">SpiceError</span></tt>) &#8211; If there is
+necessary information missing.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="spiceminer.bodies.Asteroid">
+<em class="property">class </em><tt class="descclassname">spiceminer.bodies.</tt><tt class="descname">Asteroid</tt><big>(</big><em>body_id</em><big>)</big><a class="headerlink" href="#spiceminer.bodies.Asteroid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of <a class="reference internal" href="#spiceminer.bodies.Body" title="spiceminer.bodies.Body"><tt class="xref py py-class docutils literal"><span class="pre">Body</span></tt></a> representing asteroids.</p>
+<p>Asteroids are ephimeris objects with IDs &gt; 200000.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="spiceminer.bodies.Barycenter">
+<em class="property">class </em><tt class="descclassname">spiceminer.bodies.</tt><tt class="descname">Barycenter</tt><big>(</big><em>body_id</em><big>)</big><a class="headerlink" href="#spiceminer.bodies.Barycenter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of <a class="reference internal" href="#spiceminer.bodies.Body" title="spiceminer.bodies.Body"><tt class="xref py py-class docutils literal"><span class="pre">Body</span></tt></a> representing a
+barycenter of an ephimeris object and all of its satellites.</p>
+<p>Barycenters are ephimeris objects with IDs between 0 and 9.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="spiceminer.bodies.Comet">
+<em class="property">class </em><tt class="descclassname">spiceminer.bodies.</tt><tt class="descname">Comet</tt><big>(</big><em>body_id</em><big>)</big><a class="headerlink" href="#spiceminer.bodies.Comet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of <a class="reference internal" href="#spiceminer.bodies.Body" title="spiceminer.bodies.Body"><tt class="xref py py-class docutils literal"><span class="pre">Body</span></tt></a> representing comets.</p>
+<p>Comets are ephimeris objects with IDs between 100000 and 200000.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="spiceminer.bodies.Instrument">
+<em class="property">class </em><tt class="descclassname">spiceminer.bodies.</tt><tt class="descname">Instrument</tt><big>(</big><em>body_id</em><big>)</big><a class="headerlink" href="#spiceminer.bodies.Instrument" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of <a class="reference internal" href="#spiceminer.bodies.Body" title="spiceminer.bodies.Body"><tt class="xref py py-class docutils literal"><span class="pre">Body</span></tt></a> representing instruments
+mounted on spacecraft (including rovers and their instruments).</p>
+<p>Instruments are ephimeris objects with IDs between -1001 and -10000.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="spiceminer.bodies.Planet">
+<em class="property">class </em><tt class="descclassname">spiceminer.bodies.</tt><tt class="descname">Planet</tt><big>(</big><em>body_id</em><big>)</big><a class="headerlink" href="#spiceminer.bodies.Planet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of <a class="reference internal" href="#spiceminer.bodies.Body" title="spiceminer.bodies.Body"><tt class="xref py py-class docutils literal"><span class="pre">Body</span></tt></a> representing planets.</p>
+<p>Planets are ephimeris objects with IDs between 199 and 999 with
+pattern [1-9]99.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="spiceminer.bodies.Satellite">
+<em class="property">class </em><tt class="descclassname">spiceminer.bodies.</tt><tt class="descname">Satellite</tt><big>(</big><em>body_id</em><big>)</big><a class="headerlink" href="#spiceminer.bodies.Satellite" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of <a class="reference internal" href="#spiceminer.bodies.Body" title="spiceminer.bodies.Body"><tt class="xref py py-class docutils literal"><span class="pre">Body</span></tt></a> representing satellites
+(natural bodies orbiting a planet).</p>
+<p>Satellites are ephimeris objects with IDs between 101 and 998 with
+pattern [1-9][0-9][1-8].</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="spiceminer.bodies.Spacecraft">
+<em class="property">class </em><tt class="descclassname">spiceminer.bodies.</tt><tt class="descname">Spacecraft</tt><big>(</big><em>body_id</em><big>)</big><a class="headerlink" href="#spiceminer.bodies.Spacecraft" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of <a class="reference internal" href="#spiceminer.bodies.Body" title="spiceminer.bodies.Body"><tt class="xref py py-class docutils literal"><span class="pre">Body</span></tt></a> representing spacecraft.</p>
+<p>Spacecraft are ephimeris objects with IDs between -1 and -999 or &lt; -99999.</p>
+</dd></dl>
+
+</div>
+
+
+      </div>
+      <div class="bottomnav">
+      
+        <p>
+        «&#160;&#160;<a href="kernel.html">kernel</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="time_.html">time_</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer">
+        &copy; Copyright 2013, Philipp Rasch.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

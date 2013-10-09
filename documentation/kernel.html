@@ -1,0 +1,156 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>kernel &mdash; spiceminer 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/print.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/theme_extras.js"></script>
+    <link rel="top" title="spiceminer 0.0.1 documentation" href="../index.html" />
+    <link rel="up" title="Documentation" href="index.html" />
+    <link rel="next" title="bodies" href="bodies.html" />
+    <link rel="prev" title="Documentation" href="index.html" /> 
+  </head>
+  <body>
+      <div class="header"><h1 class="heading"><a href="../index.html">
+          <span>spiceminer 0.0.1 documentation</span></a></h1>
+        <h2 class="heading"><span>kernel</span></h2>
+      </div>
+      <div class="topnav">
+      
+        <p>
+        «&#160;&#160;<a href="index.html">Documentation</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="bodies.html">bodies</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="kernel">
+<span id="id1"></span><h1>kernel<a class="headerlink" href="#kernel" title="Permalink to this headline">¶</a></h1>
+<p>This module provides functions to load/unload data files called kernels and to
+get highlevel abstractions of the objects referenced by the kernels.</p>
+<span class="target" id="module-spiceminer.kernel"></span><dl class="function">
+<dt id="spiceminer.kernel.load">
+<tt class="descclassname">spiceminer.kernel.</tt><tt class="descname">load</tt><big>(</big><em>path='.'</em>, <em>recursive=True</em>, <em>followlinks=False</em><big>)</big><a class="headerlink" href="#spiceminer.kernel.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a kernel file or a directory containing kernel files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>path</strong> (<tt class="docutils literal"><span class="pre">str</span></tt>) &#8211; Relative or absolute path to the file/(root)directory to load.</li>
+<li><strong>recursive</strong> (<tt class="docutils literal"><span class="pre">bool</span></tt>) &#8211; If <tt class="docutils literal"><span class="pre">path</span></tt> is a directory and <tt class="docutils literal"><span class="pre">recursive</span></tt> is <tt class="docutils literal"><span class="pre">True</span></tt>,
+this will also search in child directories and not only the root.</li>
+<li><strong>followlinks</strong> (<tt class="docutils literal"><span class="pre">bool</span></tt>) &#8211; <p>If <tt class="docutils literal"><span class="pre">path</span></tt> is a directory and <tt class="docutils literal"><span class="pre">recursive</span></tt> and
+<tt class="docutils literal"><span class="pre">followlinks</span></tt> are both <tt class="docutils literal"><span class="pre">True</span></tt>, symlinked directories further up the
+directory tree will also be traversed.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Setting followlinks to <tt class="docutils literal"><span class="pre">True</span></tt> may lead to infinite
+recursion.</p>
+</div>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">(<tt class="docutils literal"><span class="pre">int</span></tt>) &#8211; The number of loaded files.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raise :</th><td class="field-body"><p class="first last">Nothing.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="spiceminer.kernel.unload">
+<tt class="descclassname">spiceminer.kernel.</tt><tt class="descname">unload</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#spiceminer.kernel.unload" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unload one or more kernel files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<tt class="docutils literal"><span class="pre">str</span></tt>) &#8211; Relative or absolute path to the file/(root)directory to unload.
+Unloads <strong>all</strong> kernels further up the directory tree if <tt class="docutils literal"><span class="pre">path</span></tt> is
+a directory.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<tt class="docutils literal"><span class="pre">int</span></tt>) &#8211; The number of unloaded files.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises :</th><td class="field-body">Nothing.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="spiceminer.kernel.get">
+<tt class="descclassname">spiceminer.kernel.</tt><tt class="descname">get</tt><big>(</big><em>body</em><big>)</big><a class="headerlink" href="#spiceminer.kernel.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an entity by name or ID.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>body</strong> (<tt class="docutils literal"><span class="pre">str|int</span></tt>) &#8211; Name or ID of the entity to get.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">(<a class="reference internal" href="bodies.html#spiceminer.bodies.Body" title="spiceminer.bodies.Body"><tt class="xref py py-class docutils literal"><span class="pre">Body</span></tt></a>) &#8211; Representation of the
+requested entity.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises :</th><td class="field-body"><p class="first">(<tt class="docutils literal"><span class="pre">ValueError</span></tt>) &#8211; If the provided name/ID doesn&#8217;t reference an entity.</p>
+<p class="last">(<tt class="docutils literal"><span class="pre">TypeError</span></tt>) &#8211; If <tt class="docutils literal"><span class="pre">body</span></tt> is neither a string nor an integer.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+      </div>
+      <div class="bottomnav">
+      
+        <p>
+        «&#160;&#160;<a href="index.html">Documentation</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="bodies.html">bodies</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer">
+        &copy; Copyright 2013, Philipp Rasch.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

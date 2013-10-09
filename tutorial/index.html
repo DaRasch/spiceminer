@@ -1,0 +1,336 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Tutorial &mdash; spiceminer 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/print.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/theme_extras.js"></script>
+    <link rel="top" title="spiceminer 0.0.1 documentation" href="../index.html" />
+    <link rel="next" title="Documentation" href="../documentation/index.html" />
+    <link rel="prev" title="Setup" href="../setup/index.html" /> 
+  </head>
+  <body>
+      <div class="header"><h1 class="heading"><a href="../index.html">
+          <span>spiceminer 0.0.1 documentation</span></a></h1>
+        <h2 class="heading"><span>Tutorial</span></h2>
+      </div>
+      <div class="topnav">
+      
+        <p>
+        «&#160;&#160;<a href="../setup/index.html">Setup</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="../documentation/index.html">Documentation</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="tutorial">
+<span id="id1"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
+<p>Here I will show you the basics of how spiceminer works.</p>
+<div class="section" id="getting-started">
+<span id="tutorial-getting-started"></span><h2>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<p>Before we start actually mining data, we need to download some data. For this
+we will use the <tt class="docutils literal"><span class="pre">getdata.py</span></tt> script that ships with spiceminer.</p>
+<p>First lets get the files that are most important. These are:
+* A leapseconds kernel for time conversion.
+* Kernels containing the position of the sun, planets and their natural satellites.
+* Kernels containing the rotation of the sun, planets and their natural satellites.</p>
+<p>To get those files we type <tt class="docutils literal"><span class="pre">python</span> <span class="pre">getdata.py</span> <span class="pre">base</span></tt>. This will copy all
+necessary files to the directory <tt class="docutils literal"><span class="pre">data/base</span></tt> relative to the folder in which
+the script is located. If you want to use a different directory as base, just
+add the option <tt class="docutils literal"><span class="pre">--dir</span> <span class="pre">&lt;path&gt;</span></tt>. To update these files you can do the same
+again. It will only download new/out of date files to minimize bandwidth and
+time consumption.</p>
+<p>If that is all the data you need, you can proceed to the
+<a class="reference internal" href="#tutorial-loading-kernels"><em>next chapter</em></a>, but if you want some mission
+data as well, then read on.</p>
+<p>As of writing the missions supported are <em>MSL</em>, <em>HELIOS</em> and <em>ULYSSES</em>.To see
+all currently available missions as well as other command line options, type
+<tt class="docutils literal"><span class="pre">python</span> <span class="pre">getdata.py</span> <span class="pre">-h</span></tt>. Other missions must be downloaded by hand. You can
+find a list of available data on the official
+<a class="reference external" href="http://naif.jpl.nasa.gov/naif/data_operational.html">NAIF website</a>. Please
+make sure to read the readme for your mission of interest to find out about
+the necessary kernels.</p>
+</div>
+<div class="section" id="loading-kernels">
+<span id="tutorial-loading-kernels"></span><h2>Loading kernels<a class="headerlink" href="#loading-kernels" title="Permalink to this headline">¶</a></h2>
+<p>We will from now on assume that we work under Linux and all necessary data are
+stored under <tt class="docutils literal"><span class="pre">/home/&lt;user&gt;/data</span></tt>.</p>
+<p>Now, if we <tt class="docutils literal"><span class="pre">cd</span> <span class="pre">~/data</span></tt> and start a python interpreter we most likely just
+need to do the following:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">spiceminer</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kernel</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+<span class="go">22</span>
+</pre></div>
+</div>
+<p>The number returned by <tt class="docutils literal"><span class="pre">kernel.load()</span></tt> is the number of kernels loaded.</p>
+<p>If we don&#8217;t want to change the working directory just to load the data, we can
+feed the path to the loading function like so:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">spiceminer</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kernel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;/home/user/data&#39;</span><span class="p">)</span>
+<span class="go">22</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kernel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;data&#39;</span><span class="p">)</span> <span class="c"># If we are at /home/user</span>
+<span class="go">22</span>
+</pre></div>
+</div>
+<p>As you can see, both relative and absolute paths work.</p>
+<div class="line-block">
+<div class="line">Ok that&#8217;s all cool and stuff but what happens if there are kernels in
+<tt class="docutils literal"><span class="pre">data/base</span></tt> and <tt class="docutils literal"><span class="pre">data/msl</span></tt> for example and i want ro load all of them?</div>
+<div class="line">Actually that is the standart behaviour of the function. It loads all kernels
+in a given directory tree recursively starting at the root.</div>
+</div>
+<div class="line-block">
+<div class="line">Fine, but how about I only want to load <tt class="docutils literal"><span class="pre">data</span></tt> but not <tt class="docutils literal"><span class="pre">data/base</span></tt> or
+<tt class="docutils literal"><span class="pre">data/msl</span></tt>?</div>
+<div class="line">First off, this won&#8217;t be necessary in most cases, since loading kernels is
+quite fast. But if you really want to, you can do this:</div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">spiceminer</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kernel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;data&#39;</span><span class="p">,</span> <span class="n">recursive</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="go">5</span>
+</pre></div>
+</div>
+<p>Another thing that might happen, is that you have symlinks to other directories
+in the directory tree. By default those are ignored to avoid possible infinite
+recursions. If you know what you are doing you can turn this protection off by
+passing the <em>followlinks</em> parameter like so:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">spiceminer</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kernel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;data&#39;</span><span class="p">,</span> <span class="n">folowlinks</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="go">29</span>
+</pre></div>
+</div>
+<p>You can also unload kernels again if they are no longer needed:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">spiceminer</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kernel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;data&#39;</span><span class="p">)</span>
+<span class="go">22</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kernel</span><span class="o">.</span><span class="n">unload</span><span class="p">(</span><span class="s">&#39;data&#39;</span><span class="p">)</span>
+<span class="go">22</span>
+</pre></div>
+</div>
+<p>This is not requiered. The kernels will automatically be unloaded, once the
+session is closed or the programm finishes.</p>
+</div>
+<div class="section" id="ephimeris-objects">
+<span id="tutorial-ephimeris-objects"></span><h2>Ephimeris objects<a class="headerlink" href="#ephimeris-objects" title="Permalink to this headline">¶</a></h2>
+<p>Once you have loaded the kernels you need, it&#8217;s time to use them. Every
+physical object defined by a kernel is represented by a subclass of
+<a class="reference internal" href="../documentation/bodies.html#spiceminer.bodies.Body" title="spiceminer.bodies.Body"><tt class="xref py py-class docutils literal"><span class="pre">Body</span></tt></a> instance. Getting hold of them is pretty
+easy:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">spiceminer</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kernel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;EARTH&#39;</span><span class="p">)</span>
+<span class="go">Planet(399)</span>
+</pre></div>
+</div>
+<p>As you can see, the return value is pretty descriptive. It tells us what kind
+of <a class="reference internal" href="../documentation/bodies.html#spiceminer.bodies.Body" title="spiceminer.bodies.Body"><tt class="xref py py-class docutils literal"><span class="pre">Body</span></tt></a> we got and what its reference number
+is.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The input of <a class="reference internal" href="../documentation/kernel.html#spiceminer.kernel.get" title="spiceminer.kernel.get"><tt class="xref py py-func docutils literal"><span class="pre">get()</span></tt></a> is <strong>not</strong> case
+sensitive. I just wrote <em>EARTH</em> in all caps, because that is the standart
+convention of the spice-API.</p>
+</div>
+<p>You might wonder why this works, since we haven&#8217;t loaded any kernels. It is due
+to the fact, that some Objects are hardcoded into the framework. This is the
+case for the sun, all planets and their natural satellites, and all spacecraft.</p>
+<p>We can already extract information from this object, just not position or
+rotation, those are only available through kernels. Some info we can get about
+it:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">spiceminer</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">earth</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;EARTH&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">earth</span><span class="o">.</span><span class="n">name</span>
+<span class="go">&#39;EARTH&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">earth</span><span class="o">.</span><span class="n">id</span>
+<span class="go">399</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">earth</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span>
+<span class="go">Planet(10)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">earth</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span><span class="o">.</span><span class="n">name</span>
+<span class="go">&#39;SUN&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">earth</span><span class="o">.</span><span class="n">children</span><span class="p">()</span>
+<span class="go">[Satellite(301)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">earth</span><span class="o">.</span><span class="n">children</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
+<span class="go">&#39;MOON&#39;</span>
+<span class="go">print EARTH</span>
+<span class="go">Planet EARTH (ID 399)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="excursus-time-frange-and-others">
+<span id="tutorial-excursus"></span><h2>Excursus: Time, frange and others<a class="headerlink" href="#excursus-time-frange-and-others" title="Permalink to this headline">¶</a></h2>
+<p>With this package come some functions/classes, which are not necessary, but
+are very usefull.</p>
+<div class="section" id="a-good-time-representation">
+<span id="tutorial-excursus-time"></span><h3>A good time representation<a class="headerlink" href="#a-good-time-representation" title="Permalink to this headline">¶</a></h3>
+<p>To extract rotation and position information from an Ephimeris Object, we need
+to specify the time, for which we want that information. By convention, all
+methods in need of time information, take those as (iterables of) integers
+representing POSIX time (seconds since 1970-01-01T00:00:00). The
+<a class="reference internal" href="../documentation/time_.html#spiceminer.time_.Time" title="spiceminer.time_.Time"><tt class="xref py py-class docutils literal"><span class="pre">Time</span></tt></a> class allows easy handling of those times,
+because internally it is just an integer, but at the same time it exposes most
+of the <tt class="docutils literal"><span class="pre">datetime</span></tt> interface and some other neat features.</p>
+<p>The easiest way of creating an instance of <a class="reference internal" href="../documentation/time_.html#spiceminer.time_.Time" title="spiceminer.time_.Time"><tt class="xref py py-class docutils literal"><span class="pre">Time</span></tt></a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">spiceminer</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">epoch</span> <span class="o">=</span> <span class="n">Time</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="n">hour</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">epoch</span>
+<span class="go">2012-01-01T12:00:00.0</span>
+</pre></div>
+</div>
+<p>As you can see, it is possible to omit parameters. Omitted parameters will
+default to their respective value at 1970-01-01T00:00:00.</p>
+<p>We can also instatiate <a class="reference internal" href="../documentation/time_.html#spiceminer.time_.Time" title="spiceminer.time_.Time"><tt class="xref py py-class docutils literal"><span class="pre">Time</span></tt></a> from POSIX time or
+even <tt class="docutils literal"><span class="pre">datetime</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">spiceminer</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">Time</span><span class="o">.</span><span class="n">fromdatetime</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>
+<span class="go">2012-01-01T12:00:00.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">Time</span><span class="o">.</span><span class="n">fromposix</span><span class="p">(</span><span class="mi">1325419200</span><span class="p">)</span>
+<span class="go">2012-01-01T12:00:00.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">Time</span><span class="o">.</span><span class="n">fromydoy</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+<span class="go">2012-01-01T12:00:00.0</span>
+</pre></div>
+</div>
+<p>As mentioned above, all time dependant methods accept iterables. We could use
+the builtin <tt class="docutils literal"><span class="pre">range</span></tt> like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">spiceminer</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">start</span> <span class="o">=</span> <span class="n">Time</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="n">hour</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stop</span> <span class="o">=</span> <span class="n">Time</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="n">hour</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">step</span> <span class="o">=</span> <span class="n">Time</span><span class="o">.</span><span class="n">DAY</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">stop</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">step</span><span class="p">))</span>
+<span class="go">[1325419200, 1325505600, 1325592000, ...]</span>
+</pre></div>
+</div>
+<p>But that is somewhat ugly and limeted to integers, while
+<a class="reference internal" href="../documentation/time_.html#spiceminer.time_.Time" title="spiceminer.time_.Time"><tt class="xref py py-class docutils literal"><span class="pre">Time</span></tt></a> can represent fractions of a second.
+Fortunately, that can be fixed.</p>
+</div>
+<div class="section" id="range-for-floats">
+<span id="tutorial-excursus-frange"></span><h3>range for floats<a class="headerlink" href="#range-for-floats" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference internal" href="../documentation/extra.html#spiceminer.extra.frange" title="spiceminer.extra.frange"><tt class="xref py py-class docutils literal"><span class="pre">frange</span></tt></a> function behaves just like the builtin
+<tt class="docutils literal"><span class="pre">xrange</span></tt>, but can handle floats. It allows for much easier (and more memory
+friendly) <a class="reference internal" href="../documentation/time_.html#spiceminer.time_.Time" title="spiceminer.time_.Time"><tt class="xref py py-class docutils literal"><span class="pre">Time</span></tt></a>-iterables:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">spiceminer</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">start</span> <span class="o">=</span> <span class="n">Time</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="n">hour</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stop</span> <span class="o">=</span> <span class="n">Time</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="n">hour</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">step</span> <span class="o">=</span> <span class="n">Time</span><span class="o">.</span><span class="n">DAY</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">frange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
+<span class="go">&lt;generator object _range at 0x258d170&gt;</span>
+</pre></div>
+</div>
+<p>The result looks a little strange, but if you are familiar with iterators, you
+know why. If not, think of it like a list that can only be iterated over once
+and not be indexed.</p>
+</div>
+</div>
+<div class="section" id="getting-data">
+<span id="tutorial-getting-data"></span><h2>Getting data<a class="headerlink" href="#getting-data" title="Permalink to this headline">¶</a></h2>
+<p>Now for the interesting part. If the appropriate kernels are loaded, you can
+extract position, speed and rotation data from them. A simple example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">spiceminer</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kernel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;data&#39;</span><span class="p">)</span>
+<span class="go">22</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">frange</span><span class="p">(</span><span class="n">Time</span><span class="p">(</span><span class="mi">2013</span><span class="p">),</span> <span class="n">Time</span><span class="p">(</span><span class="mi">2014</span><span class="p">),</span> <span class="n">Time</span><span class="o">.</span><span class="n">DAY</span><span class="p">)</span> <span class="c"># Make a time span</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">earth</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;EARTH&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">earth</span><span class="o">.</span><span class="n">position</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+<span class="go">array([[  1.35699840e+09,   1.35708480e+09,   1.35717120e+09, ...,</span>
+<span class="go">          1.38827520e+09,   1.38836160e+09,   1.38844800e+09],</span>
+<span class="go">       [ -2.69289918e+07,  -2.94962808e+07,  -3.20546002e+07, ...,</span>
+<span class="go">         -1.85068538e+07,  -2.10999869e+07,  -2.36866752e+07],</span>
+<span class="go">       [  1.44612884e+08,   1.44110525e+08,   1.43563419e+08, ...,</span>
+<span class="go">          1.45947604e+08,   1.45592016e+08,   1.45190880e+08],</span>
+<span class="go">       [ -3.95472912e+03,  -3.94411592e+03,  -3.95337411e+03, ...,</span>
+<span class="go">         -4.59965922e+03,  -4.67683468e+03,  -4.74105184e+03]])</span>
+</pre></div>
+</div>
+<p>Here we got the x,y,z coordinates of the earth relative to the sun using the
+<em>ECLIPJ2000</em> reference frame over the time of 1 year. The format of the
+returned array is:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">array</span><span class="p">([[</span><span class="n">time</span><span class="p">,</span>    <span class="n">time</span><span class="p">,</span>    <span class="n">time</span><span class="p">,</span>    <span class="n">time</span><span class="p">,</span>    <span class="n">time</span><span class="p">,</span>    <span class="n">time</span><span class="p">,</span>    <span class="n">time</span><span class="p">,</span>    <span class="n">time</span><span class="p">]</span>
+       <span class="p">[</span><span class="n">x_pos</span><span class="p">,</span>   <span class="n">x_pos</span><span class="p">,</span>   <span class="n">x_pos</span><span class="p">,</span>   <span class="n">x_pos</span><span class="p">,</span>   <span class="n">x_pos</span><span class="p">,</span>   <span class="n">x_pos</span><span class="p">,</span>   <span class="n">x_pos</span><span class="p">,</span>   <span class="n">x_pos</span><span class="p">]</span>
+       <span class="p">[</span><span class="n">y_pos</span><span class="p">,</span>   <span class="n">y_pos</span><span class="p">,</span>   <span class="n">y_pos</span><span class="p">,</span>   <span class="n">y_pos</span><span class="p">,</span>   <span class="n">y_pos</span><span class="p">,</span>   <span class="n">y_pos</span><span class="p">,</span>   <span class="n">y_pos</span><span class="p">,</span>   <span class="n">y_pos</span><span class="p">]</span>
+       <span class="p">[</span><span class="n">z_pos</span><span class="p">,</span>   <span class="n">z_pos</span><span class="p">,</span>   <span class="n">z_pos</span><span class="p">,</span>   <span class="n">z_pos</span><span class="p">,</span>   <span class="n">z_pos</span><span class="p">,</span>   <span class="n">z_pos</span><span class="p">,</span>   <span class="n">z_pos</span><span class="p">,</span>   <span class="n">z_pos</span><span class="p">]])</span>
+</pre></div>
+</div>
+<p>We can of course change the reference Frame and the observer. For example, we
+can check the position of the Curiosity rover on the Mars surface:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">spiceminer</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kernel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;data&#39;</span><span class="p">)</span>
+<span class="go">22</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">frange</span><span class="p">(</span><span class="n">Time</span><span class="p">(</span><span class="mi">2012</span><span class="p">),</span> <span class="n">Time</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">Time</span><span class="o">.</span><span class="n">DAY</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mars</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;mars&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">msl_rover</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;msl_rover&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">msl_rover</span><span class="o">.</span><span class="n">position</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">observer</span><span class="o">=</span><span class="n">mars</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="n">mars</span><span class="p">)</span>
+<span class="go">array(...)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="advanced-examples">
+<span id="tutorial-advanced-examples"></span><h2>Advanced examples<a class="headerlink" href="#advanced-examples" title="Permalink to this headline">¶</a></h2>
+<p>Measure the angular tilt of the mars rover curiosity relative to its position
+on Mars:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">spiceminer</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kernel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;data&#39;</span><span class="p">)</span>
+<span class="go">22</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">frange</span><span class="p">(</span><span class="n">Time</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="n">Time</span><span class="p">(</span><span class="mi">2013</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">Time</span><span class="o">.</span><span class="n">HOUR</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mars</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;MARS&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rover</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;MSL_ROVER&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pos</span> <span class="o">=</span> <span class="n">rover</span><span class="o">.</span><span class="n">position</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">mars</span><span class="p">,</span> <span class="n">mars</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rot</span> <span class="o">=</span> <span class="n">rover</span><span class="o">.</span><span class="n">rotation</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">mars</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">angle</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="o">-</span><span class="n">z</span><span class="p">),</span> <span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rot</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rad</span>
+<span class="go">array([ 0.07098081,  0.07098081,  0.07098081, ...,  0.08967051,</span>
+<span class="go">        0.08967051,  0.08967051])</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav">
+      
+        <p>
+        «&#160;&#160;<a href="../setup/index.html">Setup</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="../documentation/index.html">Documentation</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer">
+        &copy; Copyright 2013, Philipp Rasch.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
