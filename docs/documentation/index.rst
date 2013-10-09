@@ -30,7 +30,7 @@ Modules in detail
 .. toctree::
    :maxdepth: 2
 
-   31kernel
-   32bodies
-   33time_
-   34extra
+   kernel
+   bodies
+   time_
+   extra

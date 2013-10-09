@@ -17,9 +17,9 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   10setup
-   20tutorial
-   30documentation
+   setup/index
+   tutorial/index
+   documentation/index
 
 
 Indices and tables
