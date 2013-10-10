@@ -275,7 +275,7 @@ cspice.ckgp_custom.argtypes = [c_int, c_int, c_double, c_double, c_char_p,
     POINTER(c_double * 9), POINTER(c_double), POINTER(c_int)]
 cspice.ckgp_custom.restype = c_char_p
 cspice.ckgp_custom.errcheck = errcheck
-def ckgp(spacecraft_id, instrument_id, et, tol, ref_frame):
+def ckgp(spacecraft_id, instrument_id, et, tol, ref_frame): #Unused
     cmat = (c_double * 9)()
     clkout = c_double()
     found = c_int()

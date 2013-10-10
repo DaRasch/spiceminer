@@ -13,7 +13,7 @@ import spiceminer._spicewrapper as spice
 __all__ = ['Time']
 
 
-### Miscelanuos helpers ###
+### Miscellaneuos helpers ###
 @contextmanager
 def _no_argcheck():
     # Hax! avoid unnecessary type checking
@@ -178,9 +178,7 @@ class Time(numbers.Real):
             return self.real == calendar.timegm(other.timetuple())
         try:
             return self.real == float(other)
-        except TypeError:
-            return NotImplemented
-        except ValueError:
+        except (TypeError, ValueError):
             return NotImplemented
 
     def __lt__(self, other):
@@ -191,23 +189,13 @@ class Time(numbers.Real):
             return self.real < calendar.timegm(other.timetuple())
         try:
             return self.real < float(other)
-        except TypeError:
-            return NotImplemented
-        except ValueError:
+        except (TypeError, ValueError):
             return NotImplemented
 
     def __le__(self, other):
-        # TODO replace with __lt__ or __eq__
-        if isinstance(other, datetime.datetime):
-            return self.real <= calendar.timegm(
-                other.utctimetuple()) + (other.microsecond / 1000000.0)
-        if isinstance(other, datetime.date):
-            return self.real <= calendar.timegm(other.timetuple())
         try:
-            return self.real <= float(other)
-        except TypeError:
-            return NotImplemented
-        except ValueError:
+            return self < other or self == other
+        except (TypeError, ValueError):
             return NotImplemented
 
     ### Math ###
@@ -242,9 +230,7 @@ class Time(numbers.Real):
             with _no_argcheck():
                 new = Time(second=self.real + float(other))
             return new
-        except TypeError:
-            return NotImplemented
-        except ValueError:
+        except (TypeError, ValueError):
             return NotImplemented
 
     def __sub__(self, other):
@@ -257,9 +243,7 @@ class Time(numbers.Real):
             with _no_argcheck():
                 new = Time(second=self.real - float(other))
             return new
-        except TypeError:
-            return NotImplemented
-        except ValueError:
+        except (TypeError, ValueError):
             return NotImplemented
 
     def __mul__(self, other):
