@@ -1,7 +1,6 @@
 #-*- coding:utf-8 -*-
 
 import calendar
-import datetime as dt
 
 from numpy import arccos, dot, isnan, pi
 from numpy.linalg import norm
@@ -21,13 +20,13 @@ def angle(v0, v1):
     '''
     u_v0 = v0 / norm(v0)
     u_v1 = v1 / norm(v1)
-    angle = arccos(dot(u_v0, u_v1))
+    radians = arccos(dot(u_v0, u_v1))
     if isnan(angle):
         if (u_v0 == u_v1).all():
             return 0.0
         else:
             return pi
-    return angle
+    return radians
 
 
 ### Some range-functions for easier usage of bodies.Body.state() etc. ###

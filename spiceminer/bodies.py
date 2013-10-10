@@ -77,7 +77,8 @@ class Body(object):
         Body._CACHE[body_id] = self
 
     def __str__(self):
-        return self.__class__.__name__ + ' {} (ID {})'.format(self.name, self.id)
+        return self.__class__.__name__ + ' {} (ID {})'.format(self.name,
+            self.id)
 
     def __repr__(self):
         return self.__class__.__name__ + '({})'.format(self.id)
@@ -144,7 +145,8 @@ class Body(object):
         msg = 'state() Real or Iterable argument expected, got {}.'
         raise TypeError(msg.format(type(times)))
 
-    def single_state(self, time, observer='SUN', frame='ECLIPJ2000', abcorr=None):
+    def single_state(self, time, observer='SUN', frame='ECLIPJ2000',
+        abcorr=None):
         if isinstance(observer, Body):
             observer = observer.name
         if isinstance(frame, Body):
@@ -193,7 +195,8 @@ class Body(object):
         msg = 'position() Real or Iterable argument expected, got {}.'
         raise TypeError(msg.format(type(times)))
 
-    def single_position(self, time, observer='SUN', frame='ECLIPJ2000', abcorr=None):
+    def single_position(self, time, observer='SUN', frame='ECLIPJ2000',
+        abcorr=None):
         if isinstance(observer, Body):
             observer = observer.name
         if isinstance(frame, Body):
@@ -237,7 +240,8 @@ class Body(object):
         msg = 'speed() Real or Iterable argument expected, got {}.'
         raise TypeError(msg.format(type(times)))
 
-    def single_speed(self, time, observer='SUN', frame='ECLIPJ2000', abcorr=None):
+    def single_speed(self, time, observer='SUN', frame='ECLIPJ2000',
+        abcorr=None):
         return self.single_state(time, observer, frame, abcorr)[3:]
 
     def rotation(self, times, observer='ECLIPJ2000'):
@@ -277,7 +281,7 @@ class Body(object):
 
     def single_rotation(self, time, destination='ECLIPJ2000'):
         if isinstance(destination, Body):
-            destination = detination._frame or destination.name
+            destination = destination._frame or destination.name
         return numpy.array(spice.pxform(self._frame or self.name, destination,
             Time.fromposix(time).et())).reshape(3, 3)
 

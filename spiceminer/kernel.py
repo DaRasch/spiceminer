@@ -74,17 +74,18 @@ def _load_c(path):
 
 def _load_pc(path):
     '''Load pc kernel and associated windows.'''
-    return
-    #FIXME can not read tpc files
     _IDs.reset()
-    spice.pckfrm(path, _IDs)
-    for idcode in _IDs:
-        _WINDOWS.reset()
-        spice.ckcov(path, idcode, _WINDOWS)
-        # Merge new windows and exsiting windows
-        new_windows = [(Time.fromet(et0), Time.fromet(et1))
-            for et0, et1 in zip(_WINDOWS[::2], _WINDOWS[1::2])]
-        ROT_WINDOWS[idcode] = _merge_windows(ROT_WINDOWS[idcode] + new_windows)
+    with ignored(spice.SpiceError):
+        #FIXME can not read tpc files
+        spice.pckfrm(path, _IDs)
+        for idcode in _IDs:
+            _WINDOWS.reset()
+            spice.ckcov(path, idcode, _WINDOWS)
+            # Merge new windows and exsiting windows
+            new_windows = [(Time.fromet(et0), Time.fromet(et1))
+                for et0, et1 in zip(_WINDOWS[::2], _WINDOWS[1::2])]
+            ROT_WINDOWS[idcode] = _merge_windows(
+                ROT_WINDOWS[idcode] + new_windows)
 
 def _load_any(path, extension):
     '''Load **any** file and associated windows if necessary.'''
@@ -181,7 +182,6 @@ def unload(path='.', recursive=True, followlinks=False):
         walker = os.walk(path, followlinks=followlinks)
     else:
         walker = [next(os.walk(path, followlinks=followlinks))]
-    queue = []
     for curdir, dirs, fnames in walker:
         for name in fnames:
             with ignored(ValueError):

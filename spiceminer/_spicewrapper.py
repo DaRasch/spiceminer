@@ -50,6 +50,7 @@ class SpiceCell(Structure):
                 ('data', c_void_p)]
 
     def __init__(self, dtype, length, size, card, isSet, base, data):
+        super(SpiceCell, self).__init__()
         self.dtype = dtype
         self.length = length
         self.size = size
@@ -116,7 +117,7 @@ class SpiceCell(Structure):
         if key in xrange(-card, card):
             return getter(data, key, length)
         elif not isinstance(key, int):
-            'SpiceCell inices must be integers, not {}'.format(type(key))
+            msg = 'SpiceCell inices must be integers, not {}'.format(type(key))
             raise TypeError(msg)
         else:
             raise IndexError('SpiceCell index out of range')
