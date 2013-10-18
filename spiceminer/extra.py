@@ -8,18 +8,24 @@ from numpy.linalg import norm
 __all__ = ['angle', 'frange', 'dtrange']
 
 
-def angle(v0, v1):
+def angle(v0, v1, center=None):
     '''Calculates the angle between 2 Onedimensional arrays.
 
     :type v0: ``numpy.ndarray``
     :arg v0: A vector.
     :type v1: ``numpy.ndarray``
     :arg v1: A vector.
+    :type center: ``numpy.ndarray``
+    :arg center: The point to use as (0, 0, 0).
     :return: (``float``) -- The angle between *v0* and *v1* in radians.
     :raises: Nothing.
     '''
-    u_v0 = v0 / norm(v0)
-    u_v1 = v1 / norm(v1)
+    if center is None:
+        u_v0 = v0 / norm(v0)
+        u_v1 = v1 / norm(v1)
+    else:
+        u_v0 = (v0 - center) / norm(v0)
+        u_v1 = (v1 - center) / norm(v1)
     radians = arccos(dot(u_v0, u_v1))
     if isnan(angle):
         if (u_v0 == u_v1).all():
@@ -30,6 +36,19 @@ def angle(v0, v1):
 
 
 ### Some range-functions for easier usage of bodies.Body.state() etc. ###
+def _range(start, stop, step):
+    '''Simple range function to be used in more complex wrappers.
+    '''
+        if step > 0:
+            while start < stop:
+                yield start
+                start += step
+        elif step < 0:
+            while start > stop:
+                yield start
+                start += step
+
+
 def _basicrange(args, mutator, fname):
     '''A metafunction to build xrange-like functions.
 
@@ -46,20 +65,7 @@ def _basicrange(args, mutator, fname):
     :return: (``generator``) -- All values in ``[start, stop)`` seperated by
         ``step``.
     :raises: (``TypeError``) -- If the number of arguments is 0 or more than 3.
-
-    .. WARNING:: As indicated by the leading underscore, this function is not
-        meant to be used if you don't know what you are doing. You have been
-        warned!
     '''
-    def _range(start, stop, step):
-        if step > 0:
-            while start < stop:
-                yield start
-                start += step
-        elif step < 0:
-            while start > stop:
-                yield start
-                start += step
     argc = len(args)
     args = mutator(args)
     if argc == 0:
@@ -75,6 +81,7 @@ def _basicrange(args, mutator, fname):
         msg = '{} expects at most 3 arguments, got {}'.format(fname, argc)
         raise TypeError(msg)
     return _range(start, stop, step)
+
 
 def frange(*args):
     '''Functionally equivalent to builtin ``xrange()``, but can also handle
