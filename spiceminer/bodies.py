@@ -6,8 +6,8 @@ import numpy
 
 import spiceminer._spicewrapper as spice
 
-from spiceminer.time_ import Time
-from spiceminer._helpers import ignored
+from .time_ import Time
+from ._helpers import ignored
 
 __all__ = ['Body', 'Asteroid', 'Barycenter', 'Comet', 'Instrument', 'Planet',
            'Satellite', 'Spacecraft']
