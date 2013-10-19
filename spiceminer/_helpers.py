@@ -4,8 +4,8 @@ from contextlib import contextmanager
 
 
 @contextmanager
-def ignored(exception):
+def ignored(exceptions):
     try:
         yield
-    except exception as e:
+    except exceptions:
         pass

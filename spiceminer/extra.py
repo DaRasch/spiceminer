@@ -39,14 +39,14 @@ def angle(v0, v1, center=None):
 def _range(start, stop, step):
     '''Simple range function to be used in more complex wrappers.
     '''
-        if step > 0:
-            while start < stop:
-                yield start
-                start += step
-        elif step < 0:
-            while start > stop:
-                yield start
-                start += step
+    if step > 0:
+        while start < stop:
+            yield start
+            start += step
+    elif step < 0:
+        while start > stop:
+            yield start
+            start += step
 
 
 def _basicrange(args, mutator, fname):

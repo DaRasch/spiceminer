@@ -11,14 +11,18 @@ from .bodies import Body
 from .time_ import Time
 from ._helpers import ignored
 
-__all__ = ['load', 'unload', 'get']
+__all__ = ['load', 'unload', 'get', 'LOADED_KERNELS', 'POS_WINDOWS',
+    'ROT_WINDOWS']
 
 
+#: (``defaultdict(set)``) -- All loaded kernels, sorted by extension.
 LOADED_KERNELS = defaultdict(set)
+#: (``defaultdict(list)``) -- All time windows for all loaded spk-kernels.
 POS_WINDOWS = defaultdict(list)
+#: (``defaultdict(list)``) -- All time windows for all loaded pck/ch-kernels.
 ROT_WINDOWS = defaultdict(list)
 
-_IDs = spice.SpiceCell.integer(1000)
+_IDS = spice.SpiceCell.integer(1000)
 _WINDOWS = spice.SpiceCell.double(100)
 
 
@@ -50,9 +54,9 @@ def _merge_windows(lst):
 
 def _load_sp(path):
     '''Load sp kernel and associated windows.'''
-    _IDs.reset()
-    spice.spkobj(path, _IDs)
-    for idcode in _IDs:
+    _IDS.reset()
+    spice.spkobj(path, _IDS)
+    for idcode in _IDS:
         _WINDOWS.reset()
         spice.spkcov(path, idcode, _WINDOWS)
         # Merge new windows and exsiting windows
@@ -62,9 +66,9 @@ def _load_sp(path):
 
 def _load_c(path):
     '''Load c kernel and associated windows.'''
-    _IDs.reset()
-    spice.ckobj(path, _IDs)
-    for idcode in _IDs:
+    _IDS.reset()
+    spice.ckobj(path, _IDS)
+    for idcode in _IDS:
         _WINDOWS.reset()
         spice.ckcov(path, idcode, _WINDOWS)
         # Merge new windows and exsiting windows
@@ -74,11 +78,11 @@ def _load_c(path):
 
 def _load_pc(path):
     '''Load pc kernel and associated windows.'''
-    _IDs.reset()
+    _IDS.reset()
     with ignored(spice.SpiceError):
         #FIXME can not read tpc files
-        spice.pckfrm(path, _IDs)
-        for idcode in _IDs:
+        spice.pckfrm(path, _IDS)
+        for idcode in _IDS:
             _WINDOWS.reset()
             spice.ckcov(path, idcode, _WINDOWS)
             # Merge new windows and exsiting windows
@@ -117,15 +121,17 @@ def load(path='.', recursive=True, followlinks=False):
       .. WARNING:: Setting *followlinks* to ``True`` may lead to infinite
          recursion.
 
-    :return: (``int``) -- The number of loaded files.
+    :return: (``set(str)``) -- The names of all loaded Ephimeris Objects.
     :raise: Nothing.
 
     Meta-kernels are not supported, because they would be parsed internally by
     the c-framework, therefore ignoring the feautures for time window
     extraction.
+
+    At the moment only Ephimeris Objects defined in binary kernels are parsed,
+    because of limitations in the c-framework.
     '''
     path = os.path.realpath(path)
-    count_loaded = 0
     if os.path.isfile(path):
         dirname, basename = os.path.split(path)
         walker = [[dirname, [], [basename]]]
@@ -145,11 +151,13 @@ def load(path='.', recursive=True, followlinks=False):
                 else:
                     spice.furnsh(filepath)
                     LOADED_KERNELS[extension].add(filepath)
-                    count_loaded += 1
+    loaded_objects = set()
     for filepath, extension in queue:
         _load_any(filepath, extension)
-        count_loaded += 1
-    return count_loaded
+        loaded_objects.update(spice.bodc2n(code) for code in _IDS)
+    with ignored(KeyError):
+        loaded_objects.remove(None)
+    return loaded_objects
 
 def unload(path='.', recursive=True, followlinks=False):
     '''Unload a kernel file or a directory containing kernel files.
@@ -167,7 +175,7 @@ def unload(path='.', recursive=True, followlinks=False):
       .. WARNING:: Setting *followlinks* to ``True`` may lead to infinite
          recursion.
 
-    :return: (``int``) -- The number of loaded files.
+    :return: (``int``) -- The number of unloaded files.
     :raise: Nothing.
 
     Time windows are not cleared, since that would require all loaded kernels
