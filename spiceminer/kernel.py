@@ -29,8 +29,8 @@ _WINDOWS = spice.SpiceCell.double(100)
 ### Helpers for load/unload functions ###
 def _filter_extensions(filename):
     '''Check for correct extension and return kernel type.'''
-    extension = filename.rsplit('.', 1)[1]
-    match = re.match('(b|t)(s?c|sp|f|ls|pc)$', extension)
+    extension = filename.rsplit('.', 1)[1:] or ['']
+    match = re.match('(b|t)(s?c|sp|f|ls|pc)$', extension[0])
     if match:
         return match.string[1:]
     raise ValueError('Invalid file extension, got {}'.format(extension))
@@ -63,6 +63,7 @@ def _load_sp(path):
         new_windows = [(Time.fromet(et0), Time.fromet(et1))
             for et0, et1 in zip(_WINDOWS[::2], _WINDOWS[1::2])]
         POS_WINDOWS[idcode] = _merge_windows(POS_WINDOWS[idcode] + new_windows)
+    return set(_IDS[:])
 
 def _load_c(path):
     '''Load c kernel and associated windows.'''
@@ -75,12 +76,12 @@ def _load_c(path):
         new_windows = [(Time.fromet(et0), Time.fromet(et1))
             for et0, et1 in zip(_WINDOWS[::2], _WINDOWS[1::2])]
         ROT_WINDOWS[idcode] = _merge_windows(ROT_WINDOWS[idcode] + new_windows)
+    return set(_IDS[:])
 
 def _load_pc(path):
     '''Load pc kernel and associated windows.'''
     _IDS.reset()
-    with ignored(spice.SpiceError):
-        #FIXME can not read tpc files
+    try:
         spice.pckfrm(path, _IDS)
         for idcode in _IDS:
             _WINDOWS.reset()
@@ -90,6 +91,16 @@ def _load_pc(path):
                 for et0, et1 in zip(_WINDOWS[::2], _WINDOWS[1::2])]
             ROT_WINDOWS[idcode] = _merge_windows(
                 ROT_WINDOWS[idcode] + new_windows)
+        return set(_IDS[:])
+    except spice.SpiceError:
+        # Parse text kernels seperately
+        with open(path, 'r') as f:
+            return set(map(int, re.findall('BODY([-0-9]*)_PM', f.read())))
+
+def _load_f(path):
+    '''Load f kernel.'''
+    with open(path, 'r') as f:
+        return set(map(int, re.findall('FRAME_([-0-9]*)_NAME', f.read())))
 
 def _load_any(path, extension):
     '''Load **any** file and associated windows if necessary.'''
@@ -97,11 +108,14 @@ def _load_any(path, extension):
         'sp': _load_sp,
         'c': _load_c,
         'pc': _load_pc,
+        'f': _load_f
     }
+    objects = set()
     with ignored(KeyError):
-        loaders[extension](path)
+        objects = loaders[extension](path)
     spice.furnsh(path)
     LOADED_KERNELS[extension].add(path)
+    return objects
 
 
 ### Public API ###
@@ -145,16 +159,15 @@ def load(path='.', recursive=True, followlinks=False):
             with ignored(ValueError):
                 extension = _filter_extensions(name)
                 filepath = os.path.join(curdir, name)
-                # load sp, c, pc later
-                if extension in ('sp', 'c', 'pc'):
+                # Load kernels with objects later
+                if extension in ('sp', 'c', 'pc', 'f'):
                     queue.append((filepath, extension))
                 else:
-                    spice.furnsh(filepath)
-                    LOADED_KERNELS[extension].add(filepath)
+                    queue.insert(0, (filepath, extension))
     loaded_objects = set()
     for filepath, extension in queue:
-        _load_any(filepath, extension)
-        loaded_objects.update(spice.bodc2n(code) for code in _IDS)
+        objects = _load_any(filepath, extension)
+        loaded_objects.update(spice.bodc2n(code) for code in objects)
     with ignored(KeyError):
         loaded_objects.remove(None)
     return loaded_objects
