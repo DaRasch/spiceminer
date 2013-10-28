@@ -86,7 +86,7 @@ stored under <tt class="docutils literal"><span class="pre">/home/&lt;user&gt;/d
 need to do the following:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">spiceminer</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">kernel</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
-<span class="go">22</span>
+<span class="go">set([&#39;EARTH&#39;, &#39;MOON&#39;, &#39;MSL&#39;, ...])</span>
 </pre></div>
 </div>
 <p>The number returned by <tt class="docutils literal"><span class="pre">kernel.load()</span></tt> is the number of kernels loaded.</p>
@@ -94,9 +94,9 @@ need to do the following:</p>
 feed the path to the loading function like so:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">spiceminer</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">kernel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;/home/user/data&#39;</span><span class="p">)</span>
-<span class="go">22</span>
+<span class="go">set([&#39;EARTH&#39;, &#39;MOON&#39;, &#39;MSL&#39;, ...])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">kernel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;data&#39;</span><span class="p">)</span> <span class="c"># If we are at /home/user</span>
-<span class="go">22</span>
+<span class="go">set([&#39;EARTH&#39;, &#39;MOON&#39;, &#39;MSL&#39;, ...])</span>
 </pre></div>
 </div>
 <p>As you can see, both relative and absolute paths work.</p>
@@ -114,7 +114,7 @@ quite fast. But if you really want to, you can do this:</div>
 </div>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">spiceminer</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">kernel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;data&#39;</span><span class="p">,</span> <span class="n">recursive</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-<span class="go">5</span>
+<span class="go">set([&#39;OBJECT0&#39;, &#39;OBJECT1&#39;, ...])</span>
 </pre></div>
 </div>
 <p>Another thing that might happen, is that you have symlinks to other directories
@@ -123,7 +123,7 @@ recursions. If you know what you are doing you can turn this protection off by
 passing the <em>followlinks</em> parameter like so:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">spiceminer</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">kernel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;data&#39;</span><span class="p">,</span> <span class="n">folowlinks</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="go">29</span>
+<span class="go">set([&#39;EARTH&#39;, &#39;MOON&#39;, &#39;MSL&#39;, ...])</span>
 </pre></div>
 </div>
 <p>You can also unload kernels again if they are no longer needed:</p>
@@ -140,23 +140,23 @@ session is closed or the programm finishes.</p>
 <div class="section" id="ephimeris-objects">
 <span id="tutorial-ephimeris-objects"></span><h2>Ephimeris objects<a class="headerlink" href="#ephimeris-objects" title="Permalink to this headline">¶</a></h2>
 <p>Once you have loaded the kernels you need, it&#8217;s time to use them. Every
-physical object defined by a kernel is represented by a subclass of
-<a class="reference internal" href="../documentation/bodies.html#spiceminer.bodies.Body" title="spiceminer.bodies.Body"><tt class="xref py py-class docutils literal"><span class="pre">Body</span></tt></a> instance. Getting hold of them is pretty
-easy:</p>
+physical object defined by a kernel is represented by an instance of a subclass
+of <a class="reference internal" href="../documentation/bodies.html#spiceminer.bodies.Body" title="spiceminer.bodies.Body"><tt class="xref py py-class docutils literal"><span class="pre">Body</span></tt></a>. Getting hold of them is pretty easy:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">spiceminer</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">kernel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;EARTH&#39;</span><span class="p">)</span>
 <span class="go">Planet(399)</span>
 </pre></div>
 </div>
-<p>As you can see, the return value is pretty descriptive. It tells us what kind
-of <a class="reference internal" href="../documentation/bodies.html#spiceminer.bodies.Body" title="spiceminer.bodies.Body"><tt class="xref py py-class docutils literal"><span class="pre">Body</span></tt></a> we got and what its reference number
-is.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">The input of <a class="reference internal" href="../documentation/kernel.html#spiceminer.kernel.get" title="spiceminer.kernel.get"><tt class="xref py py-func docutils literal"><span class="pre">get()</span></tt></a> is <strong>not</strong> case
 sensitive. I just wrote <em>EARTH</em> in all caps, because that is the standart
 convention of the spice-API.</p>
 </div>
+<p>As you can see, the return value is pretty descriptive. It tells us what kind
+of <a class="reference internal" href="../documentation/bodies.html#spiceminer.bodies.Body" title="spiceminer.bodies.Body"><tt class="xref py py-class docutils literal"><span class="pre">Body</span></tt></a> we got and what its reference number
+is. Some official documentation on reference numbers can be found
+<a class="reference external" href="http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/naif_ids.html#NAIF%20Object%20ID%20numbers">here</a>.</p>
 <p>You might wonder why this works, since we haven&#8217;t loaded any kernels. It is due
 to the fact, that some Objects are hardcoded into the framework. This is the
 case for the sun, all planets and their natural satellites, and all spacecraft.</p>
@@ -165,6 +165,10 @@ rotation, those are only available through kernels. Some info we can get about
 it:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">spiceminer</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">earth</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;EARTH&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">earth</span>
+<span class="go">Planet(399)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">earth</span>
+<span class="go">Planet EARTH (ID 399)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">earth</span><span class="o">.</span><span class="n">name</span>
 <span class="go">&#39;EARTH&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">earth</span><span class="o">.</span><span class="n">id</span>
@@ -177,8 +181,6 @@ it:</p>
 <span class="go">[Satellite(301)]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">earth</span><span class="o">.</span><span class="n">children</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
 <span class="go">&#39;MOON&#39;</span>
-<span class="go">print EARTH</span>
-<span class="go">Planet EARTH (ID 399)</span>
 </pre></div>
 </div>
 </div>
@@ -218,7 +220,7 @@ even <tt class="docutils literal"><span class="pre">datetime</span></tt>:</p>
 </pre></div>
 </div>
 <p>As mentioned above, all time dependant methods accept iterables. We could use
-the builtin <tt class="docutils literal"><span class="pre">range</span></tt> like this:</p>
+the builtin <tt class="docutils literal"><span class="pre">range()</span></tt> like this:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">spiceminer</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">start</span> <span class="o">=</span> <span class="n">Time</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="n">hour</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">stop</span> <span class="o">=</span> <span class="n">Time</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="n">hour</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
@@ -227,7 +229,7 @@ the builtin <tt class="docutils literal"><span class="pre">range</span></tt> lik
 <span class="go">[1325419200, 1325505600, 1325592000, ...]</span>
 </pre></div>
 </div>
-<p>But that is somewhat ugly and limeted to integers, while
+<p>But that is somewhat ugly and limited to integers, while
 <a class="reference internal" href="../documentation/time_.html#spiceminer.time_.Time" title="spiceminer.time_.Time"><tt class="xref py py-class docutils literal"><span class="pre">Time</span></tt></a> can represent fractions of a second.
 Fortunately, that can be fixed.</p>
 </div>
@@ -255,7 +257,7 @@ and not be indexed.</p>
 extract position, speed and rotation data from them. A simple example:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">spiceminer</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">kernel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;data&#39;</span><span class="p">)</span>
-<span class="go">22</span>
+<span class="go">set([&#39;EARTH&#39;, &#39;MOON&#39;, &#39;MSL&#39;, ...])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">frange</span><span class="p">(</span><span class="n">Time</span><span class="p">(</span><span class="mi">2013</span><span class="p">),</span> <span class="n">Time</span><span class="p">(</span><span class="mi">2014</span><span class="p">),</span> <span class="n">Time</span><span class="o">.</span><span class="n">DAY</span><span class="p">)</span> <span class="c"># Make a time span</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">earth</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;EARTH&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">earth</span><span class="o">.</span><span class="n">position</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
@@ -270,8 +272,8 @@ extract position, speed and rotation data from them. A simple example:</p>
 </pre></div>
 </div>
 <p>Here we got the x,y,z coordinates of the earth relative to the sun using the
-<em>ECLIPJ2000</em> reference frame over the time of 1 year. The format of the
-returned array is:</p>
+<em>ECLIPJ2000</em> <a class="reference internal" href="../documentation/index.html#documentation-frames"><em>reference frame</em></a> for each 24h over
+the time of 1 year. The format of the returned array is:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">array</span><span class="p">([[</span><span class="n">time</span><span class="p">,</span>    <span class="n">time</span><span class="p">,</span>    <span class="n">time</span><span class="p">,</span>    <span class="n">time</span><span class="p">,</span>    <span class="n">time</span><span class="p">,</span>    <span class="n">time</span><span class="p">,</span>    <span class="n">time</span><span class="p">,</span>    <span class="n">time</span><span class="p">]</span>
        <span class="p">[</span><span class="n">x_pos</span><span class="p">,</span>   <span class="n">x_pos</span><span class="p">,</span>   <span class="n">x_pos</span><span class="p">,</span>   <span class="n">x_pos</span><span class="p">,</span>   <span class="n">x_pos</span><span class="p">,</span>   <span class="n">x_pos</span><span class="p">,</span>   <span class="n">x_pos</span><span class="p">,</span>   <span class="n">x_pos</span><span class="p">]</span>
        <span class="p">[</span><span class="n">y_pos</span><span class="p">,</span>   <span class="n">y_pos</span><span class="p">,</span>   <span class="n">y_pos</span><span class="p">,</span>   <span class="n">y_pos</span><span class="p">,</span>   <span class="n">y_pos</span><span class="p">,</span>   <span class="n">y_pos</span><span class="p">,</span>   <span class="n">y_pos</span><span class="p">,</span>   <span class="n">y_pos</span><span class="p">]</span>
@@ -282,7 +284,7 @@ returned array is:</p>
 can check the position of the Curiosity rover on the Mars surface:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">spiceminer</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">kernel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;data&#39;</span><span class="p">)</span>
-<span class="go">22</span>
+<span class="go">set([&#39;EARTH&#39;, &#39;MOON&#39;, &#39;MSL&#39;, ...])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">frange</span><span class="p">(</span><span class="n">Time</span><span class="p">(</span><span class="mi">2012</span><span class="p">),</span> <span class="n">Time</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">Time</span><span class="o">.</span><span class="n">DAY</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">mars</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;mars&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">msl_rover</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;msl_rover&#39;</span><span class="p">)</span>

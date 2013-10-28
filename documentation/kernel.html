@@ -65,21 +65,21 @@ get highlevel abstractions of the objects referenced by the kernels.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>path</strong> (<tt class="docutils literal"><span class="pre">str</span></tt>) &#8211; Relative or absolute path to the file/(root)directory to load.</li>
-<li><strong>recursive</strong> (<tt class="docutils literal"><span class="pre">bool</span></tt>) &#8211; If <tt class="docutils literal"><span class="pre">path</span></tt> is a directory and <tt class="docutils literal"><span class="pre">recursive</span></tt> is <tt class="docutils literal"><span class="pre">True</span></tt>,
+<li><strong>recursive</strong> (<tt class="docutils literal"><span class="pre">bool</span></tt>) &#8211; If <em>path</em> is a directory and <em>recursive</em> is <tt class="docutils literal"><span class="pre">True</span></tt>,
 this will also search in child directories and not only the root.</li>
-<li><strong>followlinks</strong> (<tt class="docutils literal"><span class="pre">bool</span></tt>) &#8211; <p>If <tt class="docutils literal"><span class="pre">path</span></tt> is a directory and <tt class="docutils literal"><span class="pre">recursive</span></tt> and
-<tt class="docutils literal"><span class="pre">followlinks</span></tt> are both <tt class="docutils literal"><span class="pre">True</span></tt>, symlinked directories further up the
+<li><strong>followlinks</strong> (<tt class="docutils literal"><span class="pre">bool</span></tt>) &#8211; <p>If <em>path</em> is a directory and <em>recursive</em> and
+<em>followlinks</em> are both <tt class="docutils literal"><span class="pre">True</span></tt>, symlinked directories further up the
 directory tree will also be traversed.</p>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
-<p class="last">Setting followlinks to <tt class="docutils literal"><span class="pre">True</span></tt> may lead to infinite
+<p class="last">Setting <em>followlinks</em> to <tt class="docutils literal"><span class="pre">True</span></tt> may lead to infinite
 recursion.</p>
 </div>
 </li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">(<tt class="docutils literal"><span class="pre">int</span></tt>) &#8211; The number of loaded files.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">(<tt class="docutils literal"><span class="pre">set(str)</span></tt>) &#8211; The names of all loaded Ephimeris Objects.</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Raise :</th><td class="field-body"><p class="first last">Nothing.</p>
@@ -87,26 +87,47 @@ recursion.</p>
 </tr>
 </tbody>
 </table>
+<p>Meta-kernels are not supported, because they would be parsed internally by
+the c-framework, therefore ignoring the feautures for time window
+extraction.</p>
+<p>At the moment only Ephimeris Objects defined in binary kernels are parsed,
+because of limitations in the c-framework.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="spiceminer.kernel.unload">
-<tt class="descclassname">spiceminer.kernel.</tt><tt class="descname">unload</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#spiceminer.kernel.unload" title="Permalink to this definition">¶</a></dt>
-<dd><p>Unload one or more kernel files.</p>
+<tt class="descclassname">spiceminer.kernel.</tt><tt class="descname">unload</tt><big>(</big><em>path='.'</em>, <em>recursive=True</em>, <em>followlinks=False</em><big>)</big><a class="headerlink" href="#spiceminer.kernel.unload" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unload a kernel file or a directory containing kernel files.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<tt class="docutils literal"><span class="pre">str</span></tt>) &#8211; Relative or absolute path to the file/(root)directory to unload.
-Unloads <strong>all</strong> kernels further up the directory tree if <tt class="docutils literal"><span class="pre">path</span></tt> is
-a directory.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>path</strong> (<tt class="docutils literal"><span class="pre">str</span></tt>) &#8211; Relative or absolute path to the file/(root)directory to unload.</li>
+<li><strong>recursive</strong> (<tt class="docutils literal"><span class="pre">bool</span></tt>) &#8211; If <em>path</em> is a directory and <em>recursive</em> is <tt class="docutils literal"><span class="pre">True</span></tt>,
+this will also search in child directories and not only the root.</li>
+<li><strong>followlinks</strong> (<tt class="docutils literal"><span class="pre">bool</span></tt>) &#8211; <p>If <em>path</em> is a directory and <em>recursive</em> and
+<em>followlinks</em> are both <tt class="docutils literal"><span class="pre">True</span></tt>, symlinked directories further up the
+directory tree will also be traversed.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Setting <em>followlinks</em> to <tt class="docutils literal"><span class="pre">True</span></tt> may lead to infinite
+recursion.</p>
+</div>
+</li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<tt class="docutils literal"><span class="pre">int</span></tt>) &#8211; The number of unloaded files.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">(<tt class="docutils literal"><span class="pre">int</span></tt>) &#8211; The number of unloaded files.</p>
+</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Raises :</th><td class="field-body">Nothing.</td>
+<tr class="field-odd field"><th class="field-name">Raise :</th><td class="field-body"><p class="first last">Nothing.</p>
+</td>
 </tr>
 </tbody>
 </table>
+<p>Time windows are not cleared, since that would require all loaded kernels
+of that type to be checked again</p>
 </dd></dl>
 
 <dl class="function">
@@ -130,6 +151,24 @@ requested entity.</p>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="data">
+<dt id="spiceminer.kernel.LOADED_KERNELS">
+<tt class="descclassname">spiceminer.kernel.</tt><tt class="descname">LOADED_KERNELS</tt><em class="property"> = defaultdict(&lt;type 'set'&gt;, {})</em><a class="headerlink" href="#spiceminer.kernel.LOADED_KERNELS" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<tt class="docutils literal"><span class="pre">defaultdict(set)</span></tt>) &#8211; All loaded kernels, sorted by extension.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="spiceminer.kernel.POS_WINDOWS">
+<tt class="descclassname">spiceminer.kernel.</tt><tt class="descname">POS_WINDOWS</tt><em class="property"> = defaultdict(&lt;type 'list'&gt;, {})</em><a class="headerlink" href="#spiceminer.kernel.POS_WINDOWS" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<tt class="docutils literal"><span class="pre">defaultdict(list)</span></tt>) &#8211; All time windows for all loaded spk-kernels.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="spiceminer.kernel.ROT_WINDOWS">
+<tt class="descclassname">spiceminer.kernel.</tt><tt class="descname">ROT_WINDOWS</tt><em class="property"> = defaultdict(&lt;type 'list'&gt;, {})</em><a class="headerlink" href="#spiceminer.kernel.ROT_WINDOWS" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<tt class="docutils literal"><span class="pre">defaultdict(list)</span></tt>) &#8211; All time windows for all loaded pck/ch-kernels.</p>
 </dd></dl>
 
 </div>

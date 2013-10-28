@@ -148,7 +148,7 @@ necessary information missing.</p>
 
 <dl class="method">
 <dt id="spiceminer.bodies.Body.rotation">
-<tt class="descname">rotation</tt><big>(</big><em>times</em>, <em>observer='ECLIPJ2000'</em><big>)</big><a class="headerlink" href="#spiceminer.bodies.Body.rotation" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">rotation</tt><big>(</big><em>times</em>, <em>target='ECLIPJ2000'</em><big>)</big><a class="headerlink" href="#spiceminer.bodies.Body.rotation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the rotation matrix for rotating this object from its own
 reference frame to that of the observer.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -295,6 +295,13 @@ pattern [1-9][0-9][1-8].</p>
 <em class="property">class </em><tt class="descclassname">spiceminer.bodies.</tt><tt class="descname">Spacecraft</tt><big>(</big><em>body_id</em><big>)</big><a class="headerlink" href="#spiceminer.bodies.Spacecraft" title="Permalink to this definition">¶</a></dt>
 <dd><p>Subclass of <a class="reference internal" href="#spiceminer.bodies.Body" title="spiceminer.bodies.Body"><tt class="xref py py-class docutils literal"><span class="pre">Body</span></tt></a> representing spacecraft.</p>
 <p>Spacecraft are ephimeris objects with IDs between -1 and -999 or &lt; -99999.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="spiceminer.bodies.Star">
+<em class="property">class </em><tt class="descclassname">spiceminer.bodies.</tt><tt class="descname">Star</tt><big>(</big><em>body_id</em><big>)</big><a class="headerlink" href="#spiceminer.bodies.Star" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass of <a class="reference internal" href="#spiceminer.bodies.Body" title="spiceminer.bodies.Body"><tt class="xref py py-class docutils literal"><span class="pre">Body</span></tt></a> representing the sun.</p>
+<p>Only used for the sun (ID 10) at the moment.</p>
 </dd></dl>
 
 </div>
