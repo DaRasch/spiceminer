@@ -50,7 +50,7 @@ need to do the following::
 
     >>> from spiceminer import *
     >>> kernel.load()
-    22
+    set(['EARTH', 'MOON', 'MSL', ...])
 
 The number returned by ``kernel.load()`` is the number of kernels loaded.
 
@@ -59,9 +59,9 @@ feed the path to the loading function like so::
 
     >>> from spiceminer import *
     >>> kernel.load('/home/user/data')
-    22
+    set(['EARTH', 'MOON', 'MSL', ...])
     >>> kernel.load('data') # If we are at /home/user
-    22
+    set(['EARTH', 'MOON', 'MSL', ...])
 
 As you can see, both relative and absolute paths work.
 
@@ -79,7 +79,7 @@ As you can see, both relative and absolute paths work.
 
     >>> from spiceminer import *
     >>> kernel.load('data', recursive=False)
-    5
+    set(['OBJECT0', 'OBJECT1', ...])
 
 Another thing that might happen, is that you have symlinks to other directories
 in the directory tree. By default those are ignored to avoid possible infinite
@@ -88,7 +88,7 @@ passing the *followlinks* parameter like so::
 
     >>> from spiceminer import *
     >>> kernel.load('data', folowlinks=True)
-    29
+    set(['EARTH', 'MOON', 'MSL', ...])
 
 You can also unload kernels again if they are no longer needed::
 
@@ -107,21 +107,21 @@ session is closed or the programm finishes.
 Ephimeris objects
 =================
 Once you have loaded the kernels you need, it's time to use them. Every
-physical object defined by a kernel is represented by a subclass of
-:py:class:`~spiceminer.bodies.Body` instance. Getting hold of them is pretty
-easy::
+physical object defined by a kernel is represented by an instance of a subclass
+of :py:class:`~spiceminer.bodies.Body`. Getting hold of them is pretty easy::
 
     >>> from spiceminer import *
     >>> kernel.get('EARTH')
     Planet(399)
 
-As you can see, the return value is pretty descriptive. It tells us what kind
-of :py:class:`~spiceminer.bodies.Body` we got and what its reference number
-is.
-
 .. NOTE:: The input of :py:func:`~spiceminer.kernel.get` is **not** case
    sensitive. I just wrote *EARTH* in all caps, because that is the standart
    convention of the spice-API.
+
+As you can see, the return value is pretty descriptive. It tells us what kind
+of :py:class:`~spiceminer.bodies.Body` we got and what its reference number
+is. Some official documentation on reference numbers can be found
+`here <http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/naif_ids.html#NAIF%20Object%20ID%20numbers>`_.
 
 You might wonder why this works, since we haven't loaded any kernels. It is due
 to the fact, that some Objects are hardcoded into the framework. This is the
@@ -133,6 +133,10 @@ it::
 
     >>> from spiceminer import *
     >>> earth = kernel.get('EARTH')
+    >>> earth
+    Planet(399)
+    >>> print earth
+    Planet EARTH (ID 399)
     >>> earth.name
     'EARTH'
     >>> earth.id
@@ -145,8 +149,6 @@ it::
     [Satellite(301)]
     >>> earth.children()[0].name
     'MOON'
-    print EARTH
-    Planet EARTH (ID 399)
 
 
 .. _tutorial-excursus:
@@ -193,7 +195,7 @@ even ``datetime``::
     2012-01-01T12:00:00.0
 
 As mentioned above, all time dependant methods accept iterables. We could use
-the builtin ``range`` like this::
+the builtin ``range()`` like this::
 
     >>> from spiceminer import *
     >>> start = Time(2000, hour=12)
@@ -202,7 +204,7 @@ the builtin ``range`` like this::
     >>> range(int(start), int(stop), int(step))
     [1325419200, 1325505600, 1325592000, ...]
 
-But that is somewhat ugly and limeted to integers, while
+But that is somewhat ugly and limited to integers, while
 :py:class:`~spiceminer.time_.Time` can represent fractions of a second.
 Fortunately, that can be fixed.
 
@@ -236,7 +238,7 @@ extract position, speed and rotation data from them. A simple example::
 
     >>> from spiceminer import *
     >>> kernel.load('data')
-    22
+    set(['EARTH', 'MOON', 'MSL', ...])
     >>> t = frange(Time(2013), Time(2014), Time.DAY) # Make a time span
     >>> earth = kernel.get('EARTH')
     >>> earth.position(t)
@@ -250,8 +252,8 @@ extract position, speed and rotation data from them. A simple example::
              -4.59965922e+03,  -4.67683468e+03,  -4.74105184e+03]])
 
 Here we got the x,y,z coordinates of the earth relative to the sun using the
-*ECLIPJ2000* reference frame over the time of 1 year. The format of the
-returned array is::
+*ECLIPJ2000* :ref:`reference frame <documentation-frames>` for each 24h over
+the time of 1 year. The format of the returned array is::
 
      array([[time,    time,    time,    time,    time,    time,    time,    time]
             [x_pos,   x_pos,   x_pos,   x_pos,   x_pos,   x_pos,   x_pos,   x_pos]
@@ -263,7 +265,7 @@ can check the position of the Curiosity rover on the Mars surface::
 
     >>> from spiceminer import *
     >>> kernel.load('data')
-    22
+    set(['EARTH', 'MOON', 'MSL', ...])
     >>> t = frange(Time(2012), Time(2012, 6), Time.DAY)
     >>> mars = kernel.get('mars')
     >>> msl_rover = kernel.get('msl_rover')
