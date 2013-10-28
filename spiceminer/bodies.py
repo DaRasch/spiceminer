@@ -10,7 +10,7 @@ from .time_ import Time
 from ._helpers import ignored
 
 __all__ = ['Body', 'Asteroid', 'Barycenter', 'Comet', 'Instrument', 'Planet',
-           'Satellite', 'Spacecraft']
+           'Satellite', 'Spacecraft', 'Star']
 
 
 ### Helper ###
@@ -103,7 +103,8 @@ class Body(object):
         '''
         return []
 
-    def state(self, times, observer='SUN', frame='ECLIPJ2000', abcorr=None):
+    def state(self, times, observer='SUN', frame='ECLIPJ2000',
+        abcorr=None):
         '''Get the position and speed of this object relative to the observer
         in a specific reference frame.
 
@@ -154,7 +155,8 @@ class Body(object):
         return numpy.array(spice.spkezr(self.name, Time.fromposix(time).et(),
             frame, abcorr or Body._ABCORR, observer))
 
-    def position(self, times, observer='SUN', frame='ECLIPJ2000', abcorr=None):
+    def position(self, times, observer='SUN', frame='ECLIPJ2000',
+        abcorr=None):
         '''Get the position of this object relative to the observer in a
         specific reference frame.
 
@@ -204,7 +206,8 @@ class Body(object):
         return numpy.array(spice.spkpos(self.name, Time.fromposix(time).et(),
             frame, abcorr or Body._ABCORR, observer)[0])
 
-    def speed(self, times, observer='SUN', frame='ECLIPJ2000', abcorr=None):
+    def speed(self, times, observer='SUN', frame='ECLIPJ2000',
+        abcorr=None):
         '''Get the speed of this object relative to the observer in a specific
         reference frame.
 
@@ -244,7 +247,7 @@ class Body(object):
         abcorr=None):
         return self.single_state(time, observer, frame, abcorr)[3:]
 
-    def rotation(self, times, observer='ECLIPJ2000'):
+    def rotation(self, times, target='ECLIPJ2000'):
         '''Get the rotation matrix for rotating this object from its own
         reference frame to that of the observer.
 
@@ -262,8 +265,8 @@ class Body(object):
           (:py:class:`~spiceminer._spicewrapper.SpiceError`) -- If there is
           necessary information missing.
         '''
-        if isinstance(observer, Body):
-            observer = observer._frame or observer.name
+        if isinstance(target, Body):
+            target = target._frame or target.name
         if isinstance(times, numbers.Real):
             times = [float(times)]
         if isinstance(times, collections.Iterable):
@@ -272,17 +275,17 @@ class Body(object):
             for time in times:
                 with ignored(spice.SpiceError):
                     result.append(spice.pxform(self._frame or self.name,
-                        observer, Time.fromposix(time).et()))
+                        target, Time.fromposix(time).et()))
                     valid_times.append(time)
             return numpy.array(valid_times), [numpy.array(item).reshape(3, 3)
                 for item in result]
         msg = 'rotation() Real or Iterable argument expected, got {}.'
         raise TypeError(msg.format(type(times)))
 
-    def single_rotation(self, time, destination='ECLIPJ2000'):
-        if isinstance(destination, Body):
-            destination = destination._frame or destination.name
-        return numpy.array(spice.pxform(self._frame or self.name, destination,
+    def single_rotation(self, time, target='ECLIPJ2000'):
+        if isinstance(target, Body):
+            target = target._frame or destination.name
+        return numpy.array(spice.pxform(self._frame or self.name, target,
             Time.fromposix(time).et())).reshape(3, 3)
 
 
@@ -355,6 +358,7 @@ class Satellite(Body):
     '''
     def __init__(self, body_id):
         super(Satellite, self).__init__(body_id)
+        self._frame = 'IAU_' + self._name
 
     def parent(self):
         return Body(self.id - self.id % 100 + 99)
@@ -370,3 +374,18 @@ class Spacecraft(Body):
 
     def children(self):
         return list(_iterbodies(self.id * 1000, self.id * 1000 - 1000, -1))
+
+class Star(Body):
+    '''Subclass of :py:class:`~spiceminer.bodies.Body` representing the sun.
+
+    Only used for the sun (ID 10) at the moment.
+    '''
+    def __init__(self, body_id):
+        super(Star, self).__init__(body_id)
+        self._frame = 'IAU_SUN'
+
+    def parent(self):
+        return Body(0)
+
+    def children(self):
+        return list(_iterbodies(199, 1000, 100))

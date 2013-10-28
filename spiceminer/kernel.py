@@ -17,6 +17,8 @@ __all__ = ['load', 'unload', 'get', 'LOADED_KERNELS', 'POS_WINDOWS',
 
 #: (``defaultdict(set)``) -- All loaded kernels, sorted by extension.
 LOADED_KERNELS = defaultdict(set)
+#: (``set``) -- All loaded Ephimeris Objects.
+LOADED_OBJECTS = set()
 #: (``defaultdict(list)``) -- All time windows for all loaded spk-kernels.
 POS_WINDOWS = defaultdict(list)
 #: (``defaultdict(list)``) -- All time windows for all loaded pck/ch-kernels.
@@ -55,15 +57,21 @@ def _merge_windows(lst):
 def _load_sp(path):
     '''Load sp kernel and associated windows.'''
     _IDS.reset()
-    spice.spkobj(path, _IDS)
-    for idcode in _IDS:
-        _WINDOWS.reset()
-        spice.spkcov(path, idcode, _WINDOWS)
-        # Merge new windows and exsiting windows
-        new_windows = [(Time.fromet(et0), Time.fromet(et1))
-            for et0, et1 in zip(_WINDOWS[::2], _WINDOWS[1::2])]
-        POS_WINDOWS[idcode] = _merge_windows(POS_WINDOWS[idcode] + new_windows)
-    return set(_IDS[:])
+    try:
+        spice.spkobj(path, _IDS)
+        for idcode in _IDS:
+            _WINDOWS.reset()
+            spice.spkcov(path, idcode, _WINDOWS)
+            # Merge new windows and exsiting windows
+            new_windows = [(Time.fromet(et0), Time.fromet(et1))
+                for et0, et1 in zip(_WINDOWS[::2], _WINDOWS[1::2])]
+            POS_WINDOWS[idcode] = _merge_windows(
+                POS_WINDOWS[idcode] + new_windows)
+        return set(_IDS[:])
+    except spice.SpiceError:
+        # Parse text kernels seperately
+        with open(path, 'r') as f:
+            return set(map(int, re.findall('BODY([-0-9]*)_PM', f.read())))
 
 def _load_c(path):
     '''Load c kernel and associated windows.'''
@@ -170,6 +178,7 @@ def load(path='.', recursive=True, followlinks=False):
         loaded_objects.update(spice.bodc2n(code) for code in objects)
     with ignored(KeyError):
         loaded_objects.remove(None)
+    LOADED_OBJECTS.update(loaded_objects)
     return loaded_objects
 
 def unload(path='.', recursive=True, followlinks=False):
