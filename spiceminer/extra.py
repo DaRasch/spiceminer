@@ -27,7 +27,7 @@ def angle(v0, v1, center=None):
         u_v0 = (v0 - center) / norm(v0)
         u_v1 = (v1 - center) / norm(v1)
     radians = arccos(dot(u_v0, u_v1))
-    if isnan(angle):
+    if isnan(radians):
         if (u_v0 == u_v1).all():
             return 0.0
         else:
