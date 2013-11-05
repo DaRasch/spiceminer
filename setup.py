@@ -38,42 +38,68 @@ try:
 except ImportError:
     has_pytest = False
 
-if has_setuptools:
-    class NewTestCommand(Command):
-        def finalize_options(self):
-            Command.finalize_options(self)
-            self.test_args = []
-            self.test_suite = True
-        def run_tests(self):
-            # import here, cause outside the eggs aren't loaded
-            import pytest
-            errno = pytest.main(self.test_args)
-            sys.exit(errno)
-else:
-    class NewTestCommand(Command):
-        user_options = []
-        def initialize_options(self):
-            pass
-        def finalize_options(self):
-            pass
-        def run_default(self):
-            import pytest
-            if pytest.__version__ < '2.3':
-                print 'WARNING: pytest version must be >= 2.3'
-                self.run_fallback()
-            errno = pytest.main(self.user_options)
-            sys.exit(errno)
-        def run_fallback(self):
-            import subprocess
-            test_script = os.path.join(root_dir, 'test', 'runtests.py')
-            #TODO call setup.py egg_info, setup.py build_ext --inplace
-            errno = subprocess.call([sys.executable, test_script])
-            raise SystemExit(errno)
-        def run(self):
-            try:
-                self.run_default()
-            except ImportError:
-                self.run_fallback()
+# if has_setuptools:
+#     class NewTestCommand(Command):
+#         def finalize_options(self):
+#             Command.finalize_options(self)
+#             self.test_args = []
+#             self.test_suite = True
+#         def run_tests(self):
+#             # import here, cause outside the eggs aren't loaded
+#             import pytest
+#             errno = pytest.main(self.test_args)
+#             sys.exit(errno)
+# else:
+#     class NewTestCommand(Command):
+#         user_options = []
+#         def initialize_options(self):
+#             pass
+#         def finalize_options(self):
+#             pass
+#         def run_default(self):
+#             import pytest
+#             if pytest.__version__ < '2.3':
+#                 print 'WARNING: pytest version must be >= 2.3, running fallback.'
+#                 self.run_fallback()
+#             errno = pytest.main(self.user_options)
+#             sys.exit(errno)
+#         def run_fallback(self):
+#             import subprocess
+#             test_script = os.path.join(root_dir, 'test', 'runtests.py')
+#             #TODO call setup.py egg_info, setup.py build_ext --inplace
+#             errno = subprocess.call([sys.executable, test_script])
+#             raise SystemExit(errno)
+#         def run(self):
+#             try:
+#                 self.run_default()
+#             except ImportError:
+#                 self.run_fallback()
+
+class NewTestCommand(Command):
+    def initialize_options(self):
+        Command.initialize_options(self)
+        self.user_options = []
+        self.test_suite = True
+    def finalize_options(self):
+        Command.finalize_options(self)
+    def use_pytest(self):
+        import pytest
+        if pytest.__version__ < '2.3':
+            print 'WARNING: pytest version < 2.3, running fallback.'
+            raise ImportError()
+        errno = pytest.main(self.user_options)
+        sys.exit(errno)
+    def use_fallback(self):
+        import subprocess
+        test_script = os.path.join(root_dir, 'test', 'runtests.py')
+        #TODO call setup.py egg_info, setup.py build_ext --inplace
+        errno = subprocess.call([sys.executable, test_script])
+        sys.exit(errno)
+    def run(self):
+        try:
+            self.use_pytest()
+        except ImportError:
+            self.use_fallback()
 
 
 ### METADATA ###
