@@ -285,7 +285,7 @@ on Mars::
     >>> from spiceminer import *
     >>> import numpy as np
     >>> kernel.load('data')
-    22
+    set(['EARTH', 'MOON', 'MSL', ...])
     >>> t = list(frange(Time(2012,10), Time(2013, 3), Time.HOUR))
     >>> z = np.array([0, 0, 1])
     >>> mars = kernel.get('MARS')
@@ -296,5 +296,3 @@ on Mars::
     >>> rad
     array([ 0.07098081,  0.07098081,  0.07098081, ...,  0.08967051,
             0.08967051,  0.08967051])
-
-
