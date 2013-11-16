@@ -64,15 +64,48 @@ you haven&#8217;t already.</p>
 and unpack the correct version of the c-SPICE source code. If you&#8217;d rather do
 that manually or have an existing version already available you can simply set
 an environment variable named <tt class="docutils literal"><span class="pre">CSPICEPATH</span></tt> to its path.</p>
-<p>After that just use <tt class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">build</span></tt> to build all necessary
-extensions.</p>
 </div>
-<div class="section" id="verification">
-<span id="setup-verification"></span><h2>Verification<a class="headerlink" href="#verification" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="installation">
+<span id="setup-installation"></span><h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>There are different ways of installing this package. Each of them has some
+advantages and some disadvantages. You should read this, even if you know your
+way around installing python packages, because the process can be non-trivial,
+especially if you do it by hand.</p>
+<div class="section" id="direct-install">
+<h3>Direct install<a class="headerlink" href="#direct-install" title="Permalink to this headline">¶</a></h3>
+<p>The easiest solution, but you have little control over it (and possibly not
+enough rights).</p>
+<p>Just type <tt class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">install</span></tt> and everything will be handled
+automatically. If your python installation resides in the systems core
+directories (it probably does), you need to prepend the command by
+<tt class="docutils literal"><span class="pre">sudo</span></tt> (and of course you need the necessary previleges) on *NIX machines. To
+avoid this trouble, there are some options for the <tt class="docutils literal"><span class="pre">install</span></tt> command to use
+other paths for installation. Type <tt class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">--help</span> <span class="pre">install</span></tt> to see
+them.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The download scripts will not be installed.</p>
+</div>
+<p>If you use <a class="reference external" href="http://www.virtualenv.org">virtualenv</a>, then this is the
+recommended way of installing.</p>
+</div>
+<div class="section" id="copy-paste">
+<h3>Copy-Paste<a class="headerlink" href="#copy-paste" title="Permalink to this headline">¶</a></h3>
+<p>Very controllable way of installing, but some knowledge about python is
+necessary.</p>
+<p>Just type <tt class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">build_ext</span> <span class="pre">--inplace</span></tt> and the c-extension will be
+compiled to <tt class="docutils literal"><span class="pre">./spiceminer</span></tt>. Now you can just copy and paste that directory
+wherever you want.</p>
+<p>This of course dosn&#8217;t mean, that python will automatically find the package. To
+ensure, that python is always able to find it, you need to manipulate your
+<tt class="docutils literal"><span class="pre">PYTHONPATH</span></tt> accordingly.</p>
+</div>
+</div>
+<div class="section" id="verification-optional">
+<span id="setup-verification"></span><h2>Verification (optional)<a class="headerlink" href="#verification-optional" title="Permalink to this headline">¶</a></h2>
 <p>To guarantee, that the version you grabbed is fully functional and compiled
-correctly, you should run the test suite. It is not required, but strongly
-recommended.</p>
-<p>For that it is required to have at least the the newest base spice-data at
+correctly, you may run some tests on it.</p>
+<p>For this it is required to have the base spice-data at
 hand. The <tt class="docutils literal"><span class="pre">getdata.py</span></tt> script will download those for you. Just use
 <tt class="docutils literal"><span class="pre">python</span> <span class="pre">getdata.py</span> <span class="pre">base</span></tt> to download all necessary data directly to the
 spiceminer root directory.</p>
@@ -88,21 +121,6 @@ Alternatively you can just symlink that folder into the spiceminer root folder
 under the name <em>data</em>.</p>
 <p>Now run <tt class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">test</span></tt>. If it reports no errors, continue.
 Otherwise something went wrong. In that case best file a bug report.</p>
-</div>
-<div class="section" id="installation">
-<span id="setup-installation"></span><h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
-<p>If building and verification were successfull, just run
-<tt class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">install</span></tt> and all should be good to go. If you are not
-working with <a class="reference external" href="http://www.virtualenv.org">virtualenv</a> you may need to prepend
-<tt class="docutils literal"><span class="pre">sudo</span></tt> on unix machines.</p>
-<p>If you don&#8217;t want to install the package automatically, but want to copy it
-manually later on, you can susbstitute the <tt class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">build</span></tt> step for
-<tt class="docutils literal"><span class="pre">python</span> <span class="pre">build_ext</span> <span class="pre">--inplace</span></tt> to generate the c-library directly inside the
-source code directory.</p>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">The download scripts will not be installed.</p>
-</div>
 </div>
 </div>
 
