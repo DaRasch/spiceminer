@@ -2,22 +2,23 @@
 
 import calendar
 
-from numpy import arccos, dot, isnan, pi
+from numpy import arccos, dot, cross, isnan, pi
 from numpy.linalg import norm
 
-__all__ = ['angle', 'frange', 'dtrange']
+__all__ = ['angle', 'clockwise_angle', 'frange', 'dtrange']
 
 
 def angle(v0, v1, center=None):
-    '''Calculates the angle between 2 Onedimensional arrays.
+    '''Calculates the absolute angle between 2 vectors (one-dimensional
+    arrays).
 
     :type v0: ``numpy.ndarray``
     :arg v0: A vector.
     :type v1: ``numpy.ndarray``
     :arg v1: A vector.
     :type center: ``numpy.ndarray``
-    :arg center: The point to use as (0, 0, 0).
-    :return: (``float``) -- The angle between *v0* and *v1* in radians.
+    :arg center: The point to use as zero-vector.
+    :return: (``float``) -- The angle between *v0* and *v1* in radians (0-pi).
     :raises: Nothing.
     '''
     if center is None:
@@ -34,9 +35,31 @@ def angle(v0, v1, center=None):
             return pi
     return radians
 
+def clockwise_angle(v0, v1, center=None):
+    '''Calculates the clockwise angle between 2 vectors (one-dimensional
+    arrays). Always uses the clockwise angle, allowing angles greater than
+    pi.
+
+    :type v0: ``numpy.ndarray``
+    :arg v0: A vector.
+    :type v1: ``numpy.ndarray``
+    :arg v1: A vector.
+    :type center: ``numpy.ndarray``
+    :arg center: The point to use as zero-vector.
+    :return: (``float``) -- The angle between *v0* and *v1* in radians (0-pi).
+    :raises: Nothing.
+    '''
+    radians = angle(v0, v1, center)
+    more_than_half = cross(v0, v1)[2] > 0
+    # Use different calculation if angle is more than pi radians
+    if more_than_half:
+        return 2 * pi - radians
+    else:
+        return radians
+
 
 ### Some range-functions for easier usage of bodies.Body.state() etc. ###
-def _range(start, stop, step):
+def _range_base(start, stop, step):
     '''Simple range function to be used in more complex wrappers.
     '''
     if step > 0:
@@ -49,7 +72,7 @@ def _range(start, stop, step):
             start += step
 
 
-def _basicrange(args, mutator, fname):
+def _meta_range(args, mutator, fname):
     '''A metafunction to build xrange-like functions.
 
     :type args: ???
@@ -80,7 +103,7 @@ def _basicrange(args, mutator, fname):
     else:
         msg = '{} expects at most 3 arguments, got {}'.format(fname, argc)
         raise TypeError(msg)
-    return _range(start, stop, step)
+    return _range_base(start, stop, step)
 
 
 def frange(*args):
@@ -102,7 +125,7 @@ def frange(*args):
     '''
     def _floatmutator(args):
         return (float(arg) for arg in args)
-    return _basicrange(args, _floatmutator, 'frange')
+    return _meta_range(args, _floatmutator, 'frange')
 
 def dtrange(*args):
     '''Functionally equivalent to builtin ``xrange()``, but uses ``datetime``
@@ -126,4 +149,4 @@ def dtrange(*args):
             yield float(calendar.timegm(
                 arg.utctimetuple())) + (arg.microsecond / 1000000.0)
         yield args[2].total_seconds()
-    return _basicrange(args, _datetimemutator, 'dtrange')
+    return _meta_range(args, _datetimemutator, 'dtrange')

@@ -103,8 +103,8 @@ class Time(numbers.Real):
     def fromposix(cls, timestamp):
         '''Generate a :py:class:`~spiceminer.time_.Time` instance from a float.
 
-        :type t: ``float``
-        :arg t: A number representing a point in time.
+        :type timestamp: ``float``
+        :arg timestamp: A number representing a point in time.
         :return: (:py:class:`~spiceminer.time_.Time`) -- New POSIX timestamp.
         :raises: Nothing.
         '''

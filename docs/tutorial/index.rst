@@ -252,13 +252,13 @@ extract position, speed and rotation data from them. A simple example::
              -4.59965922e+03,  -4.67683468e+03,  -4.74105184e+03]])
 
 Here we got the x,y,z coordinates of the earth relative to the sun using the
-*ECLIPJ2000* :ref:`reference frame <documentation-frames>` for each 24h over
-the time of 1 year. The format of the returned array is::
+default *ECLIPJ2000* :ref:`reference frame <documentation-frames>` for each 24h
+over the time of 1 year. The format of the returned array is::
 
-     array([[time,    time,    time,    time,    time,    time,    time,    time]
-            [x_pos,   x_pos,   x_pos,   x_pos,   x_pos,   x_pos,   x_pos,   x_pos]
-            [y_pos,   y_pos,   y_pos,   y_pos,   y_pos,   y_pos,   y_pos,   y_pos]
-            [z_pos,   z_pos,   z_pos,   z_pos,   z_pos,   z_pos,   z_pos,   z_pos]])
+     array([[time,    time,    time,    time,    time,    time,    time,    ...]
+            [x_pos,   x_pos,   x_pos,   x_pos,   x_pos,   x_pos,   x_pos,   ...]
+            [y_pos,   y_pos,   y_pos,   y_pos,   y_pos,   y_pos,   y_pos,   ...]
+            [z_pos,   z_pos,   z_pos,   z_pos,   z_pos,   z_pos,   z_pos,   ...]])
 
 We can of course change the reference Frame and the observer. For example, we
 can check the position of the Curiosity rover on the Mars surface::
@@ -271,6 +271,10 @@ can check the position of the Curiosity rover on the Mars surface::
     >>> msl_rover = kernel.get('msl_rover')
     >>> msl_rover.position(t, observer=mars, frame=mars)
     array(...)
+
+Here we used ``mars`` as observer (so the position is calculated relative to
+its center) and as :ref:`reference frame <documentation-frames>` (so the
+position is calculated relative to its rotation).
 
 
 

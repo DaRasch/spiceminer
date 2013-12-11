@@ -42,6 +42,13 @@ docs/_build
 .project
 .pydevproject
 
+###########
+# Editors #
+###########
+*.sublime-project
+*.sublime-workspace
+
+
 ########
 # Misc #
 ########

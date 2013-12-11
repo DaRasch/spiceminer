@@ -68,27 +68,27 @@ Reference frames
 
 .. _reference frames: http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/frames.html
 
-Official, very technical documentation for `reference frames`_.
+Official, very technical documentation for reference frames is available
+`here <reference frames>`_.
 
-All bodies are bound to a reference frame, which has a position and rotation
-relative to other reference frames. In most cases they are handled
-automatically, when necessary, but there are some frames, which are not
-bound to any body.
+All bodies are bound to reference frames, which have a position and rotation
+relative to other reference frames. In most cases the frames are handled
+automatically, but there are some frames, which are not referenced by any body.
 
 * **J2000** -- Position like the SOLAR SYSTEM BARYCENTER
 
   * x-axis -- Line of intersection between earth's ecliptic and equator.
-  * y-axis -- Cross product of x-axis and y-axis.
+  * y-axis -- Cross product of x-axis and z-axis.
   * z-axis -- Normal of the earth's **equator** in 'northern' direction.
 
 * **ECLIPJ2000** -- Position like the SOLAR SYSTEM BARYCENTER
 
   * x-axis -- Line of intersection between earth's ecliptic and equator.
-  * y-axis -- Cross product of x-axis and y-axis.
+  * y-axis -- Cross product of x-axis and z-axis.
   * z-axis -- Normal of the earth's **ecliptic** in 'northern' direction.
 
-These frames are non-rotating and non-accelerating, which makes them global
-reference frames.
+These frames are non-rotating and non-accelerating, making them ideal global
+reference frames. The only way to access them is their string.
 
 .. _documentation-bodies:
 

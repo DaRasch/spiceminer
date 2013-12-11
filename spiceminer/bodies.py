@@ -55,7 +55,7 @@ class Body(object):
             else:
                 body = object.__new__(Satellite, body_id, *args, **kwargs)
         elif body_id == 10:
-        #    body = object.__new__(cls, 10, *args, **kwargs)
+            # body = object.__new__(cls, 10, *args, **kwargs)
             body = object.__new__(Planet, body_id, *args, **kwargs)
         elif body_id >= 0:
             body = object.__new__(Barycenter, body_id, *args, **kwargs)
