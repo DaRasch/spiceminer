@@ -5,6 +5,7 @@ import os
 import sys
 import glob
 import re
+import subprocess
 
 try:
     from setuptools import setup, Extension
@@ -42,22 +43,19 @@ class NewTestCommand(Command):
     def finalize_options(self):
         pass
     def use_pytest(self):
+        import pytest
         errno = pytest.main(self.user_options)
         sys.exit(errno)
     def use_fallback(self):
-        import subprocess
-        setup = os.path.realpath(__file__)
-        errno = subprocess.call([sys.executable, setup, 'egg_info'])
-        if errno:
-            sys.exit(errno)
-        errno = subprocess.call(
-            [sys.executable, setup, 'build_ext', '--inplace'])
-        if errno:
-            sys.exit(errno)
         test_script = os.path.join(ROOT_DIR, 'test', 'runtests.py')
         errno = subprocess.call([sys.executable, test_script])
         sys.exit(errno)
     def run(self):
+        setup = os.path.realpath(__file__)
+        errno = subprocess.call(
+            [sys.executable, setup, 'build_ext', '--inplace'])
+        if errno:
+            sys.exit(errno)
         try:
             import pytest
             if pytest.__version__ < '2.3':
