@@ -7,3 +7,5 @@ from ._spicewrapper import SpiceError
 from .extra import angle, frange, dtrange
 
 __all__ = ['kernel', 'Time', 'SpiceError', 'frange', 'dtrange']
+
+__version__ = '0.0.1'

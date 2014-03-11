@@ -176,10 +176,7 @@ class Time(numbers.Real):
                 other.utctimetuple()) + (other.microsecond / 1000000.0)
         if isinstance(other, datetime.date):
             return self.real == calendar.timegm(other.timetuple())
-        try:
-            return self.real == float(other)
-        except (TypeError, ValueError):
-            return NotImplemented
+        return self.real == other
 
     def __lt__(self, other):
         if isinstance(other, datetime.datetime):
@@ -187,16 +184,10 @@ class Time(numbers.Real):
                 other.utctimetuple()) + (other.microsecond / 1000000.0)
         if isinstance(other, datetime.date):
             return self.real < calendar.timegm(other.timetuple())
-        try:
-            return self.real < float(other)
-        except (TypeError, ValueError):
-            return NotImplemented
+        return self.real < other
 
     def __le__(self, other):
-        try:
-            return self < other or self == other
-        except (TypeError, ValueError):
-            return NotImplemented
+        return self < other or self == other
 
     ### Math ###
     def __abs__(self):
@@ -215,48 +206,54 @@ class Time(numbers.Real):
         return new
 
     def __trunc__(self):
-        return int(self.real)
+        return self.real.__trunc__()
 
     ### Self is left operand ###
     #Supported: int, float, timedelta, datetime, date, Time
     def __add__(self, other):
-        if isinstance(other, Time):
-            return NotImplemented
         if isinstance(other, datetime.timedelta):
             with _no_argcheck():
                 new = Time(second=self.real + other.total_seconds())
             return new
-        try:
+        if isinstance(other, numbers.Real):
             with _no_argcheck():
-                new = Time(second=self.real + float(other))
+                new = Time(second=self.real + other)
             return new
-        except (TypeError, ValueError):
-            return NotImplemented
+        return NotImplemented
 
     def __sub__(self, other):
-        if isinstance(other, Time):
-            return self.real - other.real
         if isinstance(other, datetime.datetime):
             return self.real - calendar.timegm(
                 other.utctimetuple()) - (other.microsecond / 1000000.0)
-        try:
+        if isinstance(other, numbers.Real):
             with _no_argcheck():
                 new = Time(second=self.real - float(other))
             return new
-        except (TypeError, ValueError):
-            return NotImplemented
+        return NotImplemented
 
     def __mul__(self, other):
+        if isinstance(other, numbers.Real):
+            return self.real * other.real
         return NotImplemented
     def __div__(self, other):
+        if isinstance(other, numbers.Real):
+            return self.real / other.real
         return NotImplemented
     def __truediv__(self, other):
+        if isinstance(other, numbers.Real):
+            return self.real / other.real
         return NotImplemented
     def __mod__(self, other):
+        if isinstance(other, numbers.Real):
+            return self.real % other.real
         return NotImplemented
     def __floordiv__(self, other):
+        if isinstance(other, numbers.Real):
+            return self.real // other.real
         return NotImplemented
     def __pow__(self, other):
+        if isinstance(other, numbers.Real):
+            return self.real ** other.real
         return NotImplemented
 
     ### Self is right operand ###

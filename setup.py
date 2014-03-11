@@ -4,6 +4,7 @@
 import os
 import sys
 import glob
+import re
 
 try:
     from setuptools import setup, Extension
@@ -13,107 +14,67 @@ except ImportError:
     from distutils.core import setup, Extension, Command
     has_setuptools = False
 
+PROJECT_NAME = 'spiceminer'
 
-root_dir = os.path.dirname(os.path.realpath(__file__))
+ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
 ### BUILD C-EXTENSION ###
-cspice_root = os.getenv('CSPICEPATH', os.path.join(root_dir, 'cspice'))
+cspice_root = os.getenv('CSPICEPATH', os.path.join(ROOT_DIR, 'cspice'))
 if not os.path.isdir(cspice_root):
     print 'ERROR: spice not found' #XXX search lib in default locations?
     sys.exit(1)
 cspice_include = os.path.join(cspice_root, 'include')
 cspice_lib = os.path.join(cspice_root, 'lib', 'cspice.a') #XXX same under windows?
 
-src_files = glob.glob(os.path.join(root_dir, 'cwrapper', '*.c'))
-cwrapper = Extension('spiceminer.libspice', src_files,
+src_files = glob.glob(os.path.join(ROOT_DIR, 'cwrapper', '*.c'))
+cwrapper = Extension('.'.join([PROJECT_NAME, 'libspice']), src_files,
     include_dirs=[cspice_include],
     extra_link_args=[cspice_lib])
 
 
 ### UPDATE TEST BEHAVIOR ###
-try:
-    import pytest
-    has_pytest = True
-except ImportError:
-    has_pytest = False
-
-# if has_setuptools:
-#     class NewTestCommand(Command):
-#         def finalize_options(self):
-#             Command.finalize_options(self)
-#             self.test_args = []
-#             self.test_suite = True
-#         def run_tests(self):
-#             # import here, cause outside the eggs aren't loaded
-#             import pytest
-#             errno = pytest.main(self.test_args)
-#             sys.exit(errno)
-# else:
-#     class NewTestCommand(Command):
-#         user_options = []
-#         def initialize_options(self):
-#             pass
-#         def finalize_options(self):
-#             pass
-#         def run_default(self):
-#             import pytest
-#             if pytest.__version__ < '2.3':
-#                 print 'WARNING: pytest version must be >= 2.3, running fallback.'
-#                 self.run_fallback()
-#             errno = pytest.main(self.user_options)
-#             sys.exit(errno)
-#         def run_fallback(self):
-#             import subprocess
-#             test_script = os.path.join(root_dir, 'test', 'runtests.py')
-#             #TODO call setup.py egg_info, setup.py build_ext --inplace
-#             errno = subprocess.call([sys.executable, test_script])
-#             raise SystemExit(errno)
-#         def run(self):
-#             try:
-#                 self.run_default()
-#             except ImportError:
-#                 self.run_fallback()
-
 class NewTestCommand(Command):
+    description = 'run test suite'
+    user_options = []
     def initialize_options(self):
-        Command.initialize_options(self)
-        self.user_options = []
         self.test_suite = True
     def finalize_options(self):
-        Command.finalize_options(self)
+        pass
     def use_pytest(self):
-        import pytest
-        if pytest.__version__ < '2.3':
-            print 'WARNING: pytest version < 2.3, running fallback.'
-            raise ImportError()
         errno = pytest.main(self.user_options)
         sys.exit(errno)
     def use_fallback(self):
         import subprocess
-        test_script = os.path.join(root_dir, 'test', 'runtests.py')
+        test_script = os.path.join(ROOT_DIR, 'test', 'runtests.py')
         #TODO call setup.py egg_info, setup.py build_ext --inplace
         errno = subprocess.call([sys.executable, test_script])
         sys.exit(errno)
     def run(self):
         try:
-            self.use_pytest()
+            import pytest
+            if pytest.__version__ < '2.3':
+                print('WARNING: Using fallback (pytest version < 2.3).')
+                self.use_fallback()
+            else:
+                self.use_pytest()
         except ImportError:
+            print('WARNING: Using fallback (pytest not available).')
             self.use_fallback()
 
 
 ### METADATA ###
-with open(os.path.join(root_dir, 'VERSION')) as f:
-    version = f.readline().strip()
+with open(os.path.join(ROOT_DIR, PROJECT_NAME, '__init__.py')) as f:
+    version = re.search("__version__ = '([^']+)'", f.read()).group(1)
 
-with open(os.path.join(root_dir, 'README.md')) as f:
+with open(os.path.join(ROOT_DIR, 'README.md')) as f:
     readme = f.read()
 
-with open(os.path.join(root_dir, 'LICENSE')) as f:
+with open(os.path.join(ROOT_DIR, 'LICENSE')) as f:
     license = f.read()
 
 metadata = {
-    'name': 'spiceminer',
+    'name': PROJECT_NAME,
     'version': version,
     'description': "A sane python wrapper for NASA's SPICE-framework.",
     'long_description': readme,
@@ -123,7 +84,7 @@ metadata = {
     'download_url': 'https://github.com/DaRasch/spiceminer/archive/master.zip',
     'platforms': 'any',
     'license': license,
-    'packages': ['spiceminer'],
+    'packages': [PROJECT_NAME],
     'ext_modules': [cwrapper],
     'requires': ['numpy'],
     'cmdclass': {'test': NewTestCommand},
