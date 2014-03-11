@@ -46,8 +46,15 @@ class NewTestCommand(Command):
         sys.exit(errno)
     def use_fallback(self):
         import subprocess
+        setup = os.path.realpath(__file__)
+        errno = subprocess.call([sys.executable, setup, 'egg_info'])
+        if errno:
+            sys.exit(errno)
+        errno = subprocess.call(
+            [sys.executable, setup, 'build_ext', '--inplace'])
+        if errno:
+            sys.exit(errno)
         test_script = os.path.join(ROOT_DIR, 'test', 'runtests.py')
-        #TODO call setup.py egg_info, setup.py build_ext --inplace
         errno = subprocess.call([sys.executable, test_script])
         sys.exit(errno)
     def run(self):
