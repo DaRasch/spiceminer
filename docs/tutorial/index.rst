@@ -3,7 +3,7 @@
 ********
 Tutorial
 ********
-Here I will show you the basics of how spiceminer works.
+This section will show you the basics of how spiceminer works.
 
 
 .. _tutorial-getting-started:

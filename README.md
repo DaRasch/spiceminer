@@ -1,11 +1,9 @@
 spiceminer
 ==========
-
-What is it?
------------
-This module is a high level python wrapper around Nasa's SPICE c-library to
-store and analyse operational data from several space missions. It concentrates
-on an easy to use API for analysing the data.
+High level python wrapper around
+[NASAs CSPICE library](http://naif.jpl.nasa.gov/naif/). It concentrates on
+an easy to use API for analysing the data and doesn't include features to
+manipulate or create data.
 
 Installation
 ------------

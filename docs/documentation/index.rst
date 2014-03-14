@@ -1,6 +1,3 @@
-.. _xrange: http://docs.python.org/2/library/functions.html#xrange
-
-
 .. _documentation:
 
 *************
@@ -33,10 +30,10 @@ and functions:
 | :py:func:`~spiceminer.extra.angle`               | Calculate angles between |
 |                                                  | 2 vectors                |
 +--------------------------------------------------+--------------------------+
-| :py:func:`~spiceminer.extra.frange`              | `xrange`_ function for   |
+| :py:func:`~spiceminer.extra.frange`              | ``xrange`` function for  |
 |                                                  | ``float``                |
 +--------------------------------------------------+--------------------------+
-| :py:func:`~spiceminer.extra.dtrange`             | `xrange`_ function for   |
+| :py:func:`~spiceminer.extra.dtrange`             | ``xrange`` function for  |
 |                                                  | ``datetime``             |
 +--------------------------------------------------+--------------------------+
 

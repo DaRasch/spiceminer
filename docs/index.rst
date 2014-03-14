@@ -8,11 +8,12 @@
 spiceminer documentation
 ========================
 
-This package is a high level python wrapper around the SPICE c-library provided
-by NASA to store and analyse operational data from several space missions. It
-concentrates on an easy to use API for analysing the data.
+The spiceminer package is a high level python wrapper around
+`NASAs CSPICE library <http://naif.jpl.nasa.gov/naif/>`_. It concentrates on
+an easy to use API for analysing the data and doesn't include features to
+manipulate or create data.
 
-You can get the source code `here <https://github.com/DaRasch/spiceminer>`_.
+`You can get the source code here <https://github.com/DaRasch/spiceminer>`_.
 
 Contents:
 
