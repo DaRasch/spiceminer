@@ -9,9 +9,18 @@ import numpy
 from ctypes import c_void_p, c_int, c_double, c_char, c_char_p
 from ctypes import cast, sizeof, byref, POINTER, Structure
 
-cwrapper = os.path.realpath(os.path.join(__file__, '..', 'libspice.*'))
-cwrapper = next(glob.iglob(cwrapper)) #TODO find better system independant alternative for glob
-del os, glob
+root = os.path.dirname(__file__)
+for suffix in ['so', 'dll']:
+    try:
+        cwrapper = os.path.realpath(os.path.join(root, 'libspice.' + suffix))
+    except OSError:
+        pass
+    else:
+        break
+if cwrapper is None:
+    raise ImportError("Can't find libspice c-library")
+#cwrapper = next(glob.iglob(cwrapper)) #TODO find better system independant alternative for glob
+del os, glob, root
 cspice = ctypes.CDLL(cwrapper)
 del cwrapper
 BITSIZE = {'char': sizeof(c_char), 'int': sizeof(c_int), 'double': sizeof(c_double)}

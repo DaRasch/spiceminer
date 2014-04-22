@@ -2,10 +2,14 @@
 
 import calendar
 
+import numpy as np
+
 from numpy import arccos, dot, cross, isnan, pi
 from numpy.linalg import norm
 
 __all__ = ['angle', 'clockwise_angle', 'frange', 'dtrange']
+
+UX, UY, UZ = np.identity(3)
 
 
 def angle(v0, v1, center=None):
@@ -35,7 +39,7 @@ def angle(v0, v1, center=None):
             return pi
     return radians
 
-def clockwise_angle(v0, v1, center=None):
+def clockwise_angle(v0, v1, center=None, up=None):
     '''Calculates the clockwise angle between 2 vectors (one-dimensional
     arrays). Always uses the clockwise angle, allowing angles greater than
     pi.
@@ -45,17 +49,35 @@ def clockwise_angle(v0, v1, center=None):
     :type v1: ``numpy.ndarray``
     :arg v1: A vector.
     :type center: ``numpy.ndarray``
-    :arg center: The point to use as zero-vector.
-    :return: (``float``) -- The angle between *v0* and *v1* in radians (0-pi).
-    :raises: Nothing.
+    :arg center: The point around which the angle is calculated.
+      **Default:** [0,0,0]
+    :type up: ``numpy.array``
+    :arg up: The vector defining which side of the plane defined by *v0* and
+      *v1* is up.
+      **Default:** [0,0,1]
+    :return: (``float``) -- The clockwise angle between *v0* and *v1* around
+      *center* in radians.
+    :raises:
+      (``ValueError``) -- If *up* lies in the plane formed by *v0* and *v1*.
     '''
     radians = angle(v0, v1, center)
-    more_than_half = cross(v0, v1)[2] > 0
-    # Use different calculation if angle is more than pi radians
-    if more_than_half:
-        return 2 * pi - radians
+    if up is None:
+        up = UZ
     else:
+        up = up / norm(up)
+    normal = cross(v0, v1)
+    normal = normal / norm(normal)
+    direction = dot(up, normal)
+    if direction > 0:
+        # Angle greater pi
+        return 2 * pi - radians
+    elif direction < 0:
+        # Angle smaller pi
         return radians
+    else:
+        # If the angle between up and normal is pi/2 (up 'dot' normal == 0), it
+        # is impossible to decide which way is clockwise
+        raise ValueError('Bad up-vector: ' + str(up))
 
 
 ### Some range-functions for easier usage of bodies.Body.state() etc. ###
