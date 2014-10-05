@@ -37,7 +37,7 @@ class SpiceError(Exception):
 
 ### helper classes/functions ###
 def _char_getter(data_p, index, length):
-    return (c_char * length).from_address(data_p + index * BITSIZE['char']).value
+    return (c_char * length).from_address(data_p + index * length * BITSIZE['char']).value
 def _double_getter(data_p, index, length):
     return c_double.from_address(data_p + index * BITSIZE['double']).value
 def _int_getter(data_p, index, length):
