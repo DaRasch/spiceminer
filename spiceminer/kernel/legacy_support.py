@@ -8,7 +8,7 @@ from .. import bodies
 from .. import _spicewrapper as spice
 from .._helpers import ignored
 
-__all__ = ['get', 'LOADED_KERNELS', 'LOADED_OBJECTS', 'OBJECTS', 'POS_WINDOWS', 'ROT_WINDOWS']
+__all__ = ['LOADED_KERNELS', 'LOADED_OBJECTS', 'OBJECTS', 'POS_WINDOWS', 'ROT_WINDOWS']
 
 
 # Mixins providing functionality for proxy classes

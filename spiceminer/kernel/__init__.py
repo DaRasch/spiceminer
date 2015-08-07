@@ -5,6 +5,7 @@ from .highlevel import Kernel
 
 # Legacy support (DEPRECATED)
 from .legacy_support import *
+from ..bodies import get
 
 
 def load(path='.', recursive=True, followlinks=False):

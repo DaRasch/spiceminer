@@ -4,13 +4,14 @@ import collections
 import numbers
 import numpy
 
-import spiceminer._spicewrapper as spice
+from . import _spicewrapper as spice
 
 from .time_ import Time
 from ._helpers import ignored
+from .kernel.highlevel import Kernel
 
-__all__ = ['Body', 'Asteroid', 'Barycenter', 'Comet', 'Instrument', 'Planet',
-           'Satellite', 'Spacecraft', 'Star']
+__all__ = ['get', 'Body', 'Asteroid', 'Barycenter', 'Comet', 'Instrument',
+            'Planet', 'Satellite', 'Spacecraft', 'Star']
 
 
 ### Helper ###
@@ -18,6 +19,34 @@ def _iterbodies(start, stop, step=1):
     for i in xrange(start, stop, step):
         with ignored(ValueError):
             yield Body(i)
+
+### Public API ###
+def get(body):
+    '''Get an entity by name or ID.
+
+    :type body: ``str|int``
+    :arg body: Name or ID of the entity to get.
+
+    :return: (:py:class:`~spiceminer.bodies.Body`) -- Representation of the
+      requested entity.
+    :raises:
+      (``ValueError``) -- If the provided name/ID doesn't reference a loaded
+      body.
+
+      (``TypeError``) -- If ``body`` is neither a string nor an integer.
+    '''
+    if isinstance(body, basestring):
+        body = spice.bodn2c(body)
+        if body is None:
+            raise ValueError('get() got invalid name {}'.format(body))
+    elif not isinstance(body, int):
+        msg = 'get() integer or str argument expected, got {}'
+        raise TypeError(msg.format(type(body)))
+    if body in set.union(set(), *(k.ids for k in Kernel.LOADED)):
+        return Body(body_id)
+    else:
+        msg = 'get() no loaded Body with ID or name {}'
+        raise ValueError(msg.format(body))
 
 
 class Body(object):
@@ -287,6 +316,13 @@ class Body(object):
             target = target._frame or destination.name
         return numpy.array(spice.pxform(self._frame or self.name, target,
             Time.fromposix(time).et())).reshape(3, 3)
+
+    def time_window_position(self):
+        return Kernel.TIMEWINDOWS_POS[self.id]
+
+    def time_window_rotation(self):
+        return Kernel.TIMEWINDOWS_ROT[self.id]
+
 
 
 class Asteroid(Body):
