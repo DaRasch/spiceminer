@@ -65,10 +65,7 @@ class LoadedKernelProxy(ProxyDictMixin):
 
 class LoadedObjectProxy(ProxyContainerMixin):
     def _proxy(self):
-        result = set()
-        for k in Kernel.LOADED:
-            result.update(k.ids)
-        return result
+        return set.union(set(), *(k.ids for k in Kernel.LOADED))
 
 
 class ObjectProxy(ProxyDictMixin):
@@ -101,28 +98,3 @@ OBJECTS = ObjectProxy()
 POS_WINDOWS = PosWindowProxy()
 #: (``defaultdict(list)``) -- All time windows for all loaded pck/ch-kernels.
 ROT_WINDOWS = RotWindowProxy()
-
-
-def get(body):
-    '''Get an entity by name or ID.
-    **DEPRECATED** Use bodies.get() instead.
-
-    :type body: ``str|int``
-    :arg body: Name or ID of the entity to get.
-
-    :return: (:py:class:`~spiceminer.bodies.Body`) -- Representation of the
-      requested entity.
-    :raises:
-      (``ValueError``) -- If the provided name/ID doesn't reference an entity.
-
-      (``TypeError``) -- If ``body`` is neither a string nor an integer.
-    '''
-    if isinstance(body, basestring):
-        body_id = spice.bodn2c(body)
-        if body_id is not None:
-            return bodies.Body(body_id)
-        raise ValueError('get() got invalid name {}.'.format(body))
-    with ignored(TypeError):
-        return bodies.Body(body)
-    msg = 'get() integer or str argument expected, got {}.'
-    raise TypeError(msg.format(type(body)))

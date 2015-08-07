@@ -162,7 +162,7 @@ class Kernel:
                     extension = filter_extensions(name)
                     hashes.append(hash(''.join([name, extension])))
         # Unload collected kernel files.
-        hashmap = {hash(k): k for k in Kernel.LOADED}
+        hashmap = {hash(k): k for k in cls.LOADED}
         for key in hashes:
             hashmap[key]._unload()
         return len(hashes)

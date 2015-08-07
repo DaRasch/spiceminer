@@ -14,7 +14,7 @@ __all__ = ['get', 'Body', 'Asteroid', 'Barycenter', 'Comet', 'Instrument',
             'Planet', 'Satellite', 'Spacecraft', 'Star']
 
 
-### Helper ###
+### Helpers ###
 def _iterbodies(start, stop, step=1):
     for i in xrange(start, stop, step):
         with ignored(ValueError):
