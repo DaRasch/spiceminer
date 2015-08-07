@@ -5,8 +5,8 @@ import os
 
 from collections import defaultdict
 
-from .lowlevel import load_any, filter_extensions, VALID_BODY_KERNEL_EXT
-from .._helpers import cleanpath, iterable_path, TimeWindows
+from .lowlevel import load_any, unload_any, filter_extensions, VALID_BODY_KERNEL_EXT
+from .._helpers import ignored, cleanpath, iterable_path, TimeWindows
 
 __all__ = ['Kernel']
 
@@ -24,17 +24,17 @@ class Kernel:
         if hash(self) in (hash(k) for k in self.__class__.LOADED) and not force_reload:
             msg = "Kernel with name '{}' and extension '{}' is already loaded"
             raise ValueError(msg.format(self.name, self.extension))
-        self.__class__.LOADED.add(self)
         # Load the kernel and handle time windows
-        self.type, self._intervals = load_any(path, ext) #load() -> str, ID : List[_Interval]
+        self.type, self._intervals = load_any(path, extension)
         self.ids = frozenset(self._intervals.keys())
         if self.type == 'pos':
             dest = self.__class__.TIMEWINDOWS_POS
         elif self.type == 'rot':
             dest = self.__class__.TIMEWINDOWS_ROT
-        for key, vals in self._intervals:
-            for val in vals:
-                dest[key] += val
+        for key, vals in self._intervals.iteritems():
+            dest[key] += vals
+        # Make self available for unloading
+        self.__class__.LOADED.add(self)
 
     def _unload(self):
         self.__class__.LOADED.remove(self)
@@ -43,9 +43,8 @@ class Kernel:
         elif self.type == 'rot':
             dest = self.__class__.TIMEWINDOWS_ROT
         for key, vals in self._intervals:
-            for val in vals:
-                dest[key] += val
-        unload_any(self.path)
+            dest[key] -= val
+        unload_any(self.path, self.extension)
 
     def __hash__(self):
         return hash(''.join([self.name, self.extension]))
@@ -91,11 +90,10 @@ class Kernel:
         # Find and sort kernel files.
         body_kernels = []
         misc_kernels = []
-        walker = iterable_path(path, recursive, followlinks)
-        for curdir, dirs, fnames in walker:
+        for curdir, _, fnames in iterable_path(path, recursive, followlinks):
             for name in fnames:
                 with ignored(ValueError):
-                    extension = _filter_extensions(name)
+                    extension = filter_extensions(name)
                     filepath = os.path.join(curdir, name)
                     # Split kernels into those containing bodies and others
                     if extension in VALID_BODY_KERNEL_EXT:
@@ -123,9 +121,9 @@ class Kernel:
             msg = 'load_single() expected a file path, got {}'
             raise ValueError(msg.format(path))
         if extension is not None:
-            extension = _filter_extensions(extension)
+            extension = filter_extensions(extension)
         else:
-            extension = _filter_extensions(path)
+            extension = filter_extensions(path)
         k = cls(path, extension, force_reload)
         return k.ids
 
@@ -154,16 +152,15 @@ class Kernel:
         '''
         path = cleanpath(path)
         if not os.path.exists(path):
-            msg = 'load() expected a valid file or directory path, got {}'
+            msg = 'unload() expected a valid file or directory path, got {}'
             raise ValueError(msg.format(path))
         # Find and sort kernel files.
         hashes = []
-        walker = iterable_path(path, recursive, followlinks)
-        for curdir, dirs, fnames in walker:
+        for _, _, fnames in iterable_path(path, recursive, followlinks):
             for name in fnames:
                 with ignored(ValueError):
-                    extension = _filter_extensions(name)
-                    hashes.append(hash(''.join(name, extension)))
+                    extension = filter_extensions(name)
+                    hashes.append(hash(''.join([name, extension])))
         # Unload collected kernel files.
         hashmap = {hash(k): k for k in Kernel.LOADED}
         for key in hashes:

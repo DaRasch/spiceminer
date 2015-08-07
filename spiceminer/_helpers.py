@@ -14,7 +14,7 @@ def ignored(*exceptions):
 
 
 def cleanpath(path):
-    os.path.abspath(os.realpath(os.path.expanduser(os.path.expandvars(path))))
+    return os.path.abspath(os.path.realpath(os.path.expanduser(os.path.expandvars(path))))
 
 def iterable_path(path, recursive, followlinks):
     if os.path.isfile(path):
@@ -27,7 +27,7 @@ def iterable_path(path, recursive, followlinks):
     return walker
 
 
-class TimeWindow:
+class TimeWindows:
     '''A sorted, immutable list of start-end-tuples.
      Necessary for storing information about times for known body
     rotation/position.
@@ -47,16 +47,21 @@ class TimeWindow:
         return iter(self._merged)
 
     def __str__(self):
-        return ''.join([self.__class__.__name__, str(self._merged)])
+        return '{}({})'.format(self.__class__.__name__, str(self._merged)[1:-1])
+
+    def __repr__(self):
+        return self.__str__()
 
     def __add__(self, other):
         if not isinstance(other, self.__class__):
-            raise TypeError()
+            msg = 'can only concatenate {}, got {}'
+            raise TypeError(msg.format(self.__class__.__name__, type(other)))
         return self.__class__(*(self.raw + other.raw))
 
     def __sub__(self, other):
         if not isinstance(other, self.__class__):
-            raise TypeError()
+            msg = 'can only cut {}, got {}'
+            raise TypeError(msg.format(self.__class__.__name__, type(other)))
         lst = self.raw
         for interval in other.raw:
             lst.remove(interval)

@@ -6,9 +6,12 @@ from collections import defaultdict
 from .highlevel import Kernel
 from .. import bodies
 from .. import _spicewrapper as spice
+from .._helpers import ignored
 
 __all__ = ['get', 'LOADED_KERNELS', 'LOADED_OBJECTS', 'OBJECTS', 'POS_WINDOWS', 'ROT_WINDOWS']
 
+
+# Mixins providing functionality for proxy classes
 class ProxyContainerMixin:
     def __iter__(self):
         return iter(self._proxy())
@@ -51,6 +54,7 @@ class ProxyDictMixin(ProxySequenceMixin):
         return list(self.iteritems())
 
 
+# Concrete Proxy classes
 class LoadedKernelProxy(ProxyDictMixin):
     def _proxy(self):
         dct = defaultdict(set)
@@ -72,6 +76,7 @@ class ObjectProxy(ProxyDictMixin):
         result = defaultdict(set)
         for k in Kernel.LOADED:
             result[k.path] = k.ids
+        return result
 
 
 class PosWindowProxy(ProxyDictMixin):
@@ -80,7 +85,7 @@ class PosWindowProxy(ProxyDictMixin):
 
 
 class RotWindowProxy(ProxyDictMixin):
-    def proxy(self):
+    def _proxy(self):
         return Kernel.TIMEWINDOWS_ROT
 
 

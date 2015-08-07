@@ -5,7 +5,7 @@ import re
 
 from .. import _spicewrapper as spice
 from ..time_ import Time
-from .._helpers import ignored, TimeWindow
+from .._helpers import ignored, TimeWindows
 
 
 VALID_BODY_KERNEL_EXT = ('sp', 'c', 'sc', 'pc', 'f')
@@ -26,6 +26,7 @@ def load_any(path, extension):
     loaders = {
         'sp': _load_sp,
         'c': _load_c,
+        'sc': _load_c,
         'pc': _load_pc,
         'f': _load_f
     }
@@ -34,6 +35,9 @@ def load_any(path, extension):
         objects = loaders[extension](path)
     spice.furnsh(path)
     return objects
+
+def unload_any(path, extension):
+    spice.unload(path)
 
 
 # Abstract loading mechanisms
@@ -49,23 +53,25 @@ def _loader_template_bin(getter_ids, getter_times, path):
         # Create new time windows
         windows = ((Time.fromet(et0), Time.fromet(et1))
             for et0, et1 in zip(_WINDOWS[::2], _WINDOWS[1::2]))
-        result[idcode] = TimeWindow(*windows)
+        result[idcode] = TimeWindows(*windows)
     return result
 
 def _loader_template_txt(regex, path):
     with open(path, 'r') as f:
-        idcodes = map(int, re.findall(regex, f.read()))
-        return {idcode: TimeWindow() for idcode in idcodes}
+        return {int(i): TimeWindows() for i in re.findall(regex, f.read())}
 
 
-# Condrete loaders for specific file formats
+# Concrete loaders for specific file formats
 def _load_sp(path):
     '''Load sp kernel and associated windows.'''
     _IDS.reset()
     kernel_type = 'pos'
     try:
         result = _loader_template_bin(spice.spkobj, spice.spkcov, path)
-    except spice.SpiceError:
+    except spice.SpiceError as e:
+        if 'needed to compute Delta ET' in e.message:
+            #TODO: find better way to distinguish errors
+            raise spice.spiceError('No leap second kernel loaded')
         # Parse text kernels seperately
         result = _loader_template_txt('BODY([-0-9]*)_PM', path)
     return kernel_type, result
