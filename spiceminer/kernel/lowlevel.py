@@ -71,7 +71,7 @@ def _load_sp(path):
     except spice.SpiceError as e:
         if 'needed to compute Delta ET' in e.message:
             #TODO: find better way to distinguish errors
-            raise spice.spiceError('No leap second kernel loaded')
+            raise spice.SpiceError('No leap second kernel loaded')
         # Parse text kernels seperately
         result = _loader_template_txt('BODY([-0-9]*)_PM', path)
     return kernel_type, result
