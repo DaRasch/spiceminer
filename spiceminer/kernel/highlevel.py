@@ -5,7 +5,7 @@ import os
 
 from collections import defaultdict
 
-from .lowlevel import load_any, unload_any, filter_extensions, VALID_BODY_KERNEL_EXT
+from .lowlevel import load_any, unload_any, filter_extensions, VALID_BODY_KERNEL_TYPES
 from .._helpers import ignored, cleanpath, iterable_path, TimeWindows
 
 __all__ = ['Kernel']
@@ -44,7 +44,7 @@ class Kernel:
             dest = self.__class__.TIMEWINDOWS_ROT
         for key, vals in self._intervals:
             dest[key] -= val
-        unload_any(self.path, self.extension)
+        unload_any(self)
 
     def __hash__(self):
         return hash(''.join([self.name, self.extension]))
@@ -96,7 +96,7 @@ class Kernel:
                     extension = filter_extensions(name)
                     filepath = os.path.join(curdir, name)
                     # Split kernels into those containing bodies and others
-                    if extension in VALID_BODY_KERNEL_EXT:
+                    if extension in VALID_BODY_KERNEL_TYPES:
                         body_kernels.append((filepath, extension))
                     else:
                         misc_kernels.append((filepath, extension))
@@ -121,7 +121,7 @@ class Kernel:
             msg = 'load_single() expected a file path, got {}'
             raise ValueError(msg.format(path))
         if extension is not None:
-            extension = filter_extensions(extension)
+            extension = filter_extensions('.' + extension)
         else:
             extension = filter_extensions(path)
         k = cls(path, extension, force_reload)
