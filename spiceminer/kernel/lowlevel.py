@@ -36,15 +36,36 @@ def filter_extensions(filename):
         If the extension is invalid (does not match `(b|t)(s?c|sp|f|ls|pc)$`).
     '''
     extension = (filename.rsplit('.', 1)[1:] or [''])[0]
-    match = re.match('(b|t)(s?c|sp|f|ls|pc)$', extension)
+    match = re.match('^(b|t)(s?c|sp|f|ls|pc)$', extension)
     if not match:
         msg = 'Invalid file extension, got {}'
-        raise ValueError(msg.format(extension))
+        raise ValueError(msg.format(filename))
     return match.string[1:]
 
-def load_any(path, extension):
-    '''Load **any** file and associated windows if necessary.'''
-    loaders = {
+def load_any(path, kernel_type):
+    '''Load any valid kernel file and associated windows if necessary.
+
+    Parameters
+    ----------
+    path: str
+        A path to an existing file.
+    kernel_type: str
+        A kernel type identifier defined in `VALID_KERNEL_TYPES`
+
+    Returns
+    -------
+    info_type: {'pos', 'rot', 'none'}
+        What kind of transformation information is provided by the kernel.
+    window_map: dict[int: list[tuple[Time, Time]]]
+        List of time windows for which the transformation information is
+        provided, mapped to the respective body id.
+    '''
+    if not os.path.isfile(path):
+        raise IOError(2, 'No such file', path)
+    if kernel_type not in VALID_KERNEL_TYPES:
+        msg = 'Invalid kernel type, expected one of {}, got {}'
+        raise ValueError(msg.format(VALID_KERNEL_TYPES, kernel_type))
+    loader = {
         'sp': _load_sp,
         'c': _load_c,
         'sc': _load_c,
@@ -88,7 +109,6 @@ def _load_dummy(path):
 def _load_sp(path):
     '''Load sp kernel and associated windows.'''
     _IDS.reset()
-    kernel_type = 'pos'
     try:
         result = _loader_template_bin(spice.spkobj, spice.spkcov, path)
     except spice.SpiceError as e:
@@ -102,14 +122,12 @@ def _load_sp(path):
 def _load_c(path):
     '''Load c kernel and associated windows.'''
     _IDS.reset()
-    kernel_type = 'rot'
     result = _loader_template_bin(spice.ckobj, spice.ckcov, path)
     return 'rot', result
 
 def _load_pc(path):
     '''Load pc kernel and associated windows.'''
     _IDS.reset()
-    kernel_type = 'rot'
     try:
         result = _loader_template_bin(spice.pckfrm, spice.ckcov, path)
     except spice.SpiceError:
