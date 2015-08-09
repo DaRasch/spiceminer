@@ -126,10 +126,10 @@ class Time(numbers.Real):
         :return: (:py:class:`~spiceminer.time_.Time`) -- New POSIX timestamp.
         :raises: (``ValueError``) -- If ``0 <= doy < (364 or 365)``
         '''
-        if not 0 <= doy < 364 + calendar.isleap(year):
+        if not 0 <= doy < 365 + calendar.isleap(year):
             msg = 'fromydoy() doy out of range, got {}'
             raise ValueError(msg.format(doy))
-        seconds = float(doy) * 86400
+        seconds = float(doy) * cls.DAY
         with _no_argcheck():
             instance = cls(int(year), second=seconds)
         return instance
