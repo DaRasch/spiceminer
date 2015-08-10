@@ -2,6 +2,7 @@
 
 import os
 
+import collections
 from contextlib import contextmanager
 
 
@@ -11,7 +12,6 @@ def ignored(*exceptions):
         yield
     except exceptions:
         pass
-
 
 def cleanpath(path):
     return os.path.abspath(os.path.realpath(os.path.expanduser(os.path.expandvars(path))))
@@ -27,9 +27,9 @@ def iterable_path(path, recursive, followlinks):
     return walker
 
 
-class TimeWindows:
+class TimeWindows(collections.Sequence):
     '''A sorted, immutable list of start-end-tuples.
-     Necessary for storing information about times for known body
+    Necessary for storing information about times for known body
     rotation/position.
     '''
     def __init__(self, *intervals):
@@ -41,10 +41,17 @@ class TimeWindows:
         return self._raw[:]
 
     def __getitem__(self, key):
-        return self._merged[key]
+        return self._merged.__getitem__(key)
 
-    def __iter__(self):
-        return iter(self._merged)
+    def __len__(self):
+        return self._merged.__len__()
+
+    # Inherits:
+    # __contains__
+    # __iter__
+    # __reversed__
+    # index
+    # count
 
     def __str__(self):
         return '{}({})'.format(self.__class__.__name__, str(self._merged)[1:-1])
@@ -64,23 +71,33 @@ class TimeWindows:
             raise TypeError(msg.format(self.__class__.__name__, type(other)))
         lst = self.raw
         for interval in other.raw:
-            lst.remove(interval)
+            with ignored(ValueError):
+                lst.remove(interval)
         return self.__class__(*lst)
+
+    def __eq__(self, other):
+        return other == self._merged
 
     @staticmethod
     def _merge(lst):
         '''Return a sorted list of non-overlapping start-end-tuples.'''
         if not lst:
             return []
-        lst = sorted(lst)
-        tmp = []
-        iterator = iter(lst)
-        old = next(iterator)
-        for new in iterator:
+        for i, item in enumerate(lst):
+            if not isinstance(item, collections.Sequence):
+                msg = 'Expected 2-tuples, but arg {} was {}'
+                raise TypeError(msg.format(i, item))
+            if not len(item) == 2:
+                msg = 'Expected 2-tuples, but arg {} was {}'
+                raise ValueError(msg.format(i, item))
+        lst = iter(sorted(lst))
+        result = []
+        old = next(lst)
+        for new in lst:
             if new[0] > old[1]:
-                tmp.append(old)
+                result.append(old)
                 old = new
             else:
                 old = (old[0], max(old[1], new[1]))
-        tmp.append(old)
-        return tmp
+        result.append(old)
+        return result
