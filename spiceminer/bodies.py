@@ -43,7 +43,7 @@ def get(body):
         msg = 'get() integer or str argument expected, got {}'
         raise TypeError(msg.format(type(body)))
     if body in set.union(set(), *(k.ids for k in Kernel.LOADED)):
-        return Body(body_id)
+        return Body(body)
     else:
         msg = 'get() no loaded Body with ID or name {}'
         raise ValueError(msg.format(body))
@@ -65,6 +65,8 @@ class Body(object):
     _CACHE = {}
     _ABCORR = 'NONE'
 
+    #TODO: implement Body.LOADED
+
     def __new__(cls, body_id, *args, **kwargs):
         if not isinstance(body_id, numbers.Integral):
             msg = 'Body() integer argument expected, got {}.'
@@ -85,7 +87,7 @@ class Body(object):
                 body = object.__new__(Satellite, body_id, *args, **kwargs)
         elif body_id == 10:
             # body = object.__new__(cls, 10, *args, **kwargs)
-            body = object.__new__(Planet, body_id, *args, **kwargs)
+            body = object.__new__(Star, body_id, *args, **kwargs)
         elif body_id >= 0:
             body = object.__new__(Barycenter, body_id, *args, **kwargs)
         elif body_id > -1000:
