@@ -90,6 +90,7 @@ def test_constructor_types(args):
 
 def gen_fromposix():
     yield pytest.mark.xfail(raises=TypeError)([1+2j, None])
+    # blackbox
     for i in range(8):
         posix = random.randint(-62135596800, 253370764800)
         yield posix, time.gmtime(posix)[:6]
@@ -102,11 +103,12 @@ def test_clsmeth_fromposix(posix, args):
 def gen_fromydoy():
     xfail_T = pytest.mark.xfail(raises=TypeError)
     xfail_V = pytest.mark.xfail(raises=ValueError)
+    yield xfail_T(([None, 200], None))
+    # day out of bounds
     yield xfail_V(([2000, -0.1], None))
     yield xfail_V(([2000, 366], None))
     yield xfail_V(([2001, 365], None))
-    yield xfail_T(([None, 200], None))
-    # day bounds
+    # day in bounds
     yield ([2000, 0], [2000])
     yield ([2000, 365 + (Time.DAY - 1.0) / Time.DAY], [2000, 12, 31, 23, 59, 59])
     yield ([2001, 364 + (Time.DAY - 1.0)  / Time.DAY], [2001, 12, 31, 23, 59, 59])
@@ -120,33 +122,40 @@ def gen_fromydoy():
         yield ydoy, args
 
 @pytest.mark.parametrize('ydoy,args', gen_fromydoy())
-def test_clsmeth_fromydoy2(ydoy, args):
+def test_clsmeth_fromydoy(ydoy, args):
     assert Time.fromydoy(*ydoy) == Time(*args)
 
 
-def test_clsmeth_fromdatetime():
-    pytest.raises(AttributeError, Time.fromdatetime, None)
-    assert Time.fromdatetime(dt.datetime(2000, 1, 1) + dt.timedelta(0, 0.4)) == Time(2000, second=0.4)
+def gen_fromdatetime():
+    # blackbox
+    for i in range(8):
+        year = random.randint(1, 9999)
+        month = random.randint(1, 12)
+        day = random.randint(1, 28)
+        hour = random.randint(1, 23)
+        minute = random.randint(1, 59)
+        second = random.randint(1, 59)
+        msec = random.random()
+        arg = dt.datetime(year, month, day, hour, minute, second) + dt.timedelta(0, msec)
+        expected = [year, month, day, hour, minute, second + msec]
+        yield arg, expected
+
+@pytest.mark.parametrize('arg,expected', gen_fromdatetime())
+def test_clsmeth_fromdatetime(arg, expected):
+    diff = 10e-5
+    expected = Time(*expected)
+    assert (expected - diff) < Time.fromdatetime(arg) < (expected + diff)
 
 
 ### Comparisons ###
-@pytest.fixture(scope='module')
-def times():
-    return (Time(), Time(2000), dt.datetime(1970, 1, 1),
-        dt.datetime(2000, 1, 1), dt.date(1970, 1, 1), dt.date(2000, 1, 1))
+def gen_eq():
+    for comp in [Time(), float(Time()), dt.datetime(1970, 1, 1), dt.date(1970, 1, 1)]:
+        yield {}, comp
 
-def test_eq(times):
-    time, dtime, ddate = times[::2]
-    assert time == Time()
-    assert time == dtime
-    assert dtime == time
-    assert time == ddate
-    assert ddate == time
+@pytest.mark.parametrize('args,comp', gen_eq())
+def test_eq(args, comp):
+    assert Time(**args) == comp
 
-def test_lt(times):
-    time0, time1, dtime0, dtime1, ddate0, ddate1 = times
-    assert time0 < time1
-    assert time0 < dtime1
-    assert dtime0 < time1
-    assert time0 < ddate1
-    assert ddate0 < time1
+@pytest.mark.parametrize('args,comp', (({'year': 1969}, comp) for _, comp in gen_eq()))
+def test_eq(args, comp):
+    assert Time(**args) < comp
