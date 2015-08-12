@@ -2,58 +2,86 @@
 
 import pytest
 
-
 import datetime as dt
+import itertools as itt
 
 import numpy as np
 
-from spiceminer import extra
+import spiceminer.extra as extra
 
-def test_angle():
-    x = np.array([1, 0, 0])
-    y = np.array([0, 1, 0])
-    assert extra.angle(x, y) == np.pi / 2
-    assert extra.angle(x, x) == 0.0
-    assert extra.angle(x, -x) == np.pi
 
-def test_frange():
-    with pytest.raises(TypeError):
-        extra.frange()
-    with pytest.raises(TypeError):
-        extra.frange(0, 8, 2, 4)
-    with pytest.raises(ValueError):
-        extra.frange('a')
-    with pytest.raises(TypeError):
-        extra.frange(None)
-    assert list(extra.frange(0)) == []
-    assert list(extra.frange(8, 0)) == []
-    assert list(extra.frange(0, 8, -1)) == []
-    assert list(extra.frange(8, 0, -1)) == [8, 7, 6, 5, 4, 3, 2, 1]
-    assert list(extra.frange(8.4)) == [0, 1, 2, 3, 4, 5, 6, 7, 8]
-    assert list(extra.frange(4.8, 8.4)) == [4.8, 5.8, 6.8, 7.8]
-    assert list(extra.frange(4.8, 8.4, 1.2)) == [4.8, 6.0, 7.2]
-    assert list(extra.frange('0', '8', '2')) == [0, 2, 4, 6]
+def gen_angle():
+    x, y, z = np.random.random((3, 3)) * np.identity(3) * 10
+    # test orthogonal vectors
+    for v0, v1 in itt.permutations((x, y, z), 2):
+        yield v0, v1, np.pi / 2
+    # test parallel vectors
+    for v in (x, y, z, x + y, y + z, z + x):
+        yield v, v, 0
+        yield v, -v, np.pi
 
-def test_dtrange():
+@pytest.mark.parametrize('v0, v1, expected', gen_angle())
+def test_angle(v0, v1, expected):
+    diff = 10e-5
+    assert (expected - diff) < extra.angle(v0, v1) < (expected + diff)
+
+
+def gen_frange():
+    # errors
+    yield pytest.mark.xfail(raises=TypeError)(([], None))
+    yield pytest.mark.xfail(raises=TypeError)((np.random.random(4), None))
+    yield pytest.mark.xfail(raises=TypeError)(([None], None))
+    yield pytest.mark.xfail(raises=ValueError)((['None'], None))
+    # 1 arg (stop)
+    yield [-6], []
+    yield [0], []
+    yield [0.5], [0]
+    yield [1], [0]
+    yield [7], list(range(7))
+    yield [3.5], [0, 1, 2 ,3]
+    yield ['2.6'], [0, 1, 2]
+    # 2 args (start, stop)
+    yield [8, 0], []
+    yield [-4, 0], list(range(-4 , 0))
+    yield [0, 3], [0, 1, 2]
+    yield [0, -9], []
+    yield [0.5, 2.4], [0.5, 1.5]
+    yield [3.7, 1.6], []
+    # 3 args (start, stop, step)
+    yield [4.8, 8.4, 1.2], [4.8, 6.0, 7.2]
+    yield [8.4, 4.8, -1.2], [8.4, 7.2, 6.0]
+
+@pytest.mark.parametrize('args,expected', gen_frange())
+def test_range(args, expected):
+    assert list(extra.frange(*args)) == expected
+
+def gen_dtrange():
     zero = dt.datetime(1970, 1, 1)
     eight = dt.datetime(1970, 1, 1, 0, 0, 8)
     eight_four = dt.datetime(1970, 1, 1, 0, 0, 8) + dt.timedelta(0, 0.4)
-    print eight_four.microsecond
     four_eight = dt.datetime(1970, 1, 1, 0, 0, 4) + dt.timedelta(0, 0.8)
     neg_one = dt.timedelta(0, -1)
     one_two = dt.timedelta(0, 1.2)
-    with pytest.raises(TypeError):
-        extra.dtrange()
-    with pytest.raises(TypeError):
-        extra.dtrange(0, 8, 2, 4)
-    with pytest.raises(AttributeError):
-        extra.dtrange('a')
-    with pytest.raises(TypeError):
-        extra.frange(None)
-    assert list(extra.dtrange(zero)) == []
-    assert list(extra.dtrange(eight, zero)) == []
-    assert list(extra.dtrange(zero, eight, neg_one)) == []
-    assert list(extra.dtrange(eight, zero, neg_one)) == [8, 7, 6, 5, 4, 3, 2, 1]
-    assert list(extra.dtrange(eight_four)) == [0, 1, 2, 3, 4, 5, 6, 7, 8]
-    assert list(extra.dtrange(four_eight, eight_four)) == [4.8, 5.8, 6.8, 7.8]
-    assert list(extra.dtrange(four_eight, eight_four, one_two)) == [4.8, 6.0, 7.2]
+    yield pytest.mark.xfail(raises=TypeError)(([], None))
+    yield pytest.mark.xfail(raises=TypeError)(([eight, zero, neg_one, one_two], None))
+    yield pytest.mark.xfail(raises=TypeError)((['a'], None))
+    yield pytest.mark.xfail(raises=TypeError)(([None], None))
+    # 1 arg (stop)
+    yield [neg_one], []
+    yield [zero], []
+    yield [one_two], [0, 1]
+    yield [eight], list(range(8))
+    # 2 args (start, stop)
+    yield [eight, zero], []
+    yield [neg_one, one_two], [-1, 0, 1]
+    yield [zero, eight], list(range(8))
+    yield [zero, neg_one], []
+    yield [one_two, four_eight], [1.2, 2.4, 3.6]
+    yield [four_eight, one_two], []
+    # 3 args (start, stop, step)
+    yield [four_eight, eight_four, one_two], [4.8, 6.0, 7.2]
+    yield [eight_four, four_eight, neg_one], [8.4, 7.4, 6.4, 5.4]
+
+@pytest.mark.parametrize('args,expected', gen_dtrange())
+def test_dtrange(args, expected):
+    assert list(extra.dtrange(*args)) == expected
