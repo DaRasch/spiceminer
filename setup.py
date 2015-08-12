@@ -47,7 +47,7 @@ class NewTestCommand(Command):
         errno = pytest.main(self.user_options)
         sys.exit(errno)
     def use_fallback(self):
-        test_script = os.path.join(ROOT_DIR, 'test', 'runtests.py')
+        test_script = 'runtests.py'
         errno = subprocess.call([sys.executable, test_script])
         sys.exit(errno)
     def run(self):
@@ -58,8 +58,8 @@ class NewTestCommand(Command):
             sys.exit(errno)
         try:
             import pytest
-            if pytest.__version__ < '2.3':
-                print('WARNING: Using fallback (pytest version < 2.3).')
+            if pytest.__version__ < '2.6.1':
+                print('WARNING: Using fallback (pytest version < 2.6.1).')
                 self.use_fallback()
             else:
                 self.use_pytest()
