@@ -9,4 +9,4 @@ from .extra import angle, frange, dtrange
 
 __all__ = ['kernel', 'get', 'Time', 'SpiceError', 'frange', 'dtrange']
 
-__version__ = '0.0.1'
+__version__ = '0.1.0'
