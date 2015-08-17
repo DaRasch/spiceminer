@@ -8,8 +8,8 @@ import re
 import subprocess
 
 try:
-    from setuptools import setup, Extension
-    from setuptools.command.test import test as Command
+    from setuptools import setup, Extension, Command
+    #from setuptools.command.test import test as Command
     has_setuptools = True
 except ImportError:
     from distutils.core import setup, Extension, Command
@@ -42,13 +42,13 @@ class NewTestCommand(Command):
         self.test_suite = True
     def finalize_options(self):
         pass
-    def use_pytest(self):
+    def use_pytest(self, argv):
         import pytest
-        errno = pytest.main(self.user_options)
+        errno = pytest.main(*argv)#self.user_options)
         sys.exit(errno)
-    def use_fallback(self):
+    def use_fallback(self, argv):
         test_script = 'runtests.py'
-        errno = subprocess.call([sys.executable, test_script])
+        errno = subprocess.call([sys.executable, test_script] + argv)
         sys.exit(errno)
     def run(self):
         setup = os.path.realpath(__file__)
@@ -56,16 +56,17 @@ class NewTestCommand(Command):
             [sys.executable, setup, 'build_ext', '--inplace'])
         if errno:
             sys.exit(errno)
+        argv = sys.argv[sys.argv.index('test') + 1:]
         try:
             import pytest
             if pytest.__version__ < '2.6.1':
                 print('WARNING: Using fallback (pytest version < 2.6.1).')
-                self.use_fallback()
+                self.use_fallback(argv)
             else:
-                self.use_pytest()
+                self.use_pytest(argv)
         except ImportError:
             print('WARNING: Using fallback (pytest not available).')
-            self.use_fallback()
+            self.use_fallback(argv)
 
 
 ### METADATA ###
@@ -107,7 +108,7 @@ metadata = {
 # setuptools only arguments
 if has_setuptools:
     metadata.update({
-    'tests_require': ['pytest>=2.3']
+    'tests_require': ['pytest>=2.6.1']
 })
 
 
