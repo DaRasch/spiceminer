@@ -116,7 +116,10 @@ def _load_sp(path):
             #TODO: find better way to distinguish errors
             raise spice.SpiceError('No leap second kernel loaded')
         # Parse text kernels seperately
-        result = _loader_template_txt('BODY([-0-9]*)_PM', path)
+        with ignored(IOError):
+            result = _loader_template_txt('BODY([-0-9]*)_PM', path)
+        if result == {}:
+            raise e
     return 'pos', result
 
 def _load_c(path):
@@ -130,12 +133,21 @@ def _load_pc(path):
     _IDS.reset()
     try:
         result = _loader_template_bin(spice.pckfrm, spice.ckcov, path)
-    except spice.SpiceError:
+    except spice.SpiceError as e:
+        if 'needed to compute Delta ET' in e.message:
+            #TODO: find better way to distinguish errors
+            raise spice.SpiceError('No leap second kernel loaded')
         # Parse text kernels seperately
-        result = _loader_template_txt('BODY([-0-9]*)_PM', path)
+        with ignored(IOError):
+            result = _loader_template_txt('BODY([-0-9]*)_PM', path)
+        if result == {}:
+            raise e
     return 'rot', result
 
 def _load_f(path):
     '''Load f kernel.'''
     result = _loader_template_txt('FRAME([-0-9]*)_NAME', path)
+    if not result:
+        msg = 'Not a valid frame kernel: {}'
+        raise spice.SpiceError(msg.format(path))
     return 'pos', result
