@@ -60,8 +60,10 @@ def gen_dtrange():
     eight = dt.datetime(1970, 1, 1, 0, 0, 8)
     eight_four = dt.datetime(1970, 1, 1, 0, 0, 8) + dt.timedelta(0, 0.4)
     four_eight = dt.datetime(1970, 1, 1, 0, 0, 4) + dt.timedelta(0, 0.8)
-    neg_one = dt.timedelta(0, -1)
-    one_two = dt.timedelta(0, 1.2)
+    neg_one = zero + dt.timedelta(0, -1)
+    one_two = zero + dt.timedelta(0, 1.2)
+    neg_one_td = dt.timedelta(0, -1)
+    one_two_td = dt.timedelta(0, 1.2)
     yield pytest.mark.xfail(raises=TypeError)(([], None))
     yield pytest.mark.xfail(raises=TypeError)(([eight, zero, neg_one, one_two], None))
     yield pytest.mark.xfail(raises=TypeError)((['a'], None))
@@ -76,11 +78,11 @@ def gen_dtrange():
     yield [neg_one, one_two], [-1, 0, 1]
     yield [zero, eight], list(range(8))
     yield [zero, neg_one], []
-    yield [one_two, four_eight], [1.2, 2.4, 3.6]
+    yield [one_two, four_eight], [1.2, 2.2, 3.2, 4.2]
     yield [four_eight, one_two], []
     # 3 args (start, stop, step)
-    yield [four_eight, eight_four, one_two], [4.8, 6.0, 7.2]
-    yield [eight_four, four_eight, neg_one], [8.4, 7.4, 6.4, 5.4]
+    yield [four_eight, eight_four, one_two_td], [4.8, 6.0, 7.2]
+    yield [eight_four, four_eight, neg_one_td], [8.4, 7.4, 6.4, 5.4]
 
 @pytest.mark.parametrize('args,expected', gen_dtrange())
 def test_dtrange(args, expected):

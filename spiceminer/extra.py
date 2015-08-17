@@ -168,7 +168,13 @@ def dtrange(*args):
     '''
     def _datetimemutator(args):
         for arg in args[:2]:
-            yield float(calendar.timegm(
-                arg.utctimetuple())) + (arg.microsecond / 1000000.0)
-        yield args[2].total_seconds()
+            try:
+                yield float(calendar.timegm(
+                    arg.utctimetuple())) + (arg.microsecond / 1000000.0)
+            except AttributeError:
+                raise TypeError('expected datetime, got {}'.format(type(arg)))
+        try:
+            yield args[2].total_seconds()
+        except AttributeError:
+            raise TypeError('expected timedelta, got {}'.format(type(arg)))
     return _meta_range(args, _datetimemutator, 'dtrange')
