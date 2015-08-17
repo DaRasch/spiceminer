@@ -17,7 +17,7 @@ def gen_ignored():
 @pytest.mark.parametrize('errors', gen_ignored())
 def test_ignored(errors):
     for error in errors:
-        with ignored(*errors):
+        with _helpers.ignored(*errors):
             raise error()
 
 
