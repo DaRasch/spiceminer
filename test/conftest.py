@@ -16,7 +16,6 @@ PKG_ROOT = os.path.realpath(os.path.join(__file__, '..', '..'))
 DATA_DIR = os.getenv('SPICEMINERDATA', os.path.join(PKG_ROOT, 'data'))
 if not os.path.isdir(DATA_DIR):
     DATA_DIR = None
-print DATA_DIR
 
 def _iter_files(root):
     if not root:
@@ -31,13 +30,12 @@ def _iter_files(root):
             except ValueError:
                 pass
 
-DATA_FILES = list(itt.islice(_iter_files(DATA_DIR), 10)) or [None]
+DATA_FILES = list(itt.islice(_iter_files(DATA_DIR), 10)) #or [None]
 
 
 
 def pytest_namespace():
-    return {#'datadir': DATA_DIR,
-    'needs_datafiles': pytest.mark.skipif(DATA_FILES == [None], reason='No data in data directory. [{}]'.format(DATA_DIR))}
+    return {'needs_datafiles': pytest.mark.skipif(not DATA_FILES, reason='No data in data directory. [{}]'.format(DATA_DIR))}
 
 
 ### Fixtures ###
@@ -49,14 +47,14 @@ def datadir():
 
 @pytest.fixture(scope='session')
 def datafiles(datadir):
-    if DATA_FILES == [None]:
+    if not DATA_FILES:
         pytest.skip('No data in data directory. [{}]'.format(datadir))
     return DATA_FILES
 
 @pytest.fixture(scope='session', params=DATA_FILES, ids=[f.path for f in DATA_FILES])
 def kernelfile(request):
-    if request.param is None:
-        pytest.skip('No data in data directory. [{}]'.format(datadir))
+    #if request.param is None:
+    #    pytest.skip('No data in data directory. [{}]'.format(datadir))
     return request.param
 
 @pytest.yield_fixture(scope='function')
