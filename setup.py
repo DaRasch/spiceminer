@@ -69,6 +69,15 @@ class NewTestCommand(Command):
             self.use_fallback(argv)
 
 
+### FIND ALL SUB-PACKAGES ###
+def iter_packages(root):
+    ignore = len(os.path.dirname(root)) + 1
+    for path, _, files in os.walk(root):
+        if '__init__.py' in files:
+            yield '.'.join(path[ignore:].split(os.path.sep))
+PACKAGES = list(iter_packages(os.path.join(ROOT_DIR, PROJECT_NAME)))
+
+
 ### METADATA ###
 with open(os.path.join(ROOT_DIR, PROJECT_NAME, '__init__.py')) as f:
     version = re.search("__version__ = '([^']+)'", f.read()).group(1)
@@ -90,7 +99,7 @@ metadata = {
     'download_url': 'https://github.com/DaRasch/spiceminer/archive/master.zip',
     'platforms': 'any',
     'license': license,
-    'packages': [PROJECT_NAME],
+    'packages': PACKAGES,
     'ext_modules': [cwrapper],
     'requires': ['numpy'],
     'cmdclass': {'test': NewTestCommand},
