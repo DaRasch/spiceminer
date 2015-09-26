@@ -58,8 +58,9 @@ def generate_filenames():
 def test_filter_extensions(filename):
     assert lowlevel.filter_extensions(filename) in lowlevel.VALID_KERNEL_TYPES
 
-
 def test_load_any(kernelfile):
+    if kernelfile.path.endswith('.bc'):
+        pytest.xfail(reason='.bc files require a loaded sc kernel')
     info, time_window_map = lowlevel.load_any(*kernelfile)
     assert info in ['pos', 'rot', 'none']
     assert isinstance(time_window_map, dict)
@@ -78,6 +79,7 @@ def test_unload_any():
 @pytest.mark.parametrize('path', ['.'])
 def test_load_dummy(path):
     assert lowlevel._load_dummy(path) == ('none', {})
+
 
 def _abstract_loader_fixture(request, kernelfile, types):
     if kernelfile.type in types:
@@ -100,9 +102,9 @@ def test_load_sp(sp_file):
 # c/sc
 @pytest.fixture
 def c_file(request, kernelfile):
-    return _abstract_loader_fixture(request, kernelfile, ['c', 'sc'])
+    return _abstract_loader_fixture(request, kernelfile, ['c'])
 
-@pytest.mark.usefixtures('with_leapseconds')
+@pytest.mark.usefixtures('with_leapseconds', 'with_spacecraftclock')
 def test_load_c(c_file):
     info_type, time_window_map = lowlevel._load_c(c_file)
     assert info_type == 'rot'
@@ -119,7 +121,7 @@ def test_load_pc(pc_file):
     assert info_type == 'rot'
     assert time_window_map != {}
 
-# pc
+# f
 @pytest.fixture
 def f_file(request, kernelfile):
     return _abstract_loader_fixture(request, kernelfile, ['f'])

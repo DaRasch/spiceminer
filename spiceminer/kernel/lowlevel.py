@@ -9,9 +9,9 @@ from ..time_ import Time
 from .._helpers import ignored, TimeWindows
 
 #: All possible type identifiers for kernels containing body transformation info.
-VALID_BODY_KERNEL_TYPES = ('sp', 'c', 'sc', 'pc', 'f')
+VALID_BODY_KERNEL_TYPES = ('sp', 'c', 'pc', 'f')
 #: All possible type identifiers for kernels not containing body transformation info.
-VALID_MISC_KERNEL_TYPES = ('ls',)
+VALID_MISC_KERNEL_TYPES = ('ls', 'sc')
 #: All possible kernel type identifiers.
 VALID_KERNEL_TYPES = VALID_BODY_KERNEL_TYPES + VALID_MISC_KERNEL_TYPES
 
@@ -68,7 +68,6 @@ def load_any(path, kernel_type):
     loader = {
         'sp': _load_sp,
         'c': _load_c,
-        'sc': _load_c,
         'pc': _load_pc,
         'f': _load_f
     }.get(kernel_type, _load_dummy)
@@ -117,7 +116,7 @@ def _load_sp(path):
             raise spice.SpiceError('No leap second kernel loaded')
         # Parse text kernels seperately
         with ignored(IOError):
-            result = _loader_template_txt('BODY([-0-9]*)_PM', path)
+            result = _loader_template_txt('BODY_?([-0-9]+)_PM', path)
         if result == {}:
             raise e
     return 'pos', result
@@ -139,15 +138,15 @@ def _load_pc(path):
             raise spice.SpiceError('No leap second kernel loaded')
         # Parse text kernels seperately
         with ignored(IOError):
-            result = _loader_template_txt('BODY([-0-9]*)_PM', path)
+            result = _loader_template_txt('BODY_?([-0-9]+)_PM', path)
         if result == {}:
             raise e
     return 'rot', result
 
 def _load_f(path):
     '''Load f kernel.'''
-    result = _loader_template_txt('FRAME([-0-9]*)_NAME', path)
+    result = _loader_template_txt('FRAME_?([-0-9]+)_NAME', path)
     if not result:
-        msg = 'Not a valid frame kernel: {}'
+        msg = 'Empty frame kernel: {}'
         raise spice.SpiceError(msg.format(path))
     return 'pos', result

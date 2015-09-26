@@ -26,12 +26,13 @@ def _iter_files(root):
             try:
                 # FIXME remove dependency on internal spiceminer code
                 kernel_type = kernel.lowlevel.filter_extensions(name)
+                print kernel_type
                 yield kfile(os.path.join(dir_path, name), kernel_type)
-            except ValueError:
+            except ValueError as e:
                 pass
+                print e
 
-DATA_FILES = list(itt.islice(_iter_files(DATA_DIR), 10)) #or [None]
-
+DATA_FILES = list(itt.islice(_iter_files(DATA_DIR), 100))
 
 
 def pytest_namespace():
@@ -65,6 +66,18 @@ def with_leapseconds(datafiles):
             break
     else:
         pytest.skip('No leap seconds kernel available')
+    yield
+    kernel.unload(item.path)
+
+@pytest.yield_fixture(scope='function')
+def with_spacecraftclock(datafiles):
+    for item in datafiles:
+        print item.type
+        if item.type == 'sc':
+            kernel.load(item.path)
+            break
+    else:
+        pytest.skip('No spacecraft clock kernel available')
     yield
     kernel.unload(item.path)
 
