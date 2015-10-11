@@ -166,7 +166,6 @@ class Kernel(object):
                     hashes.append(hash(os.path.join(dir_path, name)))
         # Unload collected kernel files.
         hashmap = {hash(k): k for k in cls.LOADED}
-        print hashmap.keys()
         for key in hashes:
             with ignored(KeyError):
                 hashmap[key]._unload()
