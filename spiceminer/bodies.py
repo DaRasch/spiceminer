@@ -35,10 +35,13 @@ def get(body):
 
       (``TypeError``) -- If ``body`` is neither a string nor an integer.
     '''
-    if isinstance(body, basestring):
-        body = spice.bodn2c(body)
-        if body is None:
+    if isinstance(body, Body):
+        body = Body(body.id)
+    elif isinstance(body, basestring):
+        num = spice.bodn2c(body)
+        if num is None:
             raise ValueError('get() got invalid name {}'.format(body))
+        body = num
     elif not isinstance(body, int):
         msg = 'get() integer or str argument expected, got {}'
         raise TypeError(msg.format(type(body)))
