@@ -124,17 +124,20 @@ class Body(object):
     def id(self):
         '''The ID of this object.'''
         return self._id
+
     @property
     def name(self):
         '''The name of this object.'''
         return self._name
 
+    @property
     def parent(self):
         '''Get object, this :py:class:`~spiceminer.bodies.Body` is bound to (be
             it orbiting or physical attachment).
         '''
         return None
 
+    @property
     def children(self):
         '''Get objects bound to this :py:class:`~spiceminer.bodies.Body`.
         '''
@@ -370,6 +373,7 @@ class Instrument(Body):
     def __init__(self, body_id):
         super(Instrument, self).__init__(body_id)
 
+    @property
     def parent(self):
         offset = 0 if self.id % 1000 == 0 else -1
         spacecraft_id = self.id / 1000 + offset
@@ -386,9 +390,11 @@ class Planet(Body):
         super(Planet, self).__init__(body_id)
         self._frame = 'IAU_' + self._name
 
+    @property
     def parent(self):
         return Body(10)
 
+    @property
     def children(self):
         return list(_iterbodies(self.id - 98, self.id))
 
@@ -404,6 +410,7 @@ class Satellite(Body):
         super(Satellite, self).__init__(body_id)
         self._frame = 'IAU_' + self._name
 
+    @property
     def parent(self):
         return Body(self.id - self.id % 100 + 99)
 
@@ -416,6 +423,7 @@ class Spacecraft(Body):
     def __init__(self, body_id):
         super(Spacecraft, self).__init__(body_id)
 
+    @property
     def children(self):
         return list(_iterbodies(self.id * 1000, self.id * 1000 - 1000, -1))
 
@@ -428,8 +436,10 @@ class Star(Body):
         super(Star, self).__init__(body_id)
         self._frame = 'IAU_SUN'
 
+    @property
     def parent(self):
         return Body(0)
 
+    @property
     def children(self):
         return list(_iterbodies(199, 1000, 100))
