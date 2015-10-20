@@ -22,19 +22,26 @@ def _iterbodies(start, stop, step=1):
 
 ### Public API ###
 def get(body):
-    '''Get an entity by name or ID.
+    '''Get body by name or id.
 
-    :type body: ``str|int``
-    :arg body: Name or ID of the entity to get.
+    Parameters
+    ----------
+    body: str|int|Body
+        The name or id of the requested body.
 
-    :return: (:py:class:`~spiceminer.bodies.Body`) -- Representation of the
-      requested entity.
-    :raises:
-      (``ValueError``) -- If the provided name/ID doesn't reference a loaded
-      body.
+    Returns
+    -------
+    Body
+        A representation of the requested body.
 
-      (``TypeError``) -- If ``body`` is neither a string nor an integer.
+    Raises
+    ------
+    ValueError
+        If the provided name/ID doesn't reference a loaded body.
+    TypeError
+        If `body` has the wrong type.
     '''
+    # XXX: Move to Body.__new__ ?
     if isinstance(body, Body):
         body = Body(body.id)
     elif isinstance(body, basestring):
@@ -43,12 +50,13 @@ def get(body):
             raise ValueError('get() got invalid name {}'.format(body))
         body = num
     elif not isinstance(body, int):
-        msg = 'get() integer or str argument expected, got {}'
+        msg = "'int' or 'str' argument expected, got '{}'"
         raise TypeError(msg.format(type(body)))
     if body in set.union(set(), *(k.ids for k in Kernel.LOADED)):
+        # TODO: Change to Body.LOADED when implemented
         return Body(body)
     else:
-        msg = 'get() no loaded Body with ID or name {}'
+        msg = "No loaded 'Body' with ID or name '{}'"
         raise ValueError(msg.format(body))
 
 
