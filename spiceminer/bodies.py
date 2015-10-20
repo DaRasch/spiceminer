@@ -120,6 +120,12 @@ class Body(object):
     def __repr__(self):
         return self.__class__.__name__ + '({})'.format(self.id)
 
+    @classmethod
+    def all(cls):
+        for k in kernel:
+            for i in k.ids:
+                return cls(i)
+
     @property
     def id(self):
         '''The ID of this object.'''
@@ -327,6 +333,14 @@ class Body(object):
             target = target._frame or destination.name
         return numpy.array(spice.pxform(self._frame or self.name, target,
             Time.fromposix(time).et())).reshape(3, 3)
+
+    def proximity(self, time, distance, classes=None):
+        for body in Body.all():
+            pos = body.single_position(time, observer=self)[1:]
+            dist = np.sqrt((pos ** 2).sum())
+            if body.__class__ in (classes or [Body]) and dist <= distance:
+                yield body
+
 
     def time_window_position(self):
         return Kernel.TIMEWINDOWS_POS[self.id]
