@@ -41,82 +41,77 @@ def get(body):
     TypeError
         If `body` has the wrong type.
     '''
-    # XXX: Move to Body.__new__ ?
-    if isinstance(body, Body):
-        body = Body(body.id)
-    elif isinstance(body, basestring):
-        num = spice.bodn2c(body)
-        if num is None:
-            raise ValueError('get() got invalid name {}'.format(body))
-        body = num
-    elif not isinstance(body, int):
-        msg = "'int' or 'str' argument expected, got '{}'"
-        raise TypeError(msg.format(type(body)))
-    if body in set.union(set(), *(k.ids for k in Kernel.LOADED)):
-        # TODO: Change to Body.LOADED when implemented
-        return Body(body)
-    else:
-        msg = "No loaded 'Body' with ID or name '{}'"
-        raise ValueError(msg.format(body))
+    return Body(body)
 
 
 class Body(object):
     '''Base class for representing ephimeres objects.
 
-    :type body_id: ``int``
-    :arg body_id: ID of the ephimeris object referenced by ``body_id``.
-    :return: (``Body``) -- Representation of the requested entity.
-    :raises:
-      (``ValueError``) -- If the provided ``body_id`` does not reference
-      any entity.
+    Parameters
+    ----------
+    body: str|int|Body
+        The name or ID of the requested body.
 
-      (``TypeError``) -- If the provided ``body_id`` is not of type ``int``.
+    Raises
+    ------
+    ValueError
+        If the provided name/ID doesn't reference a loaded body.
+    TypeError
+        If `body` has the wrong type.
     '''
 
-    _CACHE = {}
     _ABCORR = 'NONE'
 
     #TODO: implement Body.LOADED
 
-    def __new__(cls, body_id, *args, **kwargs):
-        if not isinstance(body_id, numbers.Integral):
-            msg = 'Body() integer argument expected, got {}.'
-            raise TypeError(msg.format(type(body_id)))
-        ### factory function ###
-        if body_id in Body._CACHE:
-            body = Body._CACHE[body_id]
-        elif body_id > 2000000:
-            body = object.__new__(Asteroid, body_id, *args, **kwargs)
-        elif body_id > 1000000:
-            body = object.__new__(Comet, body_id, *args, **kwargs)
-        elif body_id > 1000:
-            body = object.__new__(cls, body_id, *args, **kwargs)
-        elif body_id > 10:
-            if body_id % 100 == 99:
-                body = object.__new__(Planet, body_id, *args, **kwargs)
+    def __new__(cls, body, *args, **kwargs):
+        # Check and convert type
+        if isinstance(body, Body):
+            body = Body(body.id)
+        elif isinstance(body, basestring):
+            num = spice.bodn2c(body)
+            if num is None:
+                raise ValueError("Got invalid name '{}'".format(body))
+            body = num
+        elif not isinstance(body, int):
+            msg = "'int' or 'str' argument expected, got '{}'"
+            raise TypeError(msg.format(type(body)))
+        if body not in set.union(set(), *(k.ids for k in Kernel.LOADED)):
+            # TODO: Change to Body.LOADED when implemented
+            msg = "No loaded 'Body' with ID or name '{}'"
+            raise ValueError(msg.format(body))
+        # Create correct subclass
+        # XXX: move to metaclass?
+        elif body > 2000000:
+            body = object.__new__(Asteroid, body, *args, **kwargs)
+        elif body > 1000000:
+            body = object.__new__(Comet, body, *args, **kwargs)
+        elif body > 1000:
+            body = object.__new__(cls, body, *args, **kwargs)
+        elif body > 10:
+            if body % 100 == 99:
+                body = object.__new__(Planet, body, *args, **kwargs)
             else:
-                body = object.__new__(Satellite, body_id, *args, **kwargs)
-        elif body_id == 10:
-            # body = object.__new__(cls, 10, *args, **kwargs)
-            body = object.__new__(Star, body_id, *args, **kwargs)
-        elif body_id >= 0:
-            body = object.__new__(Barycenter, body_id, *args, **kwargs)
-        elif body_id > -1000:
-            body = object.__new__(Spacecraft, body_id, *args, **kwargs)
-        elif body_id >= -100000:
-            body = object.__new__(Instrument, body_id, *args, **kwargs)
+                body = object.__new__(Satellite, body, *args, **kwargs)
+        elif body == 10:
+            body = object.__new__(Star, body, *args, **kwargs)
+        elif body >= 0:
+            body = object.__new__(Barycenter, body, *args, **kwargs)
+        elif body > -1000:
+            body = object.__new__(Spacecraft, body, *args, **kwargs)
+        elif body >= -100000:
+            body = object.__new__(Instrument, body, *args, **kwargs)
         else:
-            body = object.__new__(Spacecraft, body_id, *args, **kwargs)
+            body = object.__new__(Spacecraft, body, *args, **kwargs)
         return body
 
-    def __init__(self, body_id):
-        self._id = body_id
-        self._name = spice.bodc2n(body_id)
+    def __init__(self, body):
+        self._id = body
+        self._name = spice.bodc2n(body)
         self._frame = None
         if self._name is None:
             msg = 'Body() {} is not a valid ID.'
-            raise ValueError(msg.format(body_id))
-        Body._CACHE[body_id] = self
+            raise ValueError(msg.format(body))
 
     def __str__(self):
         return self.__class__.__name__ + ' {} (ID {})'.format(self.name,
