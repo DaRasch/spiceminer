@@ -106,10 +106,13 @@ class Body(object):
         return body
 
     def __init__(self, body):
+        if isinstance(body, str):
+            body = spice.bodn2c(body)
         self._id = body
-        self._name = spice.bodc2n(body)
+        print body, body.__class__
+        self._name = spice.bodc2n(body) or ''
         self._frame = None
-        if self._name is None:
+        if self._name == '':
             msg = 'Body() {} is not a valid ID.'
             raise ValueError(msg.format(body))
 
@@ -118,13 +121,20 @@ class Body(object):
             self.id)
 
     def __repr__(self):
-        return self.__class__.__name__ + '({})'.format(self.id)
+        return self.__class__.__name__ + "('{}')".format(self.name)
+
+    def __hash__(self):
+        return self.id
 
     @classmethod
     def all(cls):
-        for k in kernel:
-            for i in k.ids:
-                return cls(i)
+        #TODO: Move implementation to kernel.highlevel.Kernel
+        ids = set.union(set(), *(k.ids for k in Kernel.LOADED))
+        for i in sorted(ids):
+            try:
+                yield cls(i)
+            except ValueError:
+                pass
 
     @property
     def id(self):
@@ -336,9 +346,12 @@ class Body(object):
 
     def proximity(self, time, distance, classes=None):
         for body in Body.all():
-            pos = body.single_position(time, observer=self)[1:]
-            dist = np.sqrt((pos ** 2).sum())
-            if body.__class__ in (classes or [Body]) and dist <= distance:
+            try:
+                pos = body.single_position(time, observer=self)[1:]
+            except spice.SpiceError:
+                continue
+            dist = numpy.sqrt((pos ** 2).sum())
+            if isinstance(body, (tuple(classes) or (Body,))) and dist <= distance:
                 yield body
 
 
@@ -355,8 +368,8 @@ class Asteroid(Body):
 
     Asteroids are ephimeris objects with IDs > 200000.
     '''
-    def __init__(self, body_id):
-        super(Asteroid, self).__init__(body_id)
+    def __init__(self, body):
+        super(Asteroid, self).__init__(body)
 
 
 class Barycenter(Body):
@@ -365,8 +378,8 @@ class Barycenter(Body):
 
     Barycenters are ephimeris objects with IDs between 0 and 9.
     '''
-    def __init__(self, body_id):
-        super(Barycenter, self).__init__(body_id)
+    def __init__(self, body):
+        super(Barycenter, self).__init__(body)
 
 
 class Comet(Body):
@@ -374,8 +387,8 @@ class Comet(Body):
 
     Comets are ephimeris objects with IDs between 100000 and 200000.
     '''
-    def __init__(self, body_id):
-        super(Comet, self).__init__(body_id)
+    def __init__(self, body):
+        super(Comet, self).__init__(body)
 
 
 class Instrument(Body):
@@ -384,8 +397,8 @@ class Instrument(Body):
 
     Instruments are ephimeris objects with IDs between -1001 and -10000.
     '''
-    def __init__(self, body_id):
-        super(Instrument, self).__init__(body_id)
+    def __init__(self, body):
+        super(Instrument, self).__init__(body)
 
     @property
     def parent(self):
@@ -400,8 +413,8 @@ class Planet(Body):
     Planets are ephimeris objects with IDs between 199 and 999 with
     pattern [1-9]99.
     '''
-    def __init__(self, body_id):
-        super(Planet, self).__init__(body_id)
+    def __init__(self, body):
+        super(Planet, self).__init__(body)
         self._frame = 'IAU_' + self._name
 
     @property
@@ -420,8 +433,8 @@ class Satellite(Body):
     Satellites are ephimeris objects with IDs between 101 and 998 with
     pattern [1-9][0-9][1-8].
     '''
-    def __init__(self, body_id):
-        super(Satellite, self).__init__(body_id)
+    def __init__(self, body):
+        super(Satellite, self).__init__(body)
         self._frame = 'IAU_' + self._name
 
     @property
@@ -434,8 +447,8 @@ class Spacecraft(Body):
 
     Spacecraft are ephimeris objects with IDs between -1 and -999 or < -99999.
     '''
-    def __init__(self, body_id):
-        super(Spacecraft, self).__init__(body_id)
+    def __init__(self, body):
+        super(Spacecraft, self).__init__(body)
 
     @property
     def children(self):
@@ -446,8 +459,8 @@ class Star(Body):
 
     Only used for the sun (ID 10) at the moment.
     '''
-    def __init__(self, body_id):
-        super(Star, self).__init__(body_id)
+    def __init__(self, body):
+        super(Star, self).__init__(body)
         self._frame = 'IAU_SUN'
 
     @property
