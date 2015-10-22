@@ -44,6 +44,58 @@ def get(body):
     return Body(body)
 
 
+class _BodyMeta(type):
+    def __call__(cls, body):
+        # Check and convert type
+        if isinstance(body, cls):
+            body = body.id
+        elif isinstance(body, basestring):
+            num = spice.bodn2c(body)
+            if num is None:
+                raise ValueError("Got invalid name '{}'".format(body))
+            body = num
+        elif not isinstance(body, int):
+            msg = "'int' or 'str' argument expected, got '{}'"
+            raise TypeError(msg.format(type(body)))
+        if body not in set.union(set(), *(k.ids for k in Kernel.LOADED)):
+            # TODO: Change to Body.LOADED when implemented
+            msg = "No loaded 'Body' with ID or name '{}'"
+            raise ValueError(msg.format(body))
+        body_id = body
+        # Create correct subclass
+        if body > 2000000:
+            body = object.__new__(Asteroid)
+        elif body > 1000000:
+            body = object.__new__(Comet)
+        elif body > 1000:
+            body = object.__new__(Body)
+        elif body > 10:
+            if body % 100 == 99:
+                body = object.__new__(Planet)
+            else:
+                body = object.__new__(Satellite)
+        elif body == 10:
+            body = object.__new__(Star)
+        elif body >= 0:
+            body = object.__new__(Barycenter)
+        elif body > -1000:
+            body = object.__new__(Spacecraft)
+        elif body >= -100000:
+            body = object.__new__(Instrument)
+        else:
+            body = object.__new__(Spacecraft)
+        body.__init__(body_id)
+        return body
+
+    def all(cls):
+        #TODO: Move implementation to kernel.highlevel.Kernel
+        ids = set.union(set(), *(k.ids for k in Kernel.LOADED))
+        for i in sorted(ids):
+            body = cls(i)
+            if isinstance(body, cls):
+                yield body
+
+
 class Body(object):
     '''Base class for representing ephimeres objects.
 
@@ -59,62 +111,16 @@ class Body(object):
     TypeError
         If `body` has the wrong type.
     '''
+    __metaclass__ = _BodyMeta
 
     _ABCORR = 'NONE'
 
     #TODO: implement Body.LOADED
 
-    def __new__(cls, body, *args, **kwargs):
-        # Check and convert type
-        if isinstance(body, Body):
-            body = Body(body.id)
-        elif isinstance(body, basestring):
-            num = spice.bodn2c(body)
-            if num is None:
-                raise ValueError("Got invalid name '{}'".format(body))
-            body = num
-        elif not isinstance(body, int):
-            msg = "'int' or 'str' argument expected, got '{}'"
-            raise TypeError(msg.format(type(body)))
-        if body not in set.union(set(), *(k.ids for k in Kernel.LOADED)):
-            # TODO: Change to Body.LOADED when implemented
-            msg = "No loaded 'Body' with ID or name '{}'"
-            raise ValueError(msg.format(body))
-        # Create correct subclass
-        # XXX: move to metaclass?
-        elif body > 2000000:
-            body = object.__new__(Asteroid, body, *args, **kwargs)
-        elif body > 1000000:
-            body = object.__new__(Comet, body, *args, **kwargs)
-        elif body > 1000:
-            body = object.__new__(cls, body, *args, **kwargs)
-        elif body > 10:
-            if body % 100 == 99:
-                body = object.__new__(Planet, body, *args, **kwargs)
-            else:
-                body = object.__new__(Satellite, body, *args, **kwargs)
-        elif body == 10:
-            body = object.__new__(Star, body, *args, **kwargs)
-        elif body >= 0:
-            body = object.__new__(Barycenter, body, *args, **kwargs)
-        elif body > -1000:
-            body = object.__new__(Spacecraft, body, *args, **kwargs)
-        elif body >= -100000:
-            body = object.__new__(Instrument, body, *args, **kwargs)
-        else:
-            body = object.__new__(Spacecraft, body, *args, **kwargs)
-        return body
-
     def __init__(self, body):
-        if isinstance(body, str):
-            body = spice.bodn2c(body)
         self._id = body
-        print body, body.__class__
-        self._name = spice.bodc2n(body) or ''
+        self._name = spice.bodc2n(body) or str(self._id)
         self._frame = None
-        if self._name == '':
-            msg = 'Body() {} is not a valid ID.'
-            raise ValueError(msg.format(body))
 
     def __str__(self):
         return self.__class__.__name__ + ' {} (ID {})'.format(self.name,
@@ -125,16 +131,6 @@ class Body(object):
 
     def __hash__(self):
         return self.id
-
-    @classmethod
-    def all(cls):
-        #TODO: Move implementation to kernel.highlevel.Kernel
-        ids = set.union(set(), *(k.ids for k in Kernel.LOADED))
-        for i in sorted(ids):
-            try:
-                yield cls(i)
-            except ValueError:
-                pass
 
     @property
     def id(self):
