@@ -16,9 +16,22 @@ __all__ = ['get', 'Body', 'Asteroid', 'Barycenter', 'Comet', 'Instrument',
 
 ### Helpers ###
 def _iterbodies(start, stop, step=1):
+    '''Iterate over all bodies with ids in the given range.'''
     for i in xrange(start, stop, step):
         with ignored(ValueError):
             yield Body(i)
+
+def _typecheck(times, observer, frame):
+    '''Check and convert arguments for spice interface methods.'''
+    try:
+        times = (float(t) for t in times)
+    except TypeError:
+        times = [float(times)]
+    observer = Body(observer).name
+    if frame not in ('J2000', 'ECLIPJ2000'):
+        frame = Body(frame)
+        frame = frame._frame or frame.name
+    return times, observer, frame
 
 ### Public API ###
 def get(body):
@@ -48,50 +61,50 @@ class _BodyMeta(type):
     def __call__(cls, body):
         # Check and convert type
         if isinstance(body, cls):
-            body = body.id
+            id_ = body.id
         elif isinstance(body, basestring):
-            num = spice.bodn2c(body)
-            if num is None:
+            id_ = spice.bodn2c(body)
+            if id_ is None:
                 raise ValueError("Got invalid name '{}'".format(body))
-            body = num
-        elif not isinstance(body, int):
+        elif isinstance(body, int):
+            id_ = body
+        else:
             msg = "'int' or 'str' argument expected, got '{}'"
             raise TypeError(msg.format(type(body)))
-        if body not in set.union(set(), *(k.ids for k in Kernel.LOADED)):
+        if id_ not in set.union(set(), *(k.ids for k in Kernel.LOADED)):
             # TODO: Change to Body.LOADED when implemented
             msg = "No loaded 'Body' with ID or name '{}'"
             raise ValueError(msg.format(body))
-        body_id = body
         # Create correct subclass
-        if body > 2000000:
+        if id_ > 2000000:
             body = object.__new__(Asteroid)
-        elif body > 1000000:
+        elif id_ > 1000000:
             body = object.__new__(Comet)
-        elif body > 1000:
+        elif id_ > 1000:
             body = object.__new__(Body)
-        elif body > 10:
-            if body % 100 == 99:
+        elif id_ > 10:
+            if id_ % 100 == 99:
                 body = object.__new__(Planet)
             else:
                 body = object.__new__(Satellite)
-        elif body == 10:
+        elif id_ == 10:
             body = object.__new__(Star)
-        elif body >= 0:
+        elif id_ >= 0:
             body = object.__new__(Barycenter)
-        elif body > -1000:
+        elif id_ > -1000:
             body = object.__new__(Spacecraft)
-        elif body >= -100000:
+        elif id_ >= -100000:
             body = object.__new__(Instrument)
         else:
             body = object.__new__(Spacecraft)
-        body.__init__(body_id)
+        body.__init__(id_)
         return body
 
     def all(cls):
         #TODO: Move implementation to kernel.highlevel.Kernel
         ids = set.union(set(), *(k.ids for k in Kernel.LOADED))
         for i in sorted(ids):
-            body = cls(i)
+            body = Body(i)
             if isinstance(body, cls):
                 yield body
 
@@ -134,72 +147,72 @@ class Body(object):
 
     @property
     def id(self):
-        '''The ID of this object.'''
+        '''The ID of this body.'''
         return self._id
 
     @property
     def name(self):
-        '''The name of this object.'''
+        '''The name of this body.'''
         return self._name
 
     @property
     def parent(self):
-        '''Get object, this :py:class:`~spiceminer.bodies.Body` is bound to (be
-            it orbiting or physical attachment).
+        '''Get the body that this body is bound to (orbiting or physical
+        attachment).
         '''
         return None
 
     @property
     def children(self):
-        '''Get objects bound to this :py:class:`~spiceminer.bodies.Body`.
-        '''
+        '''Get the bodies bound to this body.'''
         return []
 
     def state(self, times, observer='SUN', frame='ECLIPJ2000',
         abcorr=None):
-        '''Get the position and speed of this object relative to the observer
+        '''Get the position and speed of this body relative to the observer
         in a specific reference frame.
 
-        :type times: ``Iterable`` | has ``__float__()``
-        :arg times: The point(s) in time for which to calculate the
-          position/speed.
+        Parameters
+        ----------
+        times: float|iterable
+            The time(s) for which to get the state.
+        observer: str|Body
+            Position and speed are measured relative to this body.
+            The rotation of the bodies is ignored, see the `frame` keyword.
+        frame: Body|{'ECLIPJ2000', 'J2000'}
+            The rotational reference frame.
+            `ECLIPJ2000`: The earths ecliptic plane is used as the x-y-plane.
+            `J2000`: The earths equatorial plane is used as the x-y-plane.
+        abcorr: {'LT', 'LT+S', 'CN', 'CN+S', 'XLT', 'XLT+S', 'XCN', 'XCN+S'}
+            Aberration correction to be applied. For explanation see
+            `here <http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkez_c.html#Detailed_Input>`_.
 
-        :type observer: :py:class:`~spiceminer.bodies.Body` | ``str``
-        :arg observer: Object to use as (0,0,0).
+        Returns
+        -------
+        state: ndarray
+            The nx7 array where the rows are time, position x, y, z and speed
+            x, y, z.
 
-        :type abcorr: ``str``
-        :arg abcorr: Aberration correction to be applied. May be one of LT,
-          LT+S, CN, CN+S, XLT, XLT+S, XCN, XCN+S. For explanation of these see
-          `here <http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkez_c.html#Detailed_Input>`_.
+        Raises
+        ------
+        TypeError
+            If an argument doesn't conform to the type requirements.
 
-        :return: (``ndarray``) -- The nx7 array containing time and
-          (x, y, z)-position/speed.
-        :raises:
-          (``TypeError``) -- If an argument doesn't conform to the type
-          requirements.
-
-          (:py:class:`~spiceminer._spicewrapper.SpiceError`) -- If there is
-          necessary information missing.
+        SpiceError
+            If necessary information is missing.
         '''
-        if isinstance(observer, Body):
-            observer = observer.name
-        if isinstance(frame, Body):
-            frame = frame._frame or frame.name
-        if isinstance(times, numbers.Real):
-            times = [float(times)]
-        if isinstance(times, collections.Iterable):
-            result = []
-            for time in times:
-                with ignored(spice.SpiceError):
-                    data = spice.spkezr(self.name, Time.fromposix(time).et(),
-                        frame, abcorr or Body._ABCORR, observer)
-                    result.append([time] + data[0] + [data[1]])
-            return numpy.array(result).transpose()
-        msg = 'state() Real or Iterable argument expected, got {}.'
-        raise TypeError(msg.format(type(times)))
+        times, observer, frame = _typecheck(times, observer, frame)
+        result = []
+        for time in times:
+            with ignored(spice.SpiceError):
+                data = spice.spkezr(self.name, Time.fromposix(time).et(),
+                    frame, abcorr or Body._ABCORR, observer)
+                result.append([time] + data[0] + [data[1]])
+        return numpy.array(result).transpose()
 
     def single_state(self, time, observer='SUN', frame='ECLIPJ2000',
         abcorr=None):
+        # TODO: use _typecheck, make sure to handle single time
         if isinstance(observer, Body):
             observer = observer.name
         if isinstance(frame, Body):
@@ -209,48 +222,49 @@ class Body(object):
 
     def position(self, times, observer='SUN', frame='ECLIPJ2000',
         abcorr=None):
-        '''Get the position of this object relative to the observer in a
+        '''Get the position of this body relative to the observer in a
         specific reference frame.
 
-        :type times: ``Iterable`` | has ``__float__()``
-        :arg times: The point(s) in time for which to calculate the position.
+        Parameters
+        ----------
+        times: float|iterable
+            The time(s) for which to get the position.
+        observer: str|Body
+            Position is measured relative to this body.
+            The rotation of the bodies is ignored, see the `frame` keyword.
+        frame: Body|{'ECLIPJ2000', 'J2000'}
+            The rotational reference frame.
+            `ECLIPJ2000`: The earths ecliptic plane is used as the x-y-plane.
+            `J2000`: The earths equatorial plane is used as the x-y-plane.
+        abcorr: {'LT', 'LT+S', 'CN', 'CN+S', 'XLT', 'XLT+S', 'XCN', 'XCN+S'}
+            Aberration correction to be applied. For explanation see
+            `here <http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkez_c.html#Detailed_Input>`_.
 
-        :type observer: :py:class:`~spiceminer.bodies.Body` | ``str``
-        :arg observer: Object to use as (0,0,0).
+        Returns
+        -------
+        position: ndarray
+            The nx4 array where the rows are time, position x, y, z.
 
-        :type abcorr: ``str``
-        :arg abcorr: Aberration correction to be applied. May be one of LT,
-          LT+S, CN, CN+S, XLT, XLT+S, XCN, XCN+S. For explanation of these see
-          `here <http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkez_c.html#Detailed_Input>`_.
+        Raises
+        ------
+        TypeError
+            If an argument doesn't conform to the type requirements.
 
-        :return: (``ndarray``) -- The nx4 array containing time and
-          (x, y, z)-position.
-        :raises:
-          (``TypeError``) -- If an argument doesn't conform to the type
-          requirements.
-
-          (:py:class:`~spiceminer._spicewrapper.SpiceError`) -- If there is
-          necessary information missing.
+        SpiceError
+            If necessary information is missing.
         '''
-        if isinstance(observer, Body):
-            observer = observer.name
-        if isinstance(frame, Body):
-            frame = frame._frame or frame.name
-        if isinstance(times, numbers.Real):
-            times = [float(times)]
-        if isinstance(times, collections.Iterable):
-            result = []
-            for time in times:
-                with ignored(spice.SpiceError):
-                    result.append([time] + spice.spkpos(self.name,
-                    Time.fromposix(time).et(), frame, abcorr or Body._ABCORR,
-                    observer)[0])
-            return numpy.array(result).transpose()
-        msg = 'position() Real or Iterable argument expected, got {}.'
-        raise TypeError(msg.format(type(times)))
+        times, observer, frame = _typecheck(times, observer, frame)
+        result = []
+        for time in times:
+            with ignored(spice.SpiceError):
+                result.append([time] + spice.spkpos(self.name,
+                Time.fromposix(time).et(), frame, abcorr or Body._ABCORR,
+                observer)[0])
+        return numpy.array(result).transpose()
 
     def single_position(self, time, observer='SUN', frame='ECLIPJ2000',
         abcorr=None):
+        # TODO: use _typecheck, make sure to handle single time
         if isinstance(observer, Body):
             observer = observer.name
         if isinstance(frame, Body):
@@ -260,79 +274,81 @@ class Body(object):
 
     def speed(self, times, observer='SUN', frame='ECLIPJ2000',
         abcorr=None):
-        '''Get the speed of this object relative to the observer in a specific
+        '''Get the speed of this body relative to the observer in a specific
         reference frame.
 
-        :type times: ``Iterable`` | has ``__float__()``
-        :arg times: The point(s) in time for which to calculate the speed.
+        Parameters
+        ----------
+        times: float|iterable
+            The time(s) for which to get the speed.
+        observer: str|Body
+            Position is measured relative to this body.
+            The rotation of the bodies is ignored, see the `frame` keyword.
+        frame: Body|{'ECLIPJ2000', 'J2000'}
+            The rotational reference frame.
+            `ECLIPJ2000`: The earths ecliptic plane is used as the x-y-plane.
+            `J2000`: The earths equatorial plane is used as the x-y-plane.
+        abcorr: {'LT', 'LT+S', 'CN', 'CN+S', 'XLT', 'XLT+S', 'XCN', 'XCN+S'}
+            Aberration correction to be applied. For explanation see
+            `here <http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkez_c.html#Detailed_Input>`_.
 
-        :type observer: :py:class:`~spiceminer.bodies.Body` | ``str``
-        :arg observer: Object relative to which movement happens.
+        Returns
+        -------
+        speed: ndarray
+            The nx4 array where the rows are time, speed x, y, z.
 
-        :type abcorr: ``str``
-        :arg abcorr: Aberration correction to be applied. May be one of LT,
-          LT+S, CN, CN+S, XLT, XLT+S, XCN, XCN+S. For explanation of these see
-          `here <http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkez_c.html#Detailed_Input>`_.
+        Raises
+        ------
+        TypeError
+            If an argument doesn't conform to the type requirements.
 
-        :return: (``ndarray``) -- The nx4 array containing time and
-          (x, y, z)-speed.
-        :raises:
-          (``TypeError``) -- If an argument doesn't conform to the type
-          requirements.
-
-          (:py:class:`~spiceminer._spicewrapper.SpiceError`) -- If there is
-          necessary information missing.
+        SpiceError
+            If necessary information is missing.
         '''
-        if isinstance(observer, Body):
-            observer = observer.name
-        if isinstance(frame, Body):
-            frame = frame._frame or frame.name
-        if isinstance(times, numbers.Real):
-            times = [float(times)]
-        if isinstance(times, collections.Iterable):
-            data = self.state(times, observer, frame, abcorr)
-            return data[numpy.array([True] + [False] * 3 + [True] * 3)]
-        msg = 'speed() Real or Iterable argument expected, got {}.'
-        raise TypeError(msg.format(type(times)))
+        times, observer, frame = _typecheck(times, observer, frame)
+        data = self.state(times, observer, frame, abcorr)
+        return data[numpy.array([True] + [False] * 3 + [True] * 3)]
 
     def single_speed(self, time, observer='SUN', frame='ECLIPJ2000',
         abcorr=None):
         return self.single_state(time, observer, frame, abcorr)[3:]
 
     def rotation(self, times, target='ECLIPJ2000'):
-        '''Get the rotation matrix for rotating this object from its own
-        reference frame to that of the observer.
+        '''Get the rotation matrix for transforming the rotating of this body
+        from its own reference frame to that of the target.
 
-        :type times: ``Iterable`` | has ``__float__()``
-        :arg times: The point(s) in time for which to calculate rotations.
+        Parameters
+        ----------
+        times: float|iterable
+            The time(s) for which to get the matrix.
+        target: Body|{'ECLIPJ2000', 'J2000'}
+            Reference frame to transform to.
 
-        :type observer: :py:class:`~spiceminer.bodies.Body` | ``str``
-        :arg observer: Object/reference frame to transform to.
+        Returns
+        -------
+        times: ndarray
+            The times for which rotation matrices where generated.
+        matrices: list
+            List of 3x3 rotation matrices.
 
-        :return: (``list``) -- The list of 3x3 rotation matrizes.
-        :raises:
-          (``TypeError``) -- If an argument doesn't conform to the type
-          requirements.
+        Raises
+        ------
+        TypeError
+            If an argument doesn't conform to the type requirements.
 
-          (:py:class:`~spiceminer._spicewrapper.SpiceError`) -- If there is
-          necessary information missing.
+        SpiceError
+            If necessary information is missing.
         '''
-        if isinstance(target, Body):
-            target = target._frame or target.name
-        if isinstance(times, numbers.Real):
-            times = [float(times)]
-        if isinstance(times, collections.Iterable):
-            result = []
-            valid_times = []
-            for time in times:
-                with ignored(spice.SpiceError):
-                    result.append(spice.pxform(self._frame or self.name,
-                        target, Time.fromposix(time).et()))
-                    valid_times.append(time)
-            return numpy.array(valid_times), [numpy.array(item).reshape(3, 3)
-                for item in result]
-        msg = 'rotation() Real or Iterable argument expected, got {}.'
-        raise TypeError(msg.format(type(times)))
+        times, target, _ = _typecheck(times, target, 'ECLIPJ2000')
+        result = []
+        valid_times = []
+        for time in times:
+            with ignored(spice.SpiceError):
+                result.append(spice.pxform(self._frame or self.name,
+                    target, Time.fromposix(time).et()))
+                valid_times.append(time)
+        return numpy.array(valid_times), [numpy.array(item).reshape(3, 3)
+            for item in result]
 
     def single_rotation(self, time, target='ECLIPJ2000'):
         if isinstance(target, Body):
@@ -341,14 +357,36 @@ class Body(object):
             Time.fromposix(time).et())).reshape(3, 3)
 
     def proximity(self, time, distance, classes=None):
+        '''Get other bodies at most `distance` km away from this body.
+
+        Parameters
+        ----------
+        time: float
+            The time to look at.
+        distance: float
+            The maximum distance at which bodies are included in the results.
+        classes: type
+            Filter to select certain types of bodies to look for.
+
+        Returns
+        -------
+        bodies: iterator
+            The selected bodies.
+
+        Raises
+        ------
+        SpiceError
+            If necessary information is missing.
+        '''
         for body in Body.all():
             try:
                 pos = body.single_position(time, observer=self)[1:]
             except spice.SpiceError:
                 continue
             dist = numpy.sqrt((pos ** 2).sum())
-            if isinstance(body, (tuple(classes) or (Body,))) and dist <= distance:
-                yield body
+            if isinstance(body, tuple(classes or [Body])):
+                if body.id != self.id and dist <= distance:
+                    yield body
 
 
     def time_window_position(self):
