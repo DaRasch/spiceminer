@@ -72,7 +72,7 @@ class _BodyMeta(type):
             msg = "'int' or 'str' argument expected, got '{}'"
             raise TypeError(msg.format(type(body)))
         if id_ not in set.union(set(), *(k.ids for k in Kernel.LOADED)):
-            # TODO: Change to Body.LOADED when implemented
+            # TODO: implement better id-collection
             msg = "No loaded 'Body' with ID or name '{}'"
             raise ValueError(msg.format(body))
         # Create correct subclass
@@ -100,13 +100,17 @@ class _BodyMeta(type):
         body.__init__(id_)
         return body
 
-    def all(cls):
+    @property
+    def LOADED(cls):
         #TODO: Move implementation to kernel.highlevel.Kernel
         ids = set.union(set(), *(k.ids for k in Kernel.LOADED))
         for i in sorted(ids):
             body = Body(i)
             if isinstance(body, cls):
                 yield body
+
+    def all(cls):
+        return cls.LOADED
 
 
 class Body(object):
@@ -378,7 +382,7 @@ class Body(object):
         SpiceError
             If necessary information is missing.
         '''
-        for body in Body.all():
+        for body in Body.LOADED:
             try:
                 pos = body.single_position(time, observer=self)[1:]
             except spice.SpiceError:
