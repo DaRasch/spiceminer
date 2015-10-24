@@ -10,7 +10,7 @@ from .time_ import Time
 from ._helpers import ignored
 from .kernel.highlevel import Kernel
 
-__all__ = ['get', 'Body', 'Asteroid', 'Barycenter', 'Comet', 'Instrument',
+__all__ = ['Body', 'Asteroid', 'Barycenter', 'Comet', 'Instrument',
             'Planet', 'Satellite', 'Spacecraft', 'Star']
 
 
@@ -33,31 +33,10 @@ def _typecheck(times, observer, frame):
         frame = frame._frame or frame.name
     return times, observer, frame
 
-### Public API ###
-def get(body):
-    '''Get body by name or id.
-
-    Parameters
-    ----------
-    body: str|int|Body
-        The name or id of the requested body.
-
-    Returns
-    -------
-    Body
-        A representation of the requested body.
-
-    Raises
-    ------
-    ValueError
-        If the provided name/ID doesn't reference a loaded body.
-    TypeError
-        If `body` has the wrong type.
-    '''
-    return Body(body)
-
 
 class _BodyMeta(type):
+    '''Metaclass for Body to seperate instance creation from initialisation and
+    to force methods on the class level only.'''
     def __call__(cls, body):
         # Check and convert type
         if isinstance(body, cls):
@@ -109,16 +88,15 @@ class _BodyMeta(type):
             if isinstance(body, cls):
                 yield body
 
-    def all(cls):
-        return cls.LOADED
 
+### Public API ###
 
 class Body(object):
     '''Base class for representing ephimeres objects.
 
     Parameters
     ----------
-    body: str|int|Body
+    body: str or int or Body
         The name or ID of the requested body.
 
     Raises
@@ -160,15 +138,26 @@ class Body(object):
         return self._name
 
     @property
+    def times_pos(self):
+        '''The time intervals for which positions are defined.'''
+        return Kernel.TIMEWINDOWS_POS[self.id]
+
+    @property
+    def times_rot(self):
+        '''The time intervals for which rotations are defined.'''
+        return Kernel.TIMEWINDOWS_ROT[self.id]
+
+    @property
     def parent(self):
-        '''Get the body that this body is bound to (orbiting or physical
+        '''The body that this body is bound to (orbiting or physical
         attachment).
         '''
         return None
 
     @property
     def children(self):
-        '''Get the bodies bound to this body.'''
+        '''The bodies bound to this body (orbiting around it permanently and
+        thereby included in its barycenter).'''
         return []
 
     def state(self, times, observer='SUN', frame='ECLIPJ2000',
@@ -178,30 +167,30 @@ class Body(object):
 
         Parameters
         ----------
-        times: float|iterable
+        times: floator iterable of float
             The time(s) for which to get the state.
-        observer: str|Body
+        observer: str or Body, optional
             Position and speed are measured relative to this body.
             The rotation of the bodies is ignored, see the `frame` keyword.
-        frame: Body|{'ECLIPJ2000', 'J2000'}
+        frame: Body or {'ECLIPJ2000', 'J2000'}, optional
             The rotational reference frame.
             `ECLIPJ2000`: The earths ecliptic plane is used as the x-y-plane.
             `J2000`: The earths equatorial plane is used as the x-y-plane.
-        abcorr: {'LT', 'LT+S', 'CN', 'CN+S', 'XLT', 'XLT+S', 'XCN', 'XCN+S'}
+        abcorr: {'LT', 'LT+S', 'CN', 'CN+S', 'XLT', 'XLT+S', 'XCN', 'XCN+S'}, optional
             Aberration correction to be applied. For explanation see
             `here <http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkez_c.html#Detailed_Input>`_.
 
         Returns
         -------
-        state: ndarray
+        state: array_like
             The nx7 array where the rows are time, position x, y, z and speed
             x, y, z.
+            Positions are in km and speeds in km/sec.
 
         Raises
         ------
         TypeError
             If an argument doesn't conform to the type requirements.
-
         SpiceError
             If necessary information is missing.
         '''
@@ -214,16 +203,6 @@ class Body(object):
                 result.append([time] + data[0] + [data[1]])
         return numpy.array(result).transpose()
 
-    def single_state(self, time, observer='SUN', frame='ECLIPJ2000',
-        abcorr=None):
-        # TODO: use _typecheck, make sure to handle single time
-        if isinstance(observer, Body):
-            observer = observer.name
-        if isinstance(frame, Body):
-            frame = frame._frame or frame.name
-        return numpy.array(spice.spkezr(self.name, Time.fromposix(time).et(),
-            frame, abcorr or Body._ABCORR, observer))
-
     def position(self, times, observer='SUN', frame='ECLIPJ2000',
         abcorr=None):
         '''Get the position of this body relative to the observer in a
@@ -231,29 +210,29 @@ class Body(object):
 
         Parameters
         ----------
-        times: float|iterable
+        times: float or iterable of float
             The time(s) for which to get the position.
-        observer: str|Body
+        observer: str or Body, optional
             Position is measured relative to this body.
             The rotation of the bodies is ignored, see the `frame` keyword.
-        frame: Body|{'ECLIPJ2000', 'J2000'}
+        frame: Body or {'ECLIPJ2000', 'J2000'}, optional
             The rotational reference frame.
             `ECLIPJ2000`: The earths ecliptic plane is used as the x-y-plane.
             `J2000`: The earths equatorial plane is used as the x-y-plane.
-        abcorr: {'LT', 'LT+S', 'CN', 'CN+S', 'XLT', 'XLT+S', 'XCN', 'XCN+S'}
+        abcorr: {'LT', 'LT+S', 'CN', 'CN+S', 'XLT', 'XLT+S', 'XCN', 'XCN+S'}, optional
             Aberration correction to be applied. For explanation see
             `here <http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkez_c.html#Detailed_Input>`_.
 
         Returns
         -------
-        position: ndarray
+        position: array_like
             The nx4 array where the rows are time, position x, y, z.
+            Positions are in km.
 
         Raises
         ------
         TypeError
             If an argument doesn't conform to the type requirements.
-
         SpiceError
             If necessary information is missing.
         '''
@@ -266,16 +245,6 @@ class Body(object):
                 observer)[0])
         return numpy.array(result).transpose()
 
-    def single_position(self, time, observer='SUN', frame='ECLIPJ2000',
-        abcorr=None):
-        # TODO: use _typecheck, make sure to handle single time
-        if isinstance(observer, Body):
-            observer = observer.name
-        if isinstance(frame, Body):
-            frame = frame._frame or frame.name
-        return numpy.array(spice.spkpos(self.name, Time.fromposix(time).et(),
-            frame, abcorr or Body._ABCORR, observer)[0])
-
     def speed(self, times, observer='SUN', frame='ECLIPJ2000',
         abcorr=None):
         '''Get the speed of this body relative to the observer in a specific
@@ -283,29 +252,29 @@ class Body(object):
 
         Parameters
         ----------
-        times: float|iterable
+        times: float or iterable of float
             The time(s) for which to get the speed.
-        observer: str|Body
+        observer: str or Body, optional
             Position is measured relative to this body.
             The rotation of the bodies is ignored, see the `frame` keyword.
-        frame: Body|{'ECLIPJ2000', 'J2000'}
+        frame: Body or {'ECLIPJ2000', 'J2000'}, optional
             The rotational reference frame.
             `ECLIPJ2000`: The earths ecliptic plane is used as the x-y-plane.
             `J2000`: The earths equatorial plane is used as the x-y-plane.
-        abcorr: {'LT', 'LT+S', 'CN', 'CN+S', 'XLT', 'XLT+S', 'XCN', 'XCN+S'}
+        abcorr: {'LT', 'LT+S', 'CN', 'CN+S', 'XLT', 'XLT+S', 'XCN', 'XCN+S'}, optional
             Aberration correction to be applied. For explanation see
             `here <http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkez_c.html#Detailed_Input>`_.
 
         Returns
         -------
-        speed: ndarray
+        speed: array_like
             The nx4 array where the rows are time, speed x, y, z.
+            Speeds in km/sec.
 
         Raises
         ------
         TypeError
             If an argument doesn't conform to the type requirements.
-
         SpiceError
             If necessary information is missing.
         '''
@@ -313,33 +282,28 @@ class Body(object):
         data = self.state(times, observer, frame, abcorr)
         return data[numpy.array([True] + [False] * 3 + [True] * 3)]
 
-    def single_speed(self, time, observer='SUN', frame='ECLIPJ2000',
-        abcorr=None):
-        return self.single_state(time, observer, frame, abcorr)[3:]
-
     def rotation(self, times, target='ECLIPJ2000'):
         '''Get the rotation matrix for transforming the rotating of this body
         from its own reference frame to that of the target.
 
         Parameters
         ----------
-        times: float|iterable
+        times: float or iterable of float
             The time(s) for which to get the matrix.
-        target: Body|{'ECLIPJ2000', 'J2000'}
+        target: Body or {'ECLIPJ2000', 'J2000'}, optional
             Reference frame to transform to.
 
         Returns
         -------
-        times: ndarray
+        times: array_like
             The times for which rotation matrices where generated.
-        matrices: list
+        matrices: list of array_like
             List of 3x3 rotation matrices.
 
         Raises
         ------
         TypeError
             If an argument doesn't conform to the type requirements.
-
         SpiceError
             If necessary information is missing.
         '''
@@ -354,12 +318,6 @@ class Body(object):
         return numpy.array(valid_times), [numpy.array(item).reshape(3, 3)
             for item in result]
 
-    def single_rotation(self, time, target='ECLIPJ2000'):
-        if isinstance(target, Body):
-            target = target._frame or destination.name
-        return numpy.array(spice.pxform(self._frame or self.name, target,
-            Time.fromposix(time).et())).reshape(3, 3)
-
     def proximity(self, time, distance, classes=None):
         '''Get other bodies at most `distance` km away from this body.
 
@@ -368,13 +326,13 @@ class Body(object):
         time: float
             The time to look at.
         distance: float
-            The maximum distance at which bodies are included in the results.
+            The maximum distance in km at which bodies are included in the results.
         classes: type
             Filter to select certain types of bodies to look for.
 
-        Returns
-        -------
-        bodies: iterator
+        Yields
+        ------
+        Body
             The selected bodies.
 
         Raises
@@ -393,16 +351,8 @@ class Body(object):
                     yield body
 
 
-    def time_window_position(self):
-        return Kernel.TIMEWINDOWS_POS[self.id]
-
-    def time_window_rotation(self):
-        return Kernel.TIMEWINDOWS_ROT[self.id]
-
-
-
 class Asteroid(Body):
-    '''Subclass of :py:class:`~spiceminer.bodies.Body` representing asteroids.
+    '''Subclass of Body representing asteroids.
 
     Asteroids are ephimeris objects with IDs > 200000.
     '''
@@ -411,7 +361,7 @@ class Asteroid(Body):
 
 
 class Barycenter(Body):
-    '''Subclass of :py:class:`~spiceminer.bodies.Body` representing a
+    '''Subclass of Body representing a
     barycenter of an ephimeris object and all of its satellites.
 
     Barycenters are ephimeris objects with IDs between 0 and 9.
