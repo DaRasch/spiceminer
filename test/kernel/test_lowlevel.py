@@ -9,6 +9,18 @@ import itertools as itt
 import spiceminer as sm
 import spiceminer.kernel.lowlevel as lowlevel
 
+@pytest.fixture(scope='function', params=['pos', 'rot', 'none'])
+def dummyfy(request, monkeypatch):
+    def fake_loader(path):
+        if request.param == 'none':
+            windows = {}
+        else:
+            windows = {'ABC': 'Test'}
+        return request.param, windows
+    for func in ('_load_sp', '_load_pc', '_load_c', '_load_f'):
+        monkeypatch.setattr(lowlevel, func, fake_loader)
+    return request.param
+
 
 def generate_strings(max_size):
     while True:
@@ -58,6 +70,7 @@ def generate_filenames():
 def test_filter_extensions(filename):
     assert lowlevel.filter_extensions(filename) in lowlevel.VALID_KERNEL_TYPES
 
+@pytest.mark.usefixtures('dummyfy')
 def test_load_any(kernelfile):
     if kernelfile.path.endswith('.bc'):
         pytest.xfail(reason='.bc files require a loaded sc kernel')
