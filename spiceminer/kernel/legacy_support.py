@@ -4,7 +4,6 @@
 from collections import defaultdict
 
 from .highlevel import Kernel
-from .. import bodies
 from .. import _spicewrapper as spice
 from .._helpers import ignored
 
