@@ -3,13 +3,12 @@
 
 from .highlevel import Kernel
 
-# Legacy support (DEPRECATED)
-from .legacy_support import *
-from ..bodies import get
 
-
-def load(path='.', recursive=True, followlinks=False):
+def load(path='.', recursive=True, followlinks=False, force_reload=False):
     return Kernel.load(**locals())
+
+def load_single(cls, path, extension=None, force_reload=False):
+    return Kernel.load_single(**locals())
 
 def unload(path='.', recursive=True, followlinks=False):
     return Kernel.unload(**locals())
