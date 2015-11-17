@@ -96,14 +96,14 @@ class Kernel(object):
             msg = 'No valid files found on path'
             raise IOError(2, msg, path)
         # Load collected kernel files (misc first to avoid missing leapseconds).
-        ids = set()
+        loaded = set()
         for path, extension in misc_kernels:
             k = cls(path, extension, force_reload)
-            ids.update(k.ids)
+            loaded.add(k)
         for path, extension in body_kernels:
             k = cls(path, extension, force_reload)
-            ids.update(k.ids)
-        return ids
+            loaded.add(k)
+        return loaded
 
     @classmethod
     def load_single(cls, path, extension=None, force_reload=False):
@@ -121,7 +121,7 @@ class Kernel(object):
         else:
             kernel_type = filter_extensions(path)
         k = cls(path, kernel_type, force_reload)
-        return k.ids
+        return k
 
     @classmethod
     def unload(cls, path='.', recursive=True, followlinks=False):
@@ -147,7 +147,10 @@ class Kernel(object):
                     hashes.append(hash(os.path.join(dir_path, name)))
         # Unload collected kernel files.
         hashmap = {hash(k): k for k in cls.LOADED}
+        unloaded = set()
         for key in hashes:
             with ignored(KeyError):
-                hashmap[key]._unload()
-        return len(hashes)
+                k = hashmap[key]
+                k._unload()
+                unloaded.add(k)
+        return unloaded
