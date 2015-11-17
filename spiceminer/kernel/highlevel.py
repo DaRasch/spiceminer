@@ -12,6 +12,58 @@ __all__ = ['Kernel']
 
 
 class Kernel(object):
+    '''A loaded kernel.
+
+    Parameters
+    ----------
+    path: str
+        Relative or absolute path to the kernel file/directory.
+    kernel_type: {'sp', 'c', 'pc', 'f', 'ls', 'sc'}
+        Used to identify what information the kernel is holding and how to load
+        it.
+    force_reload: bool, optional
+        Reload already loaded kernel files.
+        By default an error is raised if a kernel file is already loaded.
+
+    Raises
+    ------
+    ValueError
+        If the kernel file is already loaded.
+
+    See also
+    --------
+    spiceminer.load: Load multiple files.
+    spiceminer.load_single: More controllable way to load single files.
+    spiceminer.unload: Unload kernels.
+
+    Attributes
+    ----------
+    *classattribute* LOADED: set of Kernel
+        All loaded kernels.
+    *classattribute* TIMEWINDOWS_POS: dict of int -> list
+        Maps a list of start-end-tuples for all known time windows of its
+        position to the id of a Body.
+    *classattribute* TIMEWINDOWS_ROT: dict of int -> list
+        Maps a list of start-end-tuples for all known time windows of its
+        rotation to the id of a Body.
+    path: str
+        Absolute path to the kernel file.
+    name: str
+        Filename of the kernel file.
+    type: {'sp', 'c', 'pc', 'f', 'ls', 'sc'}
+        Identifier for kernel loading mechanism.
+    info: {'pos', 'rot', 'none'}
+        What kind of spatial information the kernel contains.
+    ids: set of int
+        The IDs of all bodies about which the kernel has information.
+
+    Meta-kernels are not supported, because they would be parsed internally by
+    the c-framework, therefore ignoring the feautures for time window
+    extraction.
+
+    At the moment only Ephimeris Objects defined in binary kernels are parsed,
+    because of limitations in the c-framework.
+    '''
     LOADED = set()
     TIMEWINDOWS_POS = defaultdict(TimeWindows)
     TIMEWINDOWS_ROT = defaultdict(TimeWindows)
