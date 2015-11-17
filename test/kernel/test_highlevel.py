@@ -81,23 +81,23 @@ def test_cls_unload(path, kernel_type, patch_lowlevel):
 @pytest.mark.usefixtures('reset_Kernel')
 @pytest.mark.parametrize('path,extension', [('/home/user.bsp', None), ('/', 'bsp')])
 def test_load_single(path, extension, patch_lowlevel):
-    ids = highlevel.Kernel.load_single(path, extension)
+    kernel = highlevel.Kernel.load_single(path, extension)
     k = list(highlevel.Kernel.LOADED)[0]
     if extension is None:
         extension = path
     assert k.type == extension[-2:]
-    assert k.ids == ids
+    assert k == kernel
 
 
 # Need real kernels. TODO: Stop requiring live kernels?
 @pytest.mark.usefixtures('unload_kernels')
 def test_load(datadir):
-    ids = highlevel.Kernel.load(datadir)
+    kernels = highlevel.Kernel.load(datadir)
     assert highlevel.Kernel.LOADED
 
 
 # Need real kernels. TODO: Stop requiring live kernels?
 @pytest.mark.usefixtures('load_kernels', 'unload_kernels')
 def test_unload(datadir):
-    count = highlevel.Kernel.unload(datadir)
+    kernels = highlevel.Kernel.unload(datadir)
     assert not highlevel.Kernel.LOADED
