@@ -26,6 +26,8 @@ def load(path='.', recursive=True, followlinks=False, force_reload=False):
 
     Raises
     ------
+    ValueError
+        If the kernel file is already loaded.
     IOError
         If no files were loaded.
 
@@ -63,6 +65,8 @@ def load_single(cls, path, extension=None, force_reload=False):
 
     Raises
     ------
+    ValueError
+        If the kernel file is already loaded.
     IOError
         If no files were loaded.
 
