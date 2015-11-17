@@ -1,11 +1,11 @@
 #-*- coding:utf-8 -*-
 
-import collections
 import numbers
+import collections
+
 import numpy
 
 from . import _spicewrapper as spice
-
 from .time_ import Time
 from ._helpers import ignored
 from .kernel.highlevel import Kernel
