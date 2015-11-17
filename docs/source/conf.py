@@ -18,7 +18,7 @@ import sys
 # it to be able to import more configs.
 sys.path.insert(0, os.path.abspath(os.path.join(__file__, '..')))
 from conf_ext import *
-import conf_mock
+import conf_util
 
 BASEDIR = os.path.abspath(os.path.join(__file__, '..'))
 DOCROOT = os.path.abspath(os.path.join(BASEDIR, '..'))
@@ -26,7 +26,7 @@ PKGROOT = os.path.abspath(os.path.join(DOCROOT, '..'))
 MOCKDIR = conf_util.mockup(
     os.path.join(PKGROOT, 'spiceminer'),
     os.path.join(DOCROOT, 'mock'),
-    '_spicewrapper')
+    '_spicewrapper.py')
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the

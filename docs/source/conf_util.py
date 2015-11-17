@@ -30,7 +30,11 @@ def _rebuild_functions(tree, indent=0):
         if isinstance(func, ast.FunctionDef):
             for item in func.decorator_list:
                 yield '{}@{}\n'.format(indent_string, item.id)
-            args = ', '.join([item.id for item in func.args.args])
+            try:
+                args = ', '.join([item.id for item in func.args.args])
+            except AttributeError:
+                # In python3 it's arg.arg and not Name.id
+                args = ', '.join([item.arg for item in func.args.args])
             yield '{}def {}({}):\n'.format(indent_string, func.name, args)
             yield '{}pass\n'.format(' ' * (indent + 1))
 
@@ -62,6 +66,7 @@ def mockup(origin, target, *mockfiles):
             f.writelines(_rebuild_imports(tree))
             f.writelines(_rebuild_classes(tree))
             f.writelines(_rebuild_functions(tree))
+    return mockdir
 
 def find_version(filepath):
     with open(filepath) as f:
