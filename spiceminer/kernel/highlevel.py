@@ -68,30 +68,14 @@ class Kernel(object):
 
     @classmethod
     def load(cls, path='.', recursive=True, followlinks=False, force_reload=False):
-        '''Load a kernel file or a directory containing kernel files.
+        '''Load a kernel file or all kernel files in a directory tree.
 
-        :type path: ``str``
-        :arg path: Relative or absolute path to the file/(root)directory to load.
-        :type recursive: ``bool``
-        :arg recursive: If *path* is a directory and *recursive* is ``True``,
-          this will also search in child directories and not only the root.
-        :type followlinks: ``bool``
-        :arg followlinks: If *path* is a directory and *recursive* and
-          *followlinks* are both ``True``, symlinked directories further up the
-          directory tree will also be traversed.
+        Refer to `spiceminer.load` for full documentation.
 
-          .. WARNING:: Setting *followlinks* to ``True`` may lead to infinite
-             recursion.
-
-        :return: (``set(str)``) -- The names of all loaded Ephimeris Objects.
-        :raise: IOError -- If no files were loaded.
-
-        Meta-kernels are not supported, because they would be parsed internally by
-        the c-framework, therefore ignoring the feautures for time window
-        extraction.
-
-        At the moment only Ephimeris Objects defined in binary kernels are parsed,
-        because of limitations in the c-framework.
+        See also
+        --------
+        spiceminer.load_single: More controllable way to load single files.
+        spiceminer.unload: Unload kernels.
         '''
         path = cleanpath(path)
         # Find and sort kernel files.
@@ -123,6 +107,15 @@ class Kernel(object):
 
     @classmethod
     def load_single(cls, path, extension=None, force_reload=False):
+        '''Load a single kernel file. Allows non-standart extensions.
+
+        Refer to `spiceminer.load_single` for full documentation.
+
+        See also
+        --------
+        spiceminer.load: Load multiple files.
+        spiceminer.unload: Unload kernels.
+        '''
         if extension is not None:
             kernel_type = filter_extensions('.' + extension)
         else:
@@ -132,26 +125,14 @@ class Kernel(object):
 
     @classmethod
     def unload(cls, path='.', recursive=True, followlinks=False):
-        '''Unload a kernel file or a directory containing kernel files.
+        '''Unload a kernel file or all kernel files in a directory tree.
 
-        :type path: ``str``
-        :arg path: Relative or absolute path to the file/(root)directory to unload.
-        :type recursive: ``bool``
-        :arg recursive: If *path* is a directory and *recursive* is ``True``,
-          this will also search in child directories and not only the root.
-        :type followlinks: ``bool``
-        :arg followlinks: If *path* is a directory and *recursive* and
-          *followlinks* are both ``True``, symlinked directories further up the
-          directory tree will also be traversed.
+        Refer to `spiceminer.unload` for full documentation.
 
-          .. WARNING:: Setting *followlinks* to ``True`` may lead to infinite
-             recursion.
-
-        :return: (``int``) -- The number of unloaded files.
-        :raise: Nothing.
-
-        Time windows are not cleared, since that would require all loaded kernels
-        of that type to be checked again
+        See also
+        --------
+        spiceminer.load: Load multiple files.
+        spiceminer.load_single: More controllable way to load single files.
         '''
         path = cleanpath(path)
         if not os.path.exists(path):
