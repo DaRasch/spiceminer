@@ -37,24 +37,26 @@ class Kernel(object):
         # Load the kernel and handle time windows
         self.info, self._intervals = load_any(path, self.type)
         self.ids = frozenset(self._intervals.keys())
-        target = ''.join(['TIMEWINDOWS_', self.info.upper()])
-        target = getattr(self.__class__, target, None)
-        if target is not None:
+        with ignored(AttributeError):
+            windows = self._timewindows()
             for key, vals in self._intervals.iteritems():
-                target[key] += vals
+                windows[key] += vals
         # Make self available for unloading
         self.__class__.LOADED.add(self)
 
     def _unload(self):
         self.__class__.LOADED.remove(self)
-        target = ''.join(['TIMEWINDOWS_', self.info.upper()])
-        target = getattr(self.__class__, target, None)
-        if target is not None:
+        with ignored(AttributeError):
+            windows = self._timewindows()
             for key, vals in self._intervals.iteritems():
-                target[key] -= vals
-                if not target[key]:
-                    del target[key]
+                windows[key] -= vals
+                if not windows[key]:
+                    del windows[key]
         unload_any(self)
+
+    def _timewindows(self):
+        windows = 'TIMEWINDOWS_' + self.info.upper()
+        return getattr(self.__class__, windows)
 
     def __hash__(self):
         return hash(self.path)
