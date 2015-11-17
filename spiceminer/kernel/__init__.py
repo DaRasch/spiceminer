@@ -70,6 +70,13 @@ def load_single(cls, path, extension=None, force_reload=False):
     --------
     spiceminer.load: Load multiple files.
     spiceminer.unload: Unload kernels.
+
+    Meta-kernels are not supported, because they would be parsed internally by
+    the c-framework, therefore ignoring the feautures for time window
+    extraction.
+
+    At the moment only Ephimeris Objects defined in binary kernels are parsed,
+    because of limitations in the c-framework.
     '''
     return Kernel.load_single(**locals())
 
@@ -87,8 +94,8 @@ def unload(path='.', recursive=True, followlinks=False):
 
     Returns
     -------
-    int
-        Number of unloaded kernels.
+    kernels: set of kernel
+        The unloaded kernels.
 
     See also
     --------
