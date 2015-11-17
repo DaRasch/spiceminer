@@ -131,5 +131,4 @@ def gen_get():
 @pytest.mark.usefixtures('with_kernels')
 @pytest.mark.parametrize('arg,expected', list(gen_get()) + list(gen_get_nokernels()))
 def test_get(arg, expected):
-    pass
-    #assert bodies.get(arg) is Body(expected)
+    Body(arg)
