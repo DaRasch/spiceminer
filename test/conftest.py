@@ -26,11 +26,9 @@ def _iter_files(root):
             try:
                 # FIXME remove dependency on internal spiceminer code
                 kernel_type = kernel.lowlevel.filter_extensions(name)
-                print kernel_type
                 yield kfile(os.path.join(dir_path, name), kernel_type)
             except ValueError as e:
                 pass
-                print e
 
 DATA_FILES = list(itt.islice(_iter_files(DATA_DIR), 100))
 
