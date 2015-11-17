@@ -32,7 +32,8 @@ pip-log.txt
 nosetests.xml
 
 # Documentation
-docs/_build
+docs/build
+docs/mock
 
 # Translations
 *.mo
@@ -49,8 +50,8 @@ docs/_build
 *.sublime-workspace
 
 
-########
-# Misc #
-########
+###################
+# Project related #
+###################
 cspice
 data
