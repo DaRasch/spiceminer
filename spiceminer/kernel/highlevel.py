@@ -145,7 +145,7 @@ class Kernel(object):
         for dir_path, _, fnames in iterable_path(path, recursive, followlinks):
             for name in fnames:
                 # Ignore extension to be able to unload all kernels
-                hashes.addhash(os.path.join(dir_path, name)))
+                hashes.add(hash(os.path.join(dir_path, name)))
         # Unload collected kernel files.
         unloaded = {k for k in cls.LOADED if hash(k) in hashes}
         for k in unloaded:
