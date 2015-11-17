@@ -16,7 +16,9 @@ __all__ = ['Time']
 ### Miscellaneuos helpers ###
 @contextmanager
 def _no_argcheck():
-    # Hax! avoid unnecessary type checking
+    '''Hax! Avoid unnecessary type checking.
+    Used for alternate constructors which do their own type checking.
+    '''
     _tmpfuncs, Time._ARGCHECKS = Time._ARGCHECKS, []
     try:
         yield
@@ -53,25 +55,47 @@ def _argcheck_second(second):
 @functools.total_ordering
 class Time(numbers.Real):
     '''A powerfull POSIX time representation that always references UTC. It is
-    a subclass of ``numbers.Real``, so it acts like a float.
+    a subclass of ``numbers.Real``, so it acts like a float in mathematical
+    operations.
 
-    :type year: ``int``
-    :arg year: 1..9999
-    :type month: ``int``
-    :arg month: 1..12
-    :type day: ``int``
-    :arg day: 1..31
-    :type hour: ``int``
-    :arg hour: 0..23
-    :type minute: ``int``
-    :arg minute: 0..59
-    :type second: ``float``
-    :arg second: 0..<60
-    :return: (:py:class:`~spiceminer.time_.Time`) -- New POSX timestamp.
-    :raises:
-      (``ValueError``) -- If an argument is out of bounds.
+    Parameters
+    ----------
+    year: int
+        1..9999
+    month: int
+        1..12
+    day: int
+        1..31
+    hour: int
+        0..23
+    minute: int
+        0..59
+    second: float
+        0 <= second < 60
 
-      (``TypeError``) -- If an argument has the wrong type.
+    Raises
+    ------
+    ValueError
+        If an argument is out of bounds.
+    TypeError
+        If an argument has the wrong type.
+
+    Attributes
+    ----------
+    *classattribute* MINUTE: int
+        One minute in seconds
+    *classattribute* HOUR: int
+        One hour in seconds
+    *classattribute* DAY: int
+        One day in seconds
+    year: int
+    month: int
+    day: int
+    hour: int
+    minute: int
+    second: float
+    doy: float
+        The day of the year.
     '''
 
     _ARGCHECKS = [
@@ -101,12 +125,17 @@ class Time(numbers.Real):
     ### Additional constructors ###
     @classmethod
     def fromposix(cls, timestamp):
-        '''Generate a :py:class:`~spiceminer.time_.Time` instance from a float.
+        '''Generate a Time instance from a single number.
 
-        :type timestamp: ``float``
-        :arg timestamp: A number representing a point in time.
-        :return: (:py:class:`~spiceminer.time_.Time`) -- New POSIX timestamp.
-        :raises: Nothing.
+        Parameters
+        ----------
+        timestamp: float
+            A number representing a POSIX/UNIX timestamp.
+
+        Returns
+        -------
+        Time
+            New POSIX timestamp.
         '''
         with _no_argcheck():
             instance = cls(second=float(timestamp))
@@ -114,17 +143,26 @@ class Time(numbers.Real):
 
     @classmethod
     def fromydoy(cls, year, doy):
-        '''Generate a :py:class:`~spiceminer.time_.Time` instance from two
-        numbers representing a year and a day in that year.
+        '''Generate a Time instance from two numbers representing a year and a
+        day in that year.
 
-        :type year: ``int``
-        :arg year: The year to convert.
-        :type doy: ``float``
-        :arg doy: The day od year to convert. Can be a ``float`` to allow for
+        Parameters
+        ----------
+        year: int
+            The year to convert.
+        doy: float
+            The day od year to convert. Can be a ``float`` to allow for
           hour, minute, etc. measurement.
 
-        :return: (:py:class:`~spiceminer.time_.Time`) -- New POSIX timestamp.
-        :raises: (``ValueError``) -- If ``0 <= doy < (364 or 365)``
+        Returns
+        -------
+        Time
+            New POSIX timestamp.
+
+        Raises
+        ------
+        ValueError
+            If ``0 <= doy < (365 or 366)``
         '''
         if not 0 <= doy < 365 + calendar.isleap(year):
             msg = 'fromydoy() doy out of range, got {}'
@@ -136,14 +174,17 @@ class Time(numbers.Real):
 
     @classmethod
     def fromdatetime(cls, dt):
-        '''Generate a :py:class:`~spiceminer.time_.Time` instance from a
-        ``datetime`` object.
+        '''Generate a Time instance from a datetime object.
 
-        :type dt: ``datetime``
-        :arg dt: The object to convert.
+        Parameters
+        ----------
+        dt: datetime
+            The datetime object to convert.
 
-        :return: (:py:class:`~spiceminer.time_.Time`) -- New POSIX timestamp.
-        :raises: Nothing.
+        Returns
+        -------
+        Time
+            New POSIX timestamp.
         '''
         with _no_argcheck():
             instance = cls(*dt.utctimetuple()[:5],
