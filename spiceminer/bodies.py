@@ -51,7 +51,7 @@ class _BodyMeta(type):
         else:
             msg = "'int' or 'str' argument expected, got '{}'"
             raise TypeError(msg.format(type(body)))
-        if id_ not in set.union(set(), *(k.ids for k in Kernel.LOADED)):
+        if id_ not in set.union({0}, *(k.ids for k in Kernel.LOADED)):
             # TODO: implement better id-collection
             msg = "No loaded 'Body' with ID or name '{}'"
             raise ValueError(msg.format(body))
