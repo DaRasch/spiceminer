@@ -139,18 +139,13 @@ class Kernel(object):
             msg = 'unload() expected a valid file or directory path, got {}'
             raise ValueError(msg.format(path))
         # Find and sort kernel files.
-        hashes = []
+        hashes = set()
         for dir_path, _, fnames in iterable_path(path, recursive, followlinks):
             for name in fnames:
-                with ignored(ValueError):
-                    extension = filter_extensions(name)
-                    hashes.append(hash(os.path.join(dir_path, name)))
+                # Ignore extension to be able to unload all kernels
+                hashes.addhash(os.path.join(dir_path, name)))
         # Unload collected kernel files.
-        hashmap = {hash(k): k for k in cls.LOADED}
-        unloaded = set()
-        for key in hashes:
-            with ignored(KeyError):
-                k = hashmap[key]
-                k._unload()
-                unloaded.add(k)
+        unloaded = {k for k in cls.LOADED if hash(k) in hashes}
+        for k in unloaded:
+            k._unload()
         return unloaded
