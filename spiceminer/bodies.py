@@ -21,13 +21,14 @@ def _iterbodies(start, stop, step=1):
         with ignored(ValueError):
             yield Body(i)
 
-def _typecheck(times, observer, frame):
+def _typecheck(times, observer=None, frame='ECLIPJ2000'):
     '''Check and convert arguments for spice interface methods.'''
     try:
         times = (float(t) for t in times)
     except TypeError:
         times = [float(times)]
-    observer = Body(observer).name
+    if observer is not None:
+        observer = Body(observer).name
     if frame not in ('J2000', 'ECLIPJ2000'):
         frame = Body(frame)
         frame = frame._frame or frame.name
@@ -307,7 +308,7 @@ class Body(object):
         SpiceError
             If necessary information is missing.
         '''
-        times, target, _ = _typecheck(times, target, 'ECLIPJ2000')
+        times, _, target = _typecheck(times, None, 'ECLIPJ2000')
         result = []
         valid_times = []
         for time in times:
