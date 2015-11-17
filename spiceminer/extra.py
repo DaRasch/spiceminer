@@ -7,24 +7,30 @@ import numpy as np
 from numpy import arccos, dot, cross, isnan, pi
 from numpy.linalg import norm
 
-__all__ = ['angle', 'clockwise_angle', 'frange', 'dtrange']
+__all__ = ['angle']
 
 UX, UY, UZ = np.identity(3)
 
 
 def angle(v0, v1, center=None):
-    '''Calculates the absolute angle between 2 vectors (one-dimensional
-    arrays).
+    '''Calculate the angle between 2 vectors.
 
-    :type v0: ``numpy.ndarray``
-    :arg v0: A vector.
-    :type v1: ``numpy.ndarray``
-    :arg v1: A vector.
-    :type center: ``numpy.ndarray``
-    :arg center: The point to use as zero-vector.
-    :return: (``float``) -- The angle between *v0* and *v1* in radians (0-pi).
-    :raises: Nothing.
+    Parameters
+    ----------
+    v0, v1: array-like
+        The two vectors to measure the angle between. Must have shape (n>1,).
+    center: array-like, optional
+        An alternative vector to use as zero-vector. Must have shape (n>1,).
+        If `center` is given, `v0` and `v1` are assumed to be relative to it
+        and the angle between ``v0 - center`` and ``v1 - center`` is
+        calculated instead.
+
+    Returns
+    -------
+    float
+        The angle between `v0` and `v1` in radians.
     '''
+    # TODO: allow arrays to contain more than 1 vector
     if center is None:
         u_v0 = v0 / norm(v0)
         u_v1 = v1 / norm(v1)
