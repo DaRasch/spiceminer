@@ -106,6 +106,21 @@ class Body(object):
         If the provided name/ID doesn't reference a loaded body.
     TypeError
         If `body` has the wrong type.
+
+    Attributes
+    ----------
+    *classattribute* LOADED: set of body
+        All available bodies.
+    id: int
+        The reference id of the body for the backend. Guaranteed to be unique.
+    name: str
+        The name of the body.
+    times_pos: list of tuple of Time
+        Start-end-tuples of all time frames where the position of the body is
+        available.
+    times_rot: list of tuple of Time
+        Start-end-tuples of all time frames where the rotation of the body is
+        available.
     '''
     __metaclass__ = _BodyMeta
 
@@ -347,13 +362,13 @@ class Body(object):
             except spice.SpiceError:
                 continue
             dist = numpy.sqrt((pos ** 2).sum())
-            if isinstance(body, tuple(classes or [Body])):
+            if isinstance(body, tuple(classes) or (Body,)):
                 if body.id != self.id and dist <= distance:
                     yield body
 
 
 class Asteroid(Body):
-    '''Subclass of Body representing asteroids.
+    '''Bodies representing asteroids.
 
     Asteroids are ephimeris objects with IDs > 200000.
     '''
@@ -362,8 +377,8 @@ class Asteroid(Body):
 
 
 class Barycenter(Body):
-    '''Subclass of Body representing a
-    barycenter of an ephimeris object and all of its satellites.
+    '''Bodies representing a barycenter of an ephimeris object and all of its
+    satellites.
 
     Barycenters are ephimeris objects with IDs between 0 and 9.
     '''
@@ -372,7 +387,7 @@ class Barycenter(Body):
 
 
 class Comet(Body):
-    '''Subclass of :py:class:`~spiceminer.bodies.Body` representing comets.
+    '''Bodies representing comets.
 
     Comets are ephimeris objects with IDs between 100000 and 200000.
     '''
@@ -381,8 +396,8 @@ class Comet(Body):
 
 
 class Instrument(Body):
-    '''Subclass of :py:class:`~spiceminer.bodies.Body` representing instruments
-    mounted on spacecraft (including rovers and their instruments).
+    '''Bodies representing instruments mounted on spacecraft (including rovers
+    and their instruments).
 
     Instruments are ephimeris objects with IDs between -1001 and -10000.
     '''
@@ -397,7 +412,7 @@ class Instrument(Body):
 
 
 class Planet(Body):
-    '''Subclass of :py:class:`~spiceminer.bodies.Body` representing planets.
+    '''SBodies representing planets.
 
     Planets are ephimeris objects with IDs between 199 and 999 with
     pattern [1-9]99.
@@ -416,8 +431,8 @@ class Planet(Body):
 
 
 class Satellite(Body):
-    '''Subclass of :py:class:`~spiceminer.bodies.Body` representing satellites
-    (natural bodies orbiting a planet).
+    '''Bodies representing satellites (natural bodies orbiting a planet e.g.
+    moons).
 
     Satellites are ephimeris objects with IDs between 101 and 998 with
     pattern [1-9][0-9][1-8].
@@ -432,7 +447,7 @@ class Satellite(Body):
 
 
 class Spacecraft(Body):
-    '''Subclass of :py:class:`~spiceminer.bodies.Body` representing spacecraft.
+    '''Bodies representing spacecraftand rovers.
 
     Spacecraft are ephimeris objects with IDs between -1 and -999 or < -99999.
     '''
@@ -444,7 +459,7 @@ class Spacecraft(Body):
         return list(_iterbodies(self.id * 1000, self.id * 1000 - 1000, -1))
 
 class Star(Body):
-    '''Subclass of :py:class:`~spiceminer.bodies.Body` representing the sun.
+    '''Body representing the sun.
 
     Only used for the sun (ID 10) at the moment.
     '''
