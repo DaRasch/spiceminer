@@ -45,7 +45,7 @@ def load(path='.', recursive=True, followlinks=False, force_reload=False):
     '''
     return Kernel.load(**locals())
 
-def load_single(cls, path, extension=None, force_reload=False):
+def load_single(path, extension=None, force_reload=False):
     '''Load a single kernel file. Allows non-standart extensions.
 
     Parameters
