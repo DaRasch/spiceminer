@@ -323,7 +323,7 @@ class Body(object):
         SpiceError
             If necessary information is missing.
         '''
-        times, _, target = _typecheck(times, None, 'ECLIPJ2000')
+        times, _, target = _typecheck(times, None, target)
         result = []
         valid_times = []
         for time in times:
