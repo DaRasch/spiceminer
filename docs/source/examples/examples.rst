@@ -6,7 +6,6 @@ spiceminer module.
 
 Planet and Satellite info
 =========================
-
 .. literalinclude:: planets.py
     :language: python
     :linenos:

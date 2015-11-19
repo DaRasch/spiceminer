@@ -1,7 +1,5 @@
-.. spiceminer documentation master file
-
 spiceminer documentation
-========================
+************************
 
 The spiceminer package is a high level python wrapper around
 `NASAs CSPICE library <http://naif.jpl.nasa.gov/naif/>`_. It concentrates on
@@ -17,11 +15,8 @@ Contents
    :maxdepth: 2
 
    setup
-   examples
-   time
-   extra
-   kernel
-   bodies
+   examples/examples
+   devinfo
 
 
 Indices and tables
