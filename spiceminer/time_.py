@@ -82,20 +82,20 @@ class Time(numbers.Real):
 
     Attributes
     ----------
-    *classattribute* MINUTE: int
+    *classattribute* MINUTE: float
         One minute in seconds
-    *classattribute* HOUR: int
+    *classattribute* HOUR: float
         One hour in seconds
-    *classattribute* DAY: int
+    *classattribute* DAY: float
         One day in seconds
+    *classattribute* WEEK: float
+        One week (7 days) in seconds
     year: int
     month: int
     day: int
     hour: int
     minute: int
     second: float
-    doy: float
-        The day of the year.
 
     Examples
     --------
@@ -113,9 +113,10 @@ class Time(numbers.Real):
         ('minute', lambda x, y, z: _argcheck_basic(0, 59, 'minute', x)),
         ('second', lambda x, y, z: _argcheck_second(x))]
 
-    MINUTE = 60
-    HOUR = 3600
-    DAY = 86400
+    MINUTE = 60.0
+    HOUR = 60.0 * MINUTE
+    DAY = 24.0 * HOUR
+    WEEK = 7.0 * DAY
 
     def __init__(self, year=1970, month=1, day=1, hour=0, minute=0, second=0):
         super(Time, self).__init__()
@@ -128,8 +129,21 @@ class Time(numbers.Real):
 
     ### Additional constructors ###
     @classmethod
+    def now(cls):
+        '''Get current time.
+
+        Returns
+        -------
+        Time
+            New POSIX timestamp.
+        '''
+        return cls.fromdatetime(datetime.utcnow())
+
+    @classmethod
     def fromposix(cls, timestamp):
         '''Generate a Time instance from a single number.
+
+        Allows sub second precision.
 
         Parameters
         ----------
@@ -146,9 +160,30 @@ class Time(numbers.Real):
         return instance
 
     @classmethod
+    def fromstring(cls, string, format='%Y-%m-%d %H:%M:%S'):
+        '''Equivalent to time.strptime().
+
+        Does not allow sub second precision.
+
+        Parameters
+        ----------
+        string: str
+            The string to parse.
+        format: The format of the string.
+
+        Returns
+        -------
+        Time
+            New POSIX timestamp.
+        '''
+        return cls.fromposix(calendar.timegm(time.strptime(string, format)))
+
+    @classmethod
     def fromydoy(cls, year, doy):
         '''Generate a Time instance from two numbers representing a year and a
         day in that year.
+
+        Allows sub second precision.
 
         Parameters
         ----------
@@ -179,6 +214,8 @@ class Time(numbers.Real):
     @classmethod
     def fromdatetime(cls, dt):
         '''Generate a Time instance from a datetime object.
+
+        Allows sub second precision.
 
         Parameters
         ----------
@@ -214,44 +251,40 @@ class Time(numbers.Real):
     #Supported: int, float, datetime, date, Time
     def __eq__(self, other):
         if isinstance(other, datetime.datetime):
-            return self.real == calendar.timegm(
-                other.utctimetuple()) + (other.microsecond / 1000000.0)
+            return self.real == self.__class__.fromdatetime(other).real
         if isinstance(other, datetime.date):
             return self.real == calendar.timegm(other.timetuple())
-        return self.real == other
+        if isinstance(other, numbers.Real):
+            return self.real == other.real
+        return NotImplemented
 
     def __lt__(self, other):
         if isinstance(other, datetime.datetime):
-            return self.real < calendar.timegm(
-                other.utctimetuple()) + (other.microsecond / 1000000.0)
+            return self.real < self.__class__.fromdatetime(other).real
         if isinstance(other, datetime.date):
             return self.real < calendar.timegm(other.timetuple())
-        return self.real < other
+        if isinstance(other, numbers.Real):
+            return self.real < other.real
+        return NotImplemented
 
     def __le__(self, other):
         return self < other or self == other
 
     ### Math ###
     def __abs__(self):
-        with _no_argcheck():
-            new = Time(second=abs(self.real))
-        return new
+        return abs(self.real)
 
     def __neg__(self):
-        with _no_argcheck():
-            new = Time(second=-self.real)
-        return new
+        return -self.real
 
     def __pos__(self):
-        with _no_argcheck():
-            new = Time(second=self.real)
-        return new
+        return +self.real
 
     def __trunc__(self):
         return self.real.__trunc__()
 
     ### Self is left operand ###
-    #Supported: int, float, timedelta, datetime, date, Time
+    #Supported: int, float, timedelta, Time
     def __add__(self, other):
         if isinstance(other, datetime.timedelta):
             with _no_argcheck():
@@ -259,14 +292,15 @@ class Time(numbers.Real):
             return new
         if isinstance(other, numbers.Real):
             with _no_argcheck():
-                new = Time(second=self.real + other)
+                new = Time(second=self.real + other.real)
             return new
         return NotImplemented
 
     def __sub__(self, other):
-        if isinstance(other, datetime.datetime):
-            return self.real - calendar.timegm(
-                other.utctimetuple()) - (other.microsecond / 1000000.0)
+        if isinstance(other, datetime.timedelta):
+            with _no_argcheck():
+                new = Time(second=self.real + other.total_seconds())
+            return new
         if isinstance(other, numbers.Real):
             with _no_argcheck():
                 new = Time(second=self.real - float(other))
@@ -300,22 +334,32 @@ class Time(numbers.Real):
 
     ### Self is right operand ###
     def __radd__(self, other):
-        try:
-            return other + self.real
-        except ValueError:
-            return NotImplemented
-
+        if isinstance(other, numbers.Real):
+            return other.real + self.real
+        return NotImplemented
     def __rmul__(self, other):
+        if isinstance(other, numbers.Real):
+            return other.real * self.real
         return NotImplemented
     def __rdiv__(self, other):
+        if isinstance(other, numbers.Real):
+            return other.real / self.real
         return NotImplemented
     def __rtruediv__(self, other):
+        if isinstance(other, numbers.Real):
+            return other.real / self.real
         return NotImplemented
     def __rmod__(self, other):
+        if isinstance(other, numbers.Real):
+            return other.real % self.real
         return NotImplemented
     def __rfloordiv__(self, other):
+        if isinstance(other, numbers.Real):
+            return other.real // self.real
         return NotImplemented
     def __rpow__(self, other):
+        if isinstance(other, numbers.Real):
+            return other.real ** self.real
         return NotImplemented
 
     ### Representation ###
@@ -326,7 +370,7 @@ class Time(numbers.Real):
         fraction = str(self.real - int(self))[1:]
         if self < 0:
             fraction = fraction[1:]
-        return '{}T{}{}'.format(date, time_, fraction[:3])
+        return '{} {}{} UTC'.format(date, time_, fraction[:3])
 
     def __repr__(self):
         args = list(self.timetuple())
@@ -336,6 +380,10 @@ class Time(numbers.Real):
         argstr = '(year={}, month={}, day={}, hour={}, minute={}, second={}{})'
         argstr = argstr.format(*(args[:6] + [fraction[:3]]))
         return self.__class__.__name__ + argstr
+
+    def __format__(self, fmt):
+        fraction = fmt.replace('%f', str(self.real - int(self.real))[2:])
+        return time.strftime(fraction, self.timetuple())
 
     ### Protected fields ###
     @property
@@ -357,16 +405,49 @@ class Time(numbers.Real):
     def second(self):
         fraction = self.real - int(self)
         return self.timetuple()[5] + fraction
-    @property
-    def doy(self):
+
+    ### Additional methods ###
+    def day_of_year(self):
+        '''The day of year including hours, minutes, and seconds.
+
+        Allows sub second precision.
+
+        Returns
+        -------
+        float
+            Day of the year.
+        '''
         args = self.timetuple()
         seconds = args[3] * 3600 + args[4] * 60 + args[5]
         fraction = self.real - int(self)
         return args[7] + (seconds + fraction) / 86400.0
 
-    ### Additional methods ###
+    def week_of_year(self):
+        '''The week of year including days, hours, minutes, and seconds.
+
+        Allows sub second precision.
+
+        Returns
+        -------
+        float
+            Week of the year.
+        '''
+        args = self.timetuple()
+        week = args[7] / 7.0
+        seconds = args[3] * 3600 + args[4] * 60 + args[5]
+        fraction = self.real - int(self)
+        return week + (seconds + fraction) / self.__class__.WEEK
+
     def timetuple(self):
-        '''Struct representation as produced by ``time.gmtime()``.'''
+        '''Struct representation as produced by ``time.gmtime()``.
+
+        Does not allow sub second precision.
+
+        Returns
+        -------
+        time_struct
+            Time representation used by some other time related functions.
+        '''
         return time.gmtime(self.real)
 
     def et(self):
