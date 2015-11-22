@@ -16,6 +16,7 @@ Contents
 
    setup
    examples/examples
+   apidoc
    devinfo
 
 

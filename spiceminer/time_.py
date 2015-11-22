@@ -60,18 +60,18 @@ class Time(numbers.Real):
 
     Parameters
     ----------
-    year: int
-        1..9999
-    month: int
-        1..12
-    day: int
-        1..31
-    hour: int
-        0..23
-    minute: int
-        0..59
-    second: float
-        0 <= second < 60
+    year: int, optional
+        [1..9999]
+    month: int, optional
+        [1..12]
+    day: int, optional
+        [1..31]
+    hour: int, optional
+        [0..23]
+    minute: int, optional
+        [0..59]
+    second: float, optional
+        [0..60)
 
     Raises
     ------
@@ -96,6 +96,13 @@ class Time(numbers.Real):
     second: float
     doy: float
         The day of the year.
+
+    Examples
+    --------
+    >>> Time()
+    Time(year=1970, month=1, day=1, hour=0, minute=0, second=0)
+    >>> Time(2000, 5, hour=14)
+    Time(year=2000, month=5, day=1, hour=14, minute=0, second=0)
     '''
 
     _ARGCHECKS = [
@@ -106,11 +113,8 @@ class Time(numbers.Real):
         ('minute', lambda x, y, z: _argcheck_basic(0, 59, 'minute', x)),
         ('second', lambda x, y, z: _argcheck_second(x))]
 
-    #: One minute in seconds.
     MINUTE = 60
-    #: One hour in seconds.
     HOUR = 3600
-    #: One day in seconds.
     DAY = 86400
 
     def __init__(self, year=1970, month=1, day=1, hour=0, minute=0, second=0):
@@ -152,7 +156,7 @@ class Time(numbers.Real):
             The year to convert.
         doy: float
             The day od year to convert. Can be a ``float`` to allow for
-          hour, minute, etc. measurement.
+            hour, minute, etc. measurement.
 
         Returns
         -------
@@ -201,9 +205,6 @@ class Time(numbers.Real):
     ### Real-type stuff###
     @property
     def real(self):
-        '''The value of the POSIX representation of an object. Required by the
-        ``numbers.Real`` interface.
-        '''
         return float(self._value)
 
     def __float__(self):
@@ -339,32 +340,25 @@ class Time(numbers.Real):
     ### Protected fields ###
     @property
     def year(self):
-        '''Year represented by the timestamp.'''
         return self.timetuple()[0]
     @property
     def month(self):
-        '''Month represented by the timestamp.'''
         return self.timetuple()[1]
     @property
     def day(self):
-        '''Day represented by the timestamp.'''
         return self.timetuple()[2]
     @property
     def hour(self):
-        '''Hour represented by the timestamp.'''
         return self.timetuple()[3]
     @property
     def minute(self):
-        '''Minute represented by the timestamp.'''
         return self.timetuple()[4]
     @property
     def second(self):
-        '''Second represented by the timestamp.'''
         fraction = self.real - int(self)
         return self.timetuple()[5] + fraction
     @property
     def doy(self):
-        '''Day of year represented by the timestamp.'''
         args = self.timetuple()
         seconds = args[3] * 3600 + args[4] * 60 + args[5]
         fraction = self.real - int(self)
