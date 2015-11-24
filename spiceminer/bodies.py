@@ -145,35 +145,26 @@ class Body(object):
 
     @property
     def id(self):
-        '''The ID of this body.'''
         return self._id
 
     @property
     def name(self):
-        '''The name of this body.'''
         return self._name
 
     @property
     def times_pos(self):
-        '''The time intervals for which positions are defined.'''
         return Kernel.TIMEWINDOWS_POS[self.id]
 
     @property
     def times_rot(self):
-        '''The time intervals for which rotations are defined.'''
         return Kernel.TIMEWINDOWS_ROT[self.id]
 
     @property
     def parent(self):
-        '''The body that this body is bound to (orbiting or physical
-        attachment).
-        '''
         return None
 
     @property
     def children(self):
-        '''The bodies bound to this body (orbiting around it permanently and
-        thereby included in its barycenter).'''
         return []
 
     def state(self, times, observer='SUN', frame='ECLIPJ2000',
@@ -378,7 +369,7 @@ class Asteroid(Body):
 
 class Barycenter(Body):
     '''Bodies representing a barycenter of an ephimeris object and all of its
-    satellites.
+    satellites (moons).
 
     Barycenters are ephimeris objects with IDs between 0 and 9.
     '''

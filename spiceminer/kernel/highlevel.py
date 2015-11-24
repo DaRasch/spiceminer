@@ -12,7 +12,10 @@ __all__ = ['Kernel']
 
 
 class Kernel(object):
-    '''A loaded kernel.
+    '''A loaded kernel file.
+
+    .. WARNING:: The constructor should never be used directly. Use one of the
+                 methods in the *See also* section.
 
     Parameters
     ----------
@@ -29,12 +32,6 @@ class Kernel(object):
     ------
     ValueError
         If the kernel file is already loaded.
-
-    See also
-    --------
-    spiceminer.load: Load multiple files.
-    spiceminer.load_single: More controllable way to load single files.
-    spiceminer.unload: Unload kernels.
 
     Attributes
     ----------
@@ -57,12 +54,11 @@ class Kernel(object):
     ids: set of int
         The IDs of all bodies about which the kernel has information.
 
-    Meta-kernels are not supported, because they would be parsed internally by
-    the c-framework, therefore ignoring the feautures for time window
-    extraction.
-
-    At the moment only Ephimeris Objects defined in binary kernels are parsed,
-    because of limitations in the c-framework.
+    See also
+    --------
+    load: Load multiple files.
+    load_single: More controllable way to load single files.
+    unload: Unload kernels.
     '''
     LOADED = set()
     TIMEWINDOWS_POS = defaultdict(TimeWindows)

@@ -58,6 +58,12 @@ class Time(numbers.Real):
     a subclass of ``numbers.Real``, so it acts like a float in mathematical
     operations.
 
+    Comparison operations also support datetime objects.
+
+    Addition and subtraction operations yield new Time objects when the left
+    operand is already a Time object. They also support timedelta objects as
+    right operands.
+
     Parameters
     ----------
     year: int, optional

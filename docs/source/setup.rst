@@ -1,6 +1,5 @@
 Setup
 *****
-This guide explains all the things needed to get spiceminer running.
 
 Getting the source
 ==================

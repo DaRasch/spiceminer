@@ -7,6 +7,10 @@ from .highlevel import Kernel
 def load(path='.', recursive=True, followlinks=False, force_reload=False):
     '''Load a kernel file or all kernel files in a directory tree.
 
+    Meta-kernels are not supported, because they would be parsed internally by
+    the C-framework, therefore ignoring the feautures for time window
+    extraction.
+
     Parameters
     ----------
     path: str, optional
@@ -33,20 +37,17 @@ def load(path='.', recursive=True, followlinks=False, force_reload=False):
 
     See also
     --------
-    spiceminer.load_single: More controllable way to load single files.
-    spiceminer.unload: Unload kernels.
-
-    Meta-kernels are not supported, because they would be parsed internally by
-    the c-framework, therefore ignoring the feautures for time window
-    extraction.
-
-    At the moment only Ephimeris Objects defined in binary kernels are parsed,
-    because of limitations in the c-framework.
+    load_single: More controllable way to load single files.
+    unload: Unload kernels.
     '''
     return Kernel.load(**locals())
 
 def load_single(path, extension=None, force_reload=False):
     '''Load a single kernel file. Allows non-standart extensions.
+
+    Meta-kernels are not supported, because they would be parsed internally by
+    the C-framework, therefore ignoring the feautures for time window
+    extraction.
 
     Parameters
     ----------
@@ -72,15 +73,8 @@ def load_single(path, extension=None, force_reload=False):
 
     See also
     --------
-    spiceminer.load: Load multiple files.
-    spiceminer.unload: Unload kernels.
-
-    Meta-kernels are not supported, because they would be parsed internally by
-    the c-framework, therefore ignoring the feautures for time window
-    extraction.
-
-    At the moment only Ephimeris Objects defined in binary kernels are parsed,
-    because of limitations in the c-framework.
+    load: Load multiple files.
+    unload: Unload kernels.
     '''
     return Kernel.load_single(**locals())
 
@@ -103,7 +97,7 @@ def unload(path='.', recursive=True, followlinks=False):
 
     See also
     --------
-    spiceminer.load: Load multiple files.
-    spiceminer.load_single: More controllable way to load single files.
+    load: Load multiple files.
+    load_single: More controllable way to load single files.
     '''
     return Kernel.unload(**locals())
