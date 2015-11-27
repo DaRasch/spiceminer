@@ -1,0 +1,532 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Time &mdash; spiceminer 0.1.0 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="spiceminer 0.1.0 documentation" href="index.html"/>
+        <link rel="up" title="API Documentation" href="apidoc.html"/>
+        <link rel="next" title="Extras" href="extra.html"/>
+        <link rel="prev" title="Bodies" href="body.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> spiceminer
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/examples.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="apidoc.html">API Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="kernel.html">Kernels</a></li>
+<li class="toctree-l2"><a class="reference internal" href="body.html">Bodies</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Time</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#what-are-the-differences-to-datetime">What are the differences to datetime?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-spiceminer">API</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="extra.html">Extras</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="devinfo.html">Developer infos</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">spiceminer</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="apidoc.html">API Documentation</a> &raquo;</li>
+      
+    <li>Time</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/time.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="time">
+<h1>Time<a class="headerlink" href="#time" title="Permalink to this headline">¶</a></h1>
+<p>spiceminer ships its own time implementation to allow custom features and more
+consistency than the standart datetime module.</p>
+<div class="section" id="what-are-the-differences-to-datetime">
+<h2>What are the differences to datetime?<a class="headerlink" href="#what-are-the-differences-to-datetime" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>It&#8217;s a float:</dt>
+<dd><p class="first">That means it can be used in range functions that support floats like
+<code class="docutils literal"><span class="pre">numpy.arange</span></code> or <code class="docutils literal"><span class="pre">numpy.linspace</span></code>.</p>
+<p class="last">It also supports all arithmetical operations, allowing much simpler
+calculations like <code class="docutils literal"><span class="pre">Time(2015)</span> <span class="pre">+</span> <span class="pre">20</span></code> to add 20 seconds instead of having to
+generate a new object explicitly. It also has constants for minute, hour,
+and day to simpliefy use in range functions. For example
+<code class="docutils literal"><span class="pre">numpy.arange(Time(2000),</span> <span class="pre">Time(2001),</span> <span class="pre">Time.DAY)</span></code> produces an array with
+each entry representing a day in the year 2000.</p>
+</dd>
+<dt>Day of year:</dt>
+<dd>Time has constructor and attribute for handling day of year instead of
+handling month, day, hour, etc. seperately.</dd>
+<dt>No timezones:</dt>
+<dd>You don&#8217;t have to handle conversion to UTC and timezone related weirdness.</dd>
+</dl>
+</div>
+<div class="section" id="module-spiceminer">
+<span id="api"></span><h2>API<a class="headerlink" href="#module-spiceminer" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="spiceminer.Time">
+<em class="property">class </em><code class="descclassname">spiceminer.</code><code class="descname">Time</code><span class="sig-paren">(</span><em>year=1970</em>, <em>month=1</em>, <em>day=1</em>, <em>hour=0</em>, <em>minute=0</em>, <em>second=0</em><span class="sig-paren">)</span><a class="headerlink" href="#spiceminer.Time" title="Permalink to this definition">¶</a></dt>
+<dd><p>A powerfull POSIX time representation that always references UTC. It is
+a subclass of <code class="docutils literal"><span class="pre">numbers.Real</span></code>, so it acts like a float in mathematical
+operations.</p>
+<p>Comparison operations also support datetime objects.</p>
+<p>Addition and subtraction operations yield new Time objects when the left
+operand is already a Time object. They also support timedelta objects as
+right operands.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>year: int, optional</strong></p>
+<blockquote>
+<div><p>[1..9999]</p>
+</div></blockquote>
+<p><strong>month: int, optional</strong></p>
+<blockquote>
+<div><p>[1..12]</p>
+</div></blockquote>
+<p><strong>day: int, optional</strong></p>
+<blockquote>
+<div><p>[1..31]</p>
+</div></blockquote>
+<p><strong>hour: int, optional</strong></p>
+<blockquote>
+<div><p>[0..23]</p>
+</div></blockquote>
+<p><strong>minute: int, optional</strong></p>
+<blockquote>
+<div><p>[0..59]</p>
+</div></blockquote>
+<p><strong>second: float, optional</strong></p>
+<blockquote>
+<div><p>[0..60)</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>ValueError</strong></p>
+<blockquote>
+<div><p>If an argument is out of bounds.</p>
+</div></blockquote>
+<p><strong>TypeError</strong></p>
+<blockquote class="last">
+<div><p>If an argument has the wrong type.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">Time</span><span class="p">()</span>
+<span class="go">Time(year=1970, month=1, day=1, hour=0, minute=0, second=0)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Time</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">hour</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+<span class="go">Time(year=2000, month=5, day=1, hour=14, minute=0, second=0)</span>
+</pre></div>
+</div>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="52%" />
+<col width="48%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><em>classattribute</em> MINUTE: float</td>
+<td>One minute in seconds</td>
+</tr>
+<tr class="row-even"><td><em>classattribute</em> HOUR: float</td>
+<td>One hour in seconds</td>
+</tr>
+<tr class="row-odd"><td><em>classattribute</em> DAY: float</td>
+<td>One day in seconds</td>
+</tr>
+<tr class="row-even"><td><em>classattribute</em> WEEK: float</td>
+<td>One week (7 days) in seconds</td>
+</tr>
+<tr class="row-odd"><td>year: int</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>month: int</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>day: int</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>hour: int</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>minute: int</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>second: float</td>
+<td>&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+<dl class="classmethod">
+<dt id="spiceminer.Time.now">
+<em class="property">classmethod </em><code class="descname">now</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spiceminer.Time.now" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get current time.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Time</p>
+<blockquote class="last">
+<div><p>New POSIX timestamp.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="spiceminer.Time.fromposix">
+<em class="property">classmethod </em><code class="descname">fromposix</code><span class="sig-paren">(</span><em>timestamp</em><span class="sig-paren">)</span><a class="headerlink" href="#spiceminer.Time.fromposix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a Time instance from a single number.</p>
+<p>Allows sub second precision.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>timestamp: float</strong></p>
+<blockquote>
+<div><p>A number representing a POSIX/UNIX timestamp.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Time</p>
+<blockquote class="last">
+<div><p>New POSIX timestamp.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="spiceminer.Time.fromstring">
+<em class="property">classmethod </em><code class="descname">fromstring</code><span class="sig-paren">(</span><em>string</em>, <em>format='%Y-%m-%d %H:%M:%S'</em><span class="sig-paren">)</span><a class="headerlink" href="#spiceminer.Time.fromstring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Equivalent to time.strptime().</p>
+<p>Does not allow sub second precision.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>string: str</strong></p>
+<blockquote>
+<div><p>The string to parse.</p>
+</div></blockquote>
+<p><strong>format: The format of the string.</strong></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Time</p>
+<blockquote class="last">
+<div><p>New POSIX timestamp.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="spiceminer.Time.fromydoy">
+<em class="property">classmethod </em><code class="descname">fromydoy</code><span class="sig-paren">(</span><em>year</em>, <em>doy</em><span class="sig-paren">)</span><a class="headerlink" href="#spiceminer.Time.fromydoy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a Time instance from two numbers representing a year and a
+day in that year.</p>
+<p>Allows sub second precision.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>year: int</strong></p>
+<blockquote>
+<div><p>The year to convert.</p>
+</div></blockquote>
+<p><strong>doy: float</strong></p>
+<blockquote>
+<div><p>The day od year to convert. Can be a <code class="docutils literal"><span class="pre">float</span></code> to allow for
+hour, minute, etc. measurement.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Time</p>
+<blockquote>
+<div><p>New POSIX timestamp.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>ValueError</strong></p>
+<blockquote class="last">
+<div><p>If <code class="docutils literal"><span class="pre">0</span> <span class="pre">&lt;=</span> <span class="pre">doy</span> <span class="pre">&lt;</span> <span class="pre">(365</span> <span class="pre">or</span> <span class="pre">366)</span></code></p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="spiceminer.Time.fromdatetime">
+<em class="property">classmethod </em><code class="descname">fromdatetime</code><span class="sig-paren">(</span><em>dt</em><span class="sig-paren">)</span><a class="headerlink" href="#spiceminer.Time.fromdatetime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a Time instance from a datetime object.</p>
+<p>Allows sub second precision.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dt: datetime</strong></p>
+<blockquote>
+<div><p>The datetime object to convert.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Time</p>
+<blockquote class="last">
+<div><p>New POSIX timestamp.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spiceminer.Time.day_of_year">
+<code class="descname">day_of_year</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spiceminer.Time.day_of_year" title="Permalink to this definition">¶</a></dt>
+<dd><p>The day of year including hours, minutes, and seconds.</p>
+<p>Allows sub second precision.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">float</p>
+<blockquote class="last">
+<div><p>Day of the year.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spiceminer.Time.week_of_year">
+<code class="descname">week_of_year</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spiceminer.Time.week_of_year" title="Permalink to this definition">¶</a></dt>
+<dd><p>The week of year including days, hours, minutes, and seconds.</p>
+<p>Allows sub second precision.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">float</p>
+<blockquote class="last">
+<div><p>Week of the year.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spiceminer.Time.timetuple">
+<code class="descname">timetuple</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spiceminer.Time.timetuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Struct representation as produced by <code class="docutils literal"><span class="pre">time.gmtime()</span></code>.</p>
+<p>Does not allow sub second precision.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">time_struct</p>
+<blockquote class="last">
+<div><p>Time representation used by some other time related functions.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="extra.html" class="btn btn-neutral float-right" title="Extras" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="body.html" class="btn btn-neutral" title="Bodies" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Philipp Rasch.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

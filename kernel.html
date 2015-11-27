@@ -1,0 +1,466 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Kernels &mdash; spiceminer 0.1.0 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="spiceminer 0.1.0 documentation" href="index.html"/>
+        <link rel="up" title="API Documentation" href="apidoc.html"/>
+        <link rel="next" title="Bodies" href="body.html"/>
+        <link rel="prev" title="API Documentation" href="apidoc.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> spiceminer
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/examples.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="apidoc.html">API Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="">Kernels</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#official-documentation">Official documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-spiceminer">API</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="body.html">Bodies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="time.html">Time</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extra.html">Extras</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="devinfo.html">Developer infos</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">spiceminer</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="apidoc.html">API Documentation</a> &raquo;</li>
+      
+    <li>Kernels</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/kernel.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="kernels">
+<h1>Kernels<a class="headerlink" href="#kernels" title="Permalink to this headline">¶</a></h1>
+<p>Kernels are files containing information relating to objects in space.</p>
+<div class="section" id="official-documentation">
+<h2>Official documentation<a class="headerlink" href="#official-documentation" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/kernel.html">NAIF website</a>
+has a lot of indepth information about kernels.</p>
+</div>
+<div class="section" id="module-spiceminer">
+<span id="api"></span><h2>API<a class="headerlink" href="#module-spiceminer" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="spiceminer.load">
+<code class="descclassname">spiceminer.</code><code class="descname">load</code><span class="sig-paren">(</span><em>path='.'</em>, <em>recursive=True</em>, <em>followlinks=False</em>, <em>force_reload=False</em><span class="sig-paren">)</span><a class="headerlink" href="#spiceminer.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a kernel file or all kernel files in a directory tree.</p>
+<p>Meta-kernels are not supported, because they would be parsed internally by
+the C-framework, therefore ignoring the feautures for time window
+extraction.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>path: str, optional</strong></p>
+<blockquote>
+<div><p>Relative or absolute path to the kernel file/directory.</p>
+</div></blockquote>
+<p><strong>recursive: bool, optional</strong></p>
+<blockquote>
+<div><p>Search subdirectories for kernel files.</p>
+</div></blockquote>
+<p><strong>followlinks: bool, optional</strong></p>
+<blockquote>
+<div><p>Follow symbolic links.</p>
+</div></blockquote>
+<p><strong>force_reload: bool, optional</strong></p>
+<blockquote>
+<div><p>Reload already loaded kernel files.
+By default an error is raised if a kernel file is already loaded.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">kernels: set of Kernel</p>
+<blockquote>
+<div><p>The loaded kernels.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>ValueError</strong></p>
+<blockquote>
+<div><p>If the kernel file is already loaded.</p>
+</div></blockquote>
+<p><strong>IOError</strong></p>
+<blockquote class="last">
+<div><p>If no files were loaded.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><a class="reference internal" href="#spiceminer.load_single" title="spiceminer.load_single"><code class="xref py py-obj docutils literal"><span class="pre">load_single</span></code></a></dt>
+<dd>More controllable way to load single files.</dd>
+<dt><a class="reference internal" href="#spiceminer.unload" title="spiceminer.unload"><code class="xref py py-obj docutils literal"><span class="pre">unload</span></code></a></dt>
+<dd>Unload kernels.</dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="spiceminer.load_single">
+<code class="descclassname">spiceminer.</code><code class="descname">load_single</code><span class="sig-paren">(</span><em>path</em>, <em>extension=None</em>, <em>force_reload=False</em><span class="sig-paren">)</span><a class="headerlink" href="#spiceminer.load_single" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a single kernel file. Allows non-standart extensions.</p>
+<p>Meta-kernels are not supported, because they would be parsed internally by
+the C-framework, therefore ignoring the feautures for time window
+extraction.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>path: str</strong></p>
+<blockquote>
+<div><p>Relative or absolute path to the kernel file.</p>
+</div></blockquote>
+<p><strong>extension: str, optional</strong></p>
+<blockquote>
+<div><p>Use the provided extension instead of the extension of the file.</p>
+</div></blockquote>
+<p><strong>force_reload: bool, optional</strong></p>
+<blockquote>
+<div><p>Reload already loaded kernel files.
+By default an error is raised if a kernel file is already loaded.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Kernel</p>
+<blockquote>
+<div><p>The loaded kernel.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>ValueError</strong></p>
+<blockquote>
+<div><p>If the kernel file is already loaded.</p>
+</div></blockquote>
+<p><strong>IOError</strong></p>
+<blockquote class="last">
+<div><p>If no files were loaded.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><a class="reference internal" href="#spiceminer.load" title="spiceminer.load"><code class="xref py py-obj docutils literal"><span class="pre">load</span></code></a></dt>
+<dd>Load multiple files.</dd>
+<dt><a class="reference internal" href="#spiceminer.unload" title="spiceminer.unload"><code class="xref py py-obj docutils literal"><span class="pre">unload</span></code></a></dt>
+<dd>Unload kernels.</dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="spiceminer.unload">
+<code class="descclassname">spiceminer.</code><code class="descname">unload</code><span class="sig-paren">(</span><em>path='.'</em>, <em>recursive=True</em>, <em>followlinks=False</em><span class="sig-paren">)</span><a class="headerlink" href="#spiceminer.unload" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unload a kernel file or all kernel files in a directory tree.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>path: str, optional</strong></p>
+<blockquote>
+<div><p>Relative or absolute path to the kernel file/directory.</p>
+</div></blockquote>
+<p><strong>recursive: bool, optional</strong></p>
+<blockquote>
+<div><p>Search subdirectories for kernel files.</p>
+</div></blockquote>
+<p><strong>followlinks: bool, optional</strong></p>
+<blockquote>
+<div><p>Follow symbolic links.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">kernels: set of kernel</p>
+<blockquote class="last">
+<div><p>The unloaded kernels.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><a class="reference internal" href="#spiceminer.load" title="spiceminer.load"><code class="xref py py-obj docutils literal"><span class="pre">load</span></code></a></dt>
+<dd>Load multiple files.</dd>
+<dt><a class="reference internal" href="#spiceminer.load_single" title="spiceminer.load_single"><code class="xref py py-obj docutils literal"><span class="pre">load_single</span></code></a></dt>
+<dd>More controllable way to load single files.</dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="spiceminer.Kernel">
+<em class="property">class </em><code class="descclassname">spiceminer.</code><code class="descname">Kernel</code><span class="sig-paren">(</span><em>path</em>, <em>kernel_type</em>, <em>force_reload=False</em><span class="sig-paren">)</span><a class="headerlink" href="#spiceminer.Kernel" title="Permalink to this definition">¶</a></dt>
+<dd><p>A loaded kernel file.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The constructor should never be used directly. Use one of the
+methods in the <em>See also</em> section.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>path: str</strong></p>
+<blockquote>
+<div><p>Relative or absolute path to the kernel file/directory.</p>
+</div></blockquote>
+<p><strong>kernel_type: {&#8216;sp&#8217;, &#8216;c&#8217;, &#8216;pc&#8217;, &#8216;f&#8217;, &#8216;ls&#8217;, &#8216;sc&#8217;}</strong></p>
+<blockquote>
+<div><p>Used to identify what information the kernel is holding and how to load
+it.</p>
+</div></blockquote>
+<p><strong>force_reload: bool, optional</strong></p>
+<blockquote>
+<div><p>Reload already loaded kernel files.
+By default an error is raised if a kernel file is already loaded.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>ValueError</strong></p>
+<blockquote class="last">
+<div><p>If the kernel file is already loaded.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><a class="reference internal" href="#spiceminer.load" title="spiceminer.load"><code class="xref py py-obj docutils literal"><span class="pre">load</span></code></a></dt>
+<dd>Load multiple files.</dd>
+<dt><a class="reference internal" href="#spiceminer.load_single" title="spiceminer.load_single"><code class="xref py py-obj docutils literal"><span class="pre">load_single</span></code></a></dt>
+<dd>More controllable way to load single files.</dd>
+<dt><a class="reference internal" href="#spiceminer.unload" title="spiceminer.unload"><code class="xref py py-obj docutils literal"><span class="pre">unload</span></code></a></dt>
+<dd>Unload kernels.</dd>
+</dl>
+</div>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="36%" />
+<col width="64%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><em>classattribute</em> LOADED: set of Kernel</td>
+<td>All loaded kernels.</td>
+</tr>
+<tr class="row-even"><td><em>classattribute</em> TIMEWINDOWS_POS: dict of int -&gt; list</td>
+<td>Maps a list of start-end-tuples for all known time windows of its position to the id of a Body.</td>
+</tr>
+<tr class="row-odd"><td><em>classattribute</em> TIMEWINDOWS_ROT: dict of int -&gt; list</td>
+<td>Maps a list of start-end-tuples for all known time windows of its rotation to the id of a Body.</td>
+</tr>
+<tr class="row-even"><td>path: str</td>
+<td>Absolute path to the kernel file.</td>
+</tr>
+<tr class="row-odd"><td>name: str</td>
+<td>Filename of the kernel file.</td>
+</tr>
+<tr class="row-even"><td>type: {&#8216;sp&#8217;, &#8216;c&#8217;, &#8216;pc&#8217;, &#8216;f&#8217;, &#8216;ls&#8217;, &#8216;sc&#8217;}</td>
+<td>Identifier for kernel loading mechanism.</td>
+</tr>
+<tr class="row-odd"><td>info: {&#8216;pos&#8217;, &#8216;rot&#8217;, &#8216;none&#8217;}</td>
+<td>What kind of spatial information the kernel contains.</td>
+</tr>
+<tr class="row-even"><td>ids: set of int</td>
+<td>The IDs of all bodies about which the kernel has information.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="body.html" class="btn btn-neutral float-right" title="Bodies" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="apidoc.html" class="btn btn-neutral" title="API Documentation" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Philipp Rasch.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,576 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Bodies &mdash; spiceminer 0.1.0 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="spiceminer 0.1.0 documentation" href="index.html"/>
+        <link rel="up" title="API Documentation" href="apidoc.html"/>
+        <link rel="next" title="Time" href="time.html"/>
+        <link rel="prev" title="Kernels" href="kernel.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> spiceminer
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/examples.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="apidoc.html">API Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="kernel.html">Kernels</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Bodies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="time.html">Time</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extra.html">Extras</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="devinfo.html">Developer infos</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">spiceminer</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="apidoc.html">API Documentation</a> &raquo;</li>
+      
+    <li>Bodies</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/body.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-spiceminer">
+<span id="bodies"></span><h1>Bodies<a class="headerlink" href="#module-spiceminer" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="spiceminer.Body">
+<em class="property">class </em><code class="descclassname">spiceminer.</code><code class="descname">Body</code><span class="sig-paren">(</span><em>body</em><span class="sig-paren">)</span><a class="headerlink" href="#spiceminer.Body" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for representing ephimeres objects.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>body: str or int or Body</strong></p>
+<blockquote>
+<div><p>The name or ID of the requested body.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>ValueError</strong></p>
+<blockquote>
+<div><p>If the provided name/ID doesn&#8217;t reference a loaded body.</p>
+</div></blockquote>
+<p><strong>TypeError</strong></p>
+<blockquote class="last">
+<div><p>If <cite>body</cite> has the wrong type.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="31%" />
+<col width="69%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><em>classattribute</em> LOADED: set of body</td>
+<td>All available bodies.</td>
+</tr>
+<tr class="row-even"><td>id: int</td>
+<td>The reference id of the body for the backend. Guaranteed to be unique.</td>
+</tr>
+<tr class="row-odd"><td>name: str</td>
+<td>The name of the body.</td>
+</tr>
+<tr class="row-even"><td>times_pos: list of tuple of Time</td>
+<td>Start-end-tuples of all time frames where the position of the body is available.</td>
+</tr>
+<tr class="row-odd"><td>times_rot: list of tuple of Time</td>
+<td>Start-end-tuples of all time frames where the rotation of the body is available.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+<dl class="method">
+<dt id="spiceminer.Body.state">
+<code class="descname">state</code><span class="sig-paren">(</span><em>times</em>, <em>observer='SUN'</em>, <em>frame='ECLIPJ2000'</em>, <em>abcorr=None</em><span class="sig-paren">)</span><a class="headerlink" href="#spiceminer.Body.state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the position and speed of this body relative to the observer
+in a specific reference frame.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>times: floator iterable of float</strong></p>
+<blockquote>
+<div><p>The time(s) for which to get the state.</p>
+</div></blockquote>
+<p><strong>observer: str or Body, optional</strong></p>
+<blockquote>
+<div><p>Position and speed are measured relative to this body.
+The rotation of the bodies is ignored, see the <cite>frame</cite> keyword.</p>
+</div></blockquote>
+<p><strong>frame: Body or {&#8216;ECLIPJ2000&#8217;, &#8216;J2000&#8217;}, optional</strong></p>
+<blockquote>
+<div><p>The rotational reference frame.
+<cite>ECLIPJ2000</cite>: The earths ecliptic plane is used as the x-y-plane.
+<cite>J2000</cite>: The earths equatorial plane is used as the x-y-plane.</p>
+</div></blockquote>
+<p><strong>abcorr: {&#8216;LT&#8217;, &#8216;LT+S&#8217;, &#8216;CN&#8217;, &#8216;CN+S&#8217;, &#8216;XLT&#8217;, &#8216;XLT+S&#8217;, &#8216;XCN&#8217;, &#8216;XCN+S&#8217;}, optional</strong></p>
+<blockquote>
+<div><p>Aberration correction to be applied. For explanation see
+<a class="reference external" href="http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkez_c.html#Detailed_Input">here</a>.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">state: array_like</p>
+<blockquote>
+<div><p>The nx7 array where the rows are time, position x, y, z and speed
+x, y, z.
+Positions are in km and speeds in km/sec.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>TypeError</strong></p>
+<blockquote>
+<div><p>If an argument doesn&#8217;t conform to the type requirements.</p>
+</div></blockquote>
+<p><strong>SpiceError</strong></p>
+<blockquote class="last">
+<div><p>If necessary information is missing.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spiceminer.Body.position">
+<code class="descname">position</code><span class="sig-paren">(</span><em>times</em>, <em>observer='SUN'</em>, <em>frame='ECLIPJ2000'</em>, <em>abcorr=None</em><span class="sig-paren">)</span><a class="headerlink" href="#spiceminer.Body.position" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the position of this body relative to the observer in a
+specific reference frame.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>times: float or iterable of float</strong></p>
+<blockquote>
+<div><p>The time(s) for which to get the position.</p>
+</div></blockquote>
+<p><strong>observer: str or Body, optional</strong></p>
+<blockquote>
+<div><p>Position is measured relative to this body.
+The rotation of the bodies is ignored, see the <cite>frame</cite> keyword.</p>
+</div></blockquote>
+<p><strong>frame: Body or {&#8216;ECLIPJ2000&#8217;, &#8216;J2000&#8217;}, optional</strong></p>
+<blockquote>
+<div><p>The rotational reference frame.
+<cite>ECLIPJ2000</cite>: The earths ecliptic plane is used as the x-y-plane.
+<cite>J2000</cite>: The earths equatorial plane is used as the x-y-plane.</p>
+</div></blockquote>
+<p><strong>abcorr: {&#8216;LT&#8217;, &#8216;LT+S&#8217;, &#8216;CN&#8217;, &#8216;CN+S&#8217;, &#8216;XLT&#8217;, &#8216;XLT+S&#8217;, &#8216;XCN&#8217;, &#8216;XCN+S&#8217;}, optional</strong></p>
+<blockquote>
+<div><p>Aberration correction to be applied. For explanation see
+<a class="reference external" href="http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkez_c.html#Detailed_Input">here</a>.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">position: array_like</p>
+<blockquote>
+<div><p>The nx4 array where the rows are time, position x, y, z.
+Positions are in km.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>TypeError</strong></p>
+<blockquote>
+<div><p>If an argument doesn&#8217;t conform to the type requirements.</p>
+</div></blockquote>
+<p><strong>SpiceError</strong></p>
+<blockquote class="last">
+<div><p>If necessary information is missing.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spiceminer.Body.speed">
+<code class="descname">speed</code><span class="sig-paren">(</span><em>times</em>, <em>observer='SUN'</em>, <em>frame='ECLIPJ2000'</em>, <em>abcorr=None</em><span class="sig-paren">)</span><a class="headerlink" href="#spiceminer.Body.speed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the speed of this body relative to the observer in a specific
+reference frame.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>times: float or iterable of float</strong></p>
+<blockquote>
+<div><p>The time(s) for which to get the speed.</p>
+</div></blockquote>
+<p><strong>observer: str or Body, optional</strong></p>
+<blockquote>
+<div><p>Position is measured relative to this body.
+The rotation of the bodies is ignored, see the <cite>frame</cite> keyword.</p>
+</div></blockquote>
+<p><strong>frame: Body or {&#8216;ECLIPJ2000&#8217;, &#8216;J2000&#8217;}, optional</strong></p>
+<blockquote>
+<div><p>The rotational reference frame.
+<cite>ECLIPJ2000</cite>: The earths ecliptic plane is used as the x-y-plane.
+<cite>J2000</cite>: The earths equatorial plane is used as the x-y-plane.</p>
+</div></blockquote>
+<p><strong>abcorr: {&#8216;LT&#8217;, &#8216;LT+S&#8217;, &#8216;CN&#8217;, &#8216;CN+S&#8217;, &#8216;XLT&#8217;, &#8216;XLT+S&#8217;, &#8216;XCN&#8217;, &#8216;XCN+S&#8217;}, optional</strong></p>
+<blockquote>
+<div><p>Aberration correction to be applied. For explanation see
+<a class="reference external" href="http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkez_c.html#Detailed_Input">here</a>.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">speed: array_like</p>
+<blockquote>
+<div><p>The nx4 array where the rows are time, speed x, y, z.
+Speeds in km/sec.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>TypeError</strong></p>
+<blockquote>
+<div><p>If an argument doesn&#8217;t conform to the type requirements.</p>
+</div></blockquote>
+<p><strong>SpiceError</strong></p>
+<blockquote class="last">
+<div><p>If necessary information is missing.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spiceminer.Body.rotation">
+<code class="descname">rotation</code><span class="sig-paren">(</span><em>times</em>, <em>target='ECLIPJ2000'</em><span class="sig-paren">)</span><a class="headerlink" href="#spiceminer.Body.rotation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the rotation matrix for transforming the rotating of this body
+from its own reference frame to that of the target.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>times: float or iterable of float</strong></p>
+<blockquote>
+<div><p>The time(s) for which to get the matrix.</p>
+</div></blockquote>
+<p><strong>target: Body or {&#8216;ECLIPJ2000&#8217;, &#8216;J2000&#8217;}, optional</strong></p>
+<blockquote>
+<div><p>Reference frame to transform to.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">times: array_like</p>
+<blockquote>
+<div><p>The times for which rotation matrices where generated.</p>
+</div></blockquote>
+<p>matrices: list of array_like</p>
+<blockquote>
+<div><p>List of 3x3 rotation matrices.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>TypeError</strong></p>
+<blockquote>
+<div><p>If an argument doesn&#8217;t conform to the type requirements.</p>
+</div></blockquote>
+<p><strong>SpiceError</strong></p>
+<blockquote class="last">
+<div><p>If necessary information is missing.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spiceminer.Body.proximity">
+<code class="descname">proximity</code><span class="sig-paren">(</span><em>time</em>, <em>distance</em>, <em>classes=None</em><span class="sig-paren">)</span><a class="headerlink" href="#spiceminer.Body.proximity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get other bodies at most <cite>distance</cite> km away from this body.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>time: float</strong></p>
+<blockquote>
+<div><p>The time to look at.</p>
+</div></blockquote>
+<p><strong>distance: float</strong></p>
+<blockquote>
+<div><p>The maximum distance in km at which bodies are included in the results.</p>
+</div></blockquote>
+<p><strong>classes: type</strong></p>
+<blockquote>
+<div><p>Filter to select certain types of bodies to look for.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>SpiceError</strong></p>
+<blockquote class="last">
+<div><p>If necessary information is missing.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="spiceminer.Asteroid">
+<em class="property">class </em><code class="descclassname">spiceminer.</code><code class="descname">Asteroid</code><span class="sig-paren">(</span><em>body</em><span class="sig-paren">)</span><a class="headerlink" href="#spiceminer.Asteroid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bodies representing asteroids.</p>
+<p>Asteroids are ephimeris objects with IDs &gt; 200000.</p>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="spiceminer.Barycenter">
+<em class="property">class </em><code class="descclassname">spiceminer.</code><code class="descname">Barycenter</code><span class="sig-paren">(</span><em>body</em><span class="sig-paren">)</span><a class="headerlink" href="#spiceminer.Barycenter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bodies representing a barycenter of an ephimeris object and all of its
+satellites (moons).</p>
+<p>Barycenters are ephimeris objects with IDs between 0 and 9.</p>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="spiceminer.Comet">
+<em class="property">class </em><code class="descclassname">spiceminer.</code><code class="descname">Comet</code><span class="sig-paren">(</span><em>body</em><span class="sig-paren">)</span><a class="headerlink" href="#spiceminer.Comet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bodies representing comets.</p>
+<p>Comets are ephimeris objects with IDs between 100000 and 200000.</p>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="spiceminer.Instrument">
+<em class="property">class </em><code class="descclassname">spiceminer.</code><code class="descname">Instrument</code><span class="sig-paren">(</span><em>body</em><span class="sig-paren">)</span><a class="headerlink" href="#spiceminer.Instrument" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bodies representing instruments mounted on spacecraft (including rovers
+and their instruments).</p>
+<p>Instruments are ephimeris objects with IDs between -1001 and -10000.</p>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="spiceminer.Planet">
+<em class="property">class </em><code class="descclassname">spiceminer.</code><code class="descname">Planet</code><span class="sig-paren">(</span><em>body</em><span class="sig-paren">)</span><a class="headerlink" href="#spiceminer.Planet" title="Permalink to this definition">¶</a></dt>
+<dd><p>SBodies representing planets.</p>
+<p>Planets are ephimeris objects with IDs between 199 and 999 with
+pattern [1-9]99.</p>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="spiceminer.Satellite">
+<em class="property">class </em><code class="descclassname">spiceminer.</code><code class="descname">Satellite</code><span class="sig-paren">(</span><em>body</em><span class="sig-paren">)</span><a class="headerlink" href="#spiceminer.Satellite" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bodies representing satellites (natural bodies orbiting a planet e.g.
+moons).</p>
+<p>Satellites are ephimeris objects with IDs between 101 and 998 with
+pattern [1-9][0-9][1-8].</p>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="spiceminer.Spacecraft">
+<em class="property">class </em><code class="descclassname">spiceminer.</code><code class="descname">Spacecraft</code><span class="sig-paren">(</span><em>body</em><span class="sig-paren">)</span><a class="headerlink" href="#spiceminer.Spacecraft" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bodies representing spacecraftand rovers.</p>
+<p>Spacecraft are ephimeris objects with IDs between -1 and -999 or &lt; -99999.</p>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="spiceminer.Star">
+<em class="property">class </em><code class="descclassname">spiceminer.</code><code class="descname">Star</code><span class="sig-paren">(</span><em>body</em><span class="sig-paren">)</span><a class="headerlink" href="#spiceminer.Star" title="Permalink to this definition">¶</a></dt>
+<dd><p>Body representing the sun.</p>
+<p>Only used for the sun (ID 10) at the moment.</p>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="time.html" class="btn btn-neutral float-right" title="Time" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="kernel.html" class="btn btn-neutral" title="Kernels" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Philipp Rasch.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
