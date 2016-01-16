@@ -44,3 +44,10 @@ char* pxform_custom(char* from, char* to, double et, double rotate[3][3]) {
     CHECK_EXCEPTION
     FINALIZE
 }
+
+/* Get field of view (VOW) of an instrument */
+char* getfov_custom(int instrument_id, char shape[16], char frame[64], double boresight[3], int* n, double bounds[8][3]) {
+    getfov_c(instrument_id, 8, 16, 64, shape, frame, boresight, n, bounds);
+    CHECK_EXCEPTION
+    FINALIZE
+}

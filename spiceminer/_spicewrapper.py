@@ -224,6 +224,19 @@ cspice.pckcov_custom.errcheck = errcheck
 def pckcov(path, idcode, cell):
     cspice.pckcov_custom(path, idcode, byref(cell))
 
+cspice.getfov_custom.argtypes = [c_int, c_char * 16, c_char * 64, c_double * 3, POINTER(c_int), c_double * (8 * 3)]
+cspice.getfov_custom.restype = c_char_p
+cspice.getfov_custom.errcheck = errcheck
+def getfov(idcode):
+    shape = (c_char * 16)()
+    frame = (c_char * 64)()
+    boresight = (c_double * 3)()
+    n = c_int()
+    bounds = (c_double * (8 * 3))()
+    cspice.getfov_custom(idcode, shape, frame, boresight, byref(n), bounds)
+    bounds_list = [bounds[i*3:i*3+3] for i in range(n)]
+    return shape.value, frame.value, boresight[::], bounds_list
+
 ### Time conversion ###
 cspice.utc2et_custom.argtypes = [c_char_p, POINTER(c_double)]
 cspice.utc2et_custom.restype = c_char_p
