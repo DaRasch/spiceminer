@@ -11,7 +11,7 @@ from .._helpers import ignored, TimeWindows
 #: All possible type identifiers for kernels containing body transformation info.
 VALID_BODY_KERNEL_TYPES = ('sp', 'c', 'pc', 'f')
 #: All possible type identifiers for kernels not containing body transformation info.
-VALID_MISC_KERNEL_TYPES = ('ls', 'sc')
+VALID_MISC_KERNEL_TYPES = ('i', 'ls', 'sc')
 #: All possible kernel type identifiers.
 VALID_KERNEL_TYPES = VALID_BODY_KERNEL_TYPES + VALID_MISC_KERNEL_TYPES
 
@@ -36,7 +36,7 @@ def filter_extensions(filename):
         If the extension is invalid (does not match `(b|t)(s?c|sp|f|ls|pc)$`).
     '''
     extension = (filename.rsplit('.', 1)[1:] or [''])[0]
-    match = re.match('^(b|t)(s?c|sp|f|ls|pc)$', extension)
+    match = re.match('^(b|t)(s?c|sp|f|ls|pc|i)$', extension)
     if not match:
         msg = 'Invalid file extension, got {}'
         raise ValueError(msg.format(filename))

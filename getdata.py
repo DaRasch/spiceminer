@@ -44,7 +44,31 @@ NAMES = {
             'msl_surf_rsm_tlmres\.bc',
             'msl_surf_rover_tlm\.bc'
         ],
-        'MSL/kernels/fk/': ['msl\.tf'],
+        'MSL/kernels/fk/': [
+            'msl\.tf',
+            'msl_v08\.tf'
+        ],
+        'MSL/kernels/ik/': [
+            'msl_aux_v[0-9]*\.ti',
+            'msl_chrmi_[0-9]*_c[0-9]*\.ti',
+            'msl_hbla_[0-9]*_c[0-9]*\.ti',
+            'msl_hblb_[0-9]*_c[0-9]*\.ti',
+            'msl_hbra_[0-9]*_c[0-9]*\.ti',
+            'msl_hbrb_[0-9]*_c[0-9]*\.ti',
+            'msl_hfla_[0-9]*_c[0-9]*\.ti',
+            'msl_hflb_[0-9]*_c[0-9]*\.ti',
+            'msl_hfra_[0-9]*_c[0-9]*\.ti',
+            'msl_hfrb_[0-9]*_c[0-9]*\.ti',
+            'msl_mahli_[0-9]*_c[0-9]*\.ti',
+            'msl_mardi_[0-9]*_c[0-9]*\.ti',
+            'msl_ml_[0-9]*_c[0-9]*\.ti',
+            'msl_mr_[0-9]*_c[0-9]*\.ti',
+            'msl_nla_[0-9]*_c[0-9]*\.ti',
+            'msl_nlb_[0-9]*_c[0-9]*\.ti',
+            'msl_nra_[0-9]*_c[0-9]*\.ti',
+            'msl_nrb_[0-9]*_c[0-9]*\.ti',
+            'msl_struct_v[0-9]*\.ti'
+        ],
         'MSL/kernels/sclk/': [
             'msl_lmst_ops[0-9]*_v[0-9]*\.tsc',
             'msl.tsc'
@@ -129,7 +153,7 @@ for name in cmdline.data:
     try:
         with open(os.path.join(data_dir, 'metadata.pickle'), 'rb') as f:
             old_files = pickle.load(f)
-    except Exception as e:
+    except OSError as e:
         if e.errno != 2:
             print(e)
         for patterns in NAMES[name].values():
