@@ -234,7 +234,7 @@ def getfov(idcode):
     n = c_int()
     bounds = (c_double * (8 * 3))()
     cspice.getfov_custom(idcode, shape, frame, boresight, byref(n), bounds)
-    bounds_list = [bounds[i*3:i*3+3] for i in range(n)]
+    bounds_list = [bounds[i*3:i*3+3] for i in range(n.value)]
     return shape.value, frame.value, boresight[::], bounds_list
 
 ### Time conversion ###

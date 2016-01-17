@@ -401,9 +401,39 @@ class Instrument(Body):
         spacecraft_id = self.id / 1000 + offset
         return Body(spacecraft_id)
 
+    def fov(self):
+        '''Get the field of view of an instrument.
+
+        Returns
+        ------
+        shape: {'POLYGON', 'RECTANGLE', 'CIRCLE', 'ELLIPSE'}
+            The shape of the field of view.
+        frame: Body
+            The reference frame in which the field of view boundary vectors
+            are defined.
+        boresight: array_like
+            Vector pointing in the direction of the center of the field of view.
+        bounds: array_like
+            Array of vectors that point to the *corners* of the instrument
+            field of view.
+
+        Raises
+        ------
+        SpiceError
+            If the instrument has no available field of view.
+
+        For more information on the relation between shape and bounds, see
+        `here <http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/getfov_c.html#Detailed_Output>`_
+        '''
+        shape, frame, boresight, bounds = spice.getfov(self.id)
+        frame = Body(frame)
+        boresight = numpy.array(boresight)
+        bounds = numpy.array(bounds)
+        return shape, frame, boresight, bounds
+
 
 class Planet(Body):
-    '''SBodies representing planets.
+    '''Bodies representing planets.
 
     Planets are ephimeris objects with IDs between 199 and 999 with
     pattern [1-9]99.
