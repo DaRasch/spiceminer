@@ -414,7 +414,7 @@ class Instrument(Body):
         boresight: array_like
             Vector pointing in the direction of the center of the field of view.
         bounds: array_like
-            Array of vectors that point to the *corners* of the instrument
+            Array of vectors (nx3) that point to the *corners* of the instrument
             field of view.
 
         Raises
@@ -425,11 +425,13 @@ class Instrument(Body):
         For more information on the relation between shape and bounds, see
         `here <http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/getfov_c.html#Detailed_Output>`_
         '''
+        nt = collections.namedtuple('FOVParameters', 
+            ['shape', 'frame', 'boresight', 'bounds'])
         shape, frame, boresight, bounds = spice.getfov(self.id)
         frame = Body(frame)
         boresight = numpy.array(boresight)
-        bounds = numpy.array(bounds)
-        return shape, frame, boresight, bounds
+        bounds = numpy.array(bounds).T
+        return nt(shape, frame, boresight, bounds)
 
 
 class Planet(Body):
