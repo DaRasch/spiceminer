@@ -23,6 +23,8 @@ def _iterbodies(start, stop, step=1):
 
 def _typecheck(times, observer=None, frame='ECLIPJ2000'):
     '''Check and convert arguments for spice interface methods.'''
+    if isinstance(times, basestring):
+        times = [float(times)]
     try:
         times = (float(t) for t in times)
     except TypeError:
@@ -43,9 +45,12 @@ class _BodyMeta(type):
         if isinstance(body, cls):
             id_ = body.id
         elif isinstance(body, basestring):
-            id_ = spice.bodn2c(body)
-            if id_ is None:
-                raise ValueError("Got invalid name '{}'".format(body))
+            try:
+                id_ = int(body)
+            except ValueError:
+                id_ = spice.bodn2c(body)
+                if id_ is None:
+                    raise ValueError("Got invalid name '{}'".format(body))
         elif isinstance(body, int):
             id_ = body
         else:
@@ -142,6 +147,9 @@ class Body(object):
 
     def __hash__(self):
         return self.id
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.id == other.id
 
     @property
     def id(self):
@@ -349,11 +357,13 @@ class Body(object):
         '''
         for body in Body.LOADED:
             try:
-                pos = body.single_position(time, observer=self)[1:]
+                pos = body.position(time, observer=self, frame=self)[1:]
             except spice.SpiceError:
                 continue
+            if len(pos) == 0:
+                continue
             dist = numpy.sqrt((pos ** 2).sum())
-            if isinstance(body, tuple(classes) or (Body,)):
+            if isinstance(body, tuple(classes or (Body,))):
                 if body.id != self.id and dist <= distance:
                     yield body
 
