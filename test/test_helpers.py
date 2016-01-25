@@ -21,17 +21,26 @@ def test_ignored(errors):
             raise error()
 
 
-paths = ['.', '..', __file__]
+iterable_paths = ['.', '..', __file__]
+cleanable_paths = [
+    '~',
+    '$ENV_TEST',
+    '$ENV_TEST/..',
+    pytest.mark.xfail(raises=AssertionError)('/..')
+]
 
-@pytest.mark.parametrize('path', paths + ['~'])
-def test_cleanpath(path):
+@pytest.mark.parametrize('path', iterable_paths + cleanable_paths)
+def test_cleanpath(path, monkeypatch):
+    monkeypatch.setenv('ENV_TEST', '.')
     path = _helpers.cleanpath(path)
     assert os.path.exists(path)
     for symbol in ['~', '$', '{', '}', '..']:
         assert symbol not in path
 
 
-@pytest.mark.parametrize('path,recursive,followlinks', itt.product(paths, (True, False), (True, False)))
+@pytest.mark.parametrize('path', iterable_paths)
+@pytest.mark.parametrize('recursive', [True, False])
+@pytest.mark.parametrize('followlinks', [True, False])
 def test_iterable_path(path, recursive, followlinks):
     iterable = _helpers.iterable_path(path, recursive, followlinks)
     assert isinstance(iterable, collections.Iterable)
