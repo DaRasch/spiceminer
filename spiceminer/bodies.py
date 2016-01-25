@@ -23,6 +23,8 @@ def _iterbodies(start, stop, step=1):
 
 def _typecheck(times, observer=None, frame='ECLIPJ2000'):
     '''Check and convert arguments for spice interface methods.'''
+    if isinstance(times, basestring):
+        times = [float(times)]
     try:
         times = (float(t) for t in times)
     except TypeError:
@@ -43,9 +45,12 @@ class _BodyMeta(type):
         if isinstance(body, cls):
             id_ = body.id
         elif isinstance(body, basestring):
-            id_ = spice.bodn2c(body)
-            if id_ is None:
-                raise ValueError("Got invalid name '{}'".format(body))
+            try:
+                id_ = int(body)
+            except ValueError:
+                id_ = spice.bodn2c(body)
+                if id_ is None:
+                    raise ValueError("Got invalid name '{}'".format(body))
         elif isinstance(body, int):
             id_ = body
         else:
@@ -142,6 +147,9 @@ class Body(object):
 
     def __hash__(self):
         return self.id
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.id == other.id
 
     @property
     def id(self):
@@ -349,11 +357,13 @@ class Body(object):
         '''
         for body in Body.LOADED:
             try:
-                pos = body.single_position(time, observer=self)[1:]
+                pos = body.position(time, observer=self, frame=self)[1:]
             except spice.SpiceError:
                 continue
+            if len(pos) == 0:
+                continue
             dist = numpy.sqrt((pos ** 2).sum())
-            if isinstance(body, tuple(classes) or (Body,)):
+            if isinstance(body, tuple(classes or (Body,))):
                 if body.id != self.id and dist <= distance:
                     yield body
 
@@ -401,9 +411,41 @@ class Instrument(Body):
         spacecraft_id = self.id / 1000 + offset
         return Body(spacecraft_id)
 
+    def fov(self):
+        '''Get the field of view of an instrument.
+
+        Returns
+        ------
+        shape: {'POLYGON', 'RECTANGLE', 'CIRCLE', 'ELLIPSE'}
+            The shape of the field of view.
+        frame: Body
+            The reference frame in which the field of view boundary vectors
+            are defined.
+        boresight: array_like
+            Vector pointing in the direction of the center of the field of view.
+        bounds: array_like
+            Array of vectors (nx3) that point to the *corners* of the instrument
+            field of view.
+
+        Raises
+        ------
+        SpiceError
+            If the instrument has no available field of view.
+
+        For more information on the relation between shape and bounds, see
+        `here <http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/getfov_c.html#Detailed_Output>`_
+        '''
+        nt = collections.namedtuple('FOVParameters', 
+            ['shape', 'frame', 'boresight', 'bounds'])
+        shape, frame, boresight, bounds = spice.getfov(self.id)
+        frame = Body(frame)
+        boresight = numpy.array(boresight)
+        bounds = numpy.array(bounds).T
+        return nt(shape, frame, boresight, bounds)
+
 
 class Planet(Body):
-    '''SBodies representing planets.
+    '''Bodies representing planets.
 
     Planets are ephimeris objects with IDs between 199 and 999 with
     pattern [1-9]99.

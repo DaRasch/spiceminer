@@ -9,8 +9,6 @@ from collections import namedtuple
 import spiceminer.kernel as kernel
 
 
-#VALID_EXT = [''.join(ext) for ext in itt.product(('b', 't'), kernel.lowlevel.VALID_KERNEL_TYPES)]
-
 PKG_ROOT = os.path.realpath(os.path.join(__file__, '..', '..'))
 
 DATA_DIR = os.getenv('SPICEMINERDATA', os.path.join(PKG_ROOT, 'data'))
@@ -34,7 +32,9 @@ DATA_FILES = list(itt.islice(_iter_files(DATA_DIR), 100))
 
 
 def pytest_namespace():
-    return {'needs_datafiles': pytest.mark.skipif(not DATA_FILES, reason='No data in data directory. [{}]'.format(DATA_DIR))}
+    return {
+        'needs_datafiles': pytest.mark.skipif(not DATA_FILES, reason='No data in data directory. [{}]'.format(DATA_DIR))
+    }
 
 
 ### Fixtures ###
@@ -70,7 +70,6 @@ def with_leapseconds(datafiles):
 @pytest.yield_fixture(scope='function')
 def with_spacecraftclock(datafiles):
     for item in datafiles:
-        print item.type
         if item.type == 'sc':
             kernel.load(item.path)
             break
