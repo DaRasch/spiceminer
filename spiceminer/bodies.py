@@ -1,26 +1,19 @@
 #-*- coding:utf-8 -*-
 
-import numbers
 import collections
 
 import numpy
 
 from . import _spicewrapper as spice
+from .kernel import shared
 from .time_ import Time
 from ._helpers import ignored
-from .kernel.highlevel import Kernel
 
 __all__ = ['Body', 'Asteroid', 'Barycenter', 'Comet', 'Instrument',
             'Planet', 'Satellite', 'Spacecraft', 'Star']
 
 
 ### Helpers ###
-def _iterbodies(start, stop, step=1):
-    '''Iterate over all bodies with ids in the given range.'''
-    for i in xrange(start, stop, step):
-        with ignored(ValueError):
-            yield Body(i)
-
 def _typecheck(times, observer=None, frame='ECLIPJ2000'):
     '''Check and convert arguments for spice interface methods.'''
     if isinstance(times, basestring):
@@ -40,6 +33,68 @@ def _typecheck(times, observer=None, frame='ECLIPJ2000'):
 class _BodyMeta(type):
     '''Metaclass for Body to seperate instance creation from initialisation and
     to force methods on the class level only.'''
+
+    _ID_COUNTER = collections.Counter()
+    _ID_MAP = {}
+
+    def __init__(cls, name, bases, namespace):
+        super(cls.__class__, cls).__init__(name, bases, namespace)
+        if not hasattr(cls, 'LOADED'):
+            cls.LOADED = set()
+        if not hasattr(cls, '_REGISTRY'):
+            cls._REGISTRY = set(base for base in bases if type(base) == cls.__class__)
+            cls._REGISTRY.add(cls)
+
+    def _register(cls, body):
+        for kls in cls._REGISTRY:
+            kls.LOADED.add(body)
+
+    def _unregister(cls, body):
+        for kls in cls._REGISTRY:
+            kls.LOADED.remove(body)
+
+    def _make(cls, id_):
+        if _BodyMeta._ID_COUNTER[id_] == 0:
+            # Create correct subclass
+            if id_ > 2000000:
+                body = object.__new__(Asteroid)
+            elif id_ > 1000000:
+                body = object.__new__(Comet)
+            elif id_ > 1000:
+                body = object.__new__(Body)
+            elif id_ > 10:
+                if id_ % 100 == 99:
+                    body = object.__new__(Planet)
+                else:
+                    body = object.__new__(Satellite)
+            elif id_ == 10:
+                body = object.__new__(Star)
+            elif id_ >= 0:
+                body = object.__new__(Barycenter)
+            elif id_ > -1000:
+                body = object.__new__(Spacecraft)
+            elif id_ >= -100000:
+                body = object.__new__(Instrument)
+            else:
+                body = object.__new__(Spacecraft)
+            body.__init__(id_)
+            body.__class__._register(body)
+            _BodyMeta._ID_MAP[id_] = body
+        _BodyMeta._ID_COUNTER[id_] += 1
+        return body
+
+    def _delete(cls, id_):
+        _BodyMeta._ID_COUNTER[id_] -= 1
+        body = cls(id_)
+        count = _BodyMeta._ID_COUNTER[id_]
+        if count == 0:
+            body.__class__._unregister(body)
+            del _BodyMeta._ID_MAP[id_]
+        elif count < 0:
+            _BodyMeta._ID_COUNTER[id_] = 0
+            msg = '{} with id {} is not loaded'
+            raise ValueError(msg.format(cls.__name__, id_))
+
     def __call__(cls, body):
         # Check and convert type
         if isinstance(body, cls):
@@ -56,43 +111,10 @@ class _BodyMeta(type):
         else:
             msg = "'int' or 'str' argument expected, got '{}'"
             raise TypeError(msg.format(type(body)))
-        if id_ not in set.union({0}, *(k.ids for k in Kernel.LOADED)):
-            # TODO: implement better id-collection
+        if id_ not in _ID_MAP:
             msg = "No loaded 'Body' with ID or name '{}'"
             raise ValueError(msg.format(body))
-        # Create correct subclass
-        if id_ > 2000000:
-            body = object.__new__(Asteroid)
-        elif id_ > 1000000:
-            body = object.__new__(Comet)
-        elif id_ > 1000:
-            body = object.__new__(Body)
-        elif id_ > 10:
-            if id_ % 100 == 99:
-                body = object.__new__(Planet)
-            else:
-                body = object.__new__(Satellite)
-        elif id_ == 10:
-            body = object.__new__(Star)
-        elif id_ >= 0:
-            body = object.__new__(Barycenter)
-        elif id_ > -1000:
-            body = object.__new__(Spacecraft)
-        elif id_ >= -100000:
-            body = object.__new__(Instrument)
-        else:
-            body = object.__new__(Spacecraft)
-        body.__init__(id_)
-        return body
-
-    @property
-    def LOADED(cls):
-        #TODO: Move implementation to kernel.highlevel.Kernel
-        ids = set.union(set(), *(k.ids for k in Kernel.LOADED))
-        for i in sorted(ids):
-            body = Body(i)
-            if isinstance(body, cls):
-                yield body
+        return _ID_MAP[id_]
 
 
 ### Public API ###
@@ -131,8 +153,6 @@ class Body(object):
 
     _ABCORR = 'NONE'
 
-    #TODO: implement Body.LOADED
-
     def __init__(self, body):
         self._id = body
         self._name = spice.bodc2n(body) or str(self._id)
@@ -148,9 +168,6 @@ class Body(object):
     def __hash__(self):
         return self.id
 
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.id == other.id
-
     @property
     def id(self):
         return self._id
@@ -161,11 +178,11 @@ class Body(object):
 
     @property
     def times_pos(self):
-        return Kernel.TIMEWINDOWS_POS[self.id]
+        return shared.TIMEWINDOWS_POS[self]
 
     @property
     def times_rot(self):
-        return Kernel.TIMEWINDOWS_ROT[self.id]
+        return shared.TIMEWINDOWS_ROT[self]
 
     @property
     def parent(self):
@@ -355,7 +372,7 @@ class Body(object):
         SpiceError
             If necessary information is missing.
         '''
-        for body in Body.LOADED:
+        for body in set().union(kls.LOADED for kls in (classes or [Body])):
             try:
                 pos = body.position(time, observer=self, frame=self)[1:]
             except spice.SpiceError:
@@ -363,9 +380,8 @@ class Body(object):
             if len(pos) == 0:
                 continue
             dist = numpy.sqrt((pos ** 2).sum())
-            if isinstance(body, tuple(classes or (Body,))):
-                if body.id != self.id and dist <= distance:
-                    yield body
+            if body != self and dist <= distance:
+                yield body
 
 
 class Asteroid(Body):
@@ -435,7 +451,7 @@ class Instrument(Body):
         For more information on the relation between shape and bounds, see
         `here <http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/getfov_c.html#Detailed_Output>`_
         '''
-        nt = collections.namedtuple('FOVParameters', 
+        nt = collections.namedtuple('FOVParameters',
             ['shape', 'frame', 'boresight', 'bounds'])
         shape, frame, boresight, bounds = spice.getfov(self.id)
         frame = Body(frame)

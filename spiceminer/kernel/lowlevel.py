@@ -1,83 +1,143 @@
 #!/usr/bin/env python
 #-*- coding:utf-8 -*-
 
-import os
-import re
+import collections
 
 from .. import _spicewrapper as spice
 from ..time_ import Time
 from .._helpers import ignored, TimeWindows
 
-#: All possible type identifiers for kernels containing body transformation info.
-VALID_BODY_KERNEL_TYPES = ('sp', 'c', 'pc', 'f')
-#: All possible type identifiers for kernels not containing body transformation info.
-VALID_MISC_KERNEL_TYPES = ('i', 'ls', 'sc')
-#: All possible kernel type identifiers.
-VALID_KERNEL_TYPES = VALID_BODY_KERNEL_TYPES + VALID_MISC_KERNEL_TYPES
 
-def filter_extensions(filename):
-    '''Check for correct extension and return kernel type.
+### Constants ###
+#TODO: move to constants.py
+# File encodings
+ARCH_BIN = {'DAF', 'DAS', 'NAIF'}
+ARCH_TXT = {'KPL'}
+ARCH = set.union(ARCH_BIN, ARCH_TXT)
+
+# Kernel types
+KTYPE_POS = {'sp', 'f'}
+KTYPE_ROT = {'c', 'pc'}
+KTYPE_NONE = {'ls', 'sc', 'i'}
+KTYPE_BODY = set.union(KTYPE_POS, KTYPE_ROT)
+KTYPE = set.union(KTYPE_BODY, KTYPE_NONE)
+
+
+### Kernel property parsing ###
+# TODO: move to its own module
+kp = collections.namedtuple('KernelProperties', ['path', 'binary', 'arch', 'type', 'info'])
+def kernel_properties(filepath):
+    '''Information about a kernel file.
 
     Parameters
     ----------
-    filename: str
-        A file name of the format `name.extension` or `.extension`. Providing
-        only `extension` will raise an error, even if the extension is valid.
-
-    Returns
-    -------
-    str
-        The kernel type identifier part of the extension (basically
-        `extension[1:]`).
+    filepath: str
+        Absolute path of a kernel file.
 
     Raises
     ------
     ValueError
-        If the extension is invalid (does not match `(b|t)(s?c|sp|f|ls|pc)$`).
-    '''
-    extension = (filename.rsplit('.', 1)[1:] or [''])[0]
-    match = re.match('^(b|t)(s?c|sp|f|ls|pc|i)$', extension)
-    if not match:
-        msg = 'Invalid file extension, got {}'
-        raise ValueError(msg.format(filename))
-    return match.string[1:]
+        If the file is not a recognized kernel.
 
-def load_any(path, kernel_type):
+    Notes
+    -----
+    Identifier description:
+        https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/kernel.html#SPICE%20Kernel%20Type%20Identification
+    Legal characters in text kernels:
+        https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/kernel.html#Text%20Kernel%20Specifications
+    '''
+    with open(filepath, 'rb') as file:
+        identifier = file.read(8).decode('utf-8').strip()
+    arch, ktype = _split_identifier(identifier)
+    _validate(filepath, arch, ktype)
+    binary = arch in ARCH_BIN
+    info = _info_type(kernel_type)
+    return kp(filepath, binary, arch, ktype, info)
+
+def _split_identifier(identifier):
+    try:
+        i = identifier.index('/')
+        arch = identifier[:i]
+        ktype = identifier[i + 1:][:-1]
+    except ValueError:
+        arch = identifier[:3]
+        ktype = identifier[3:6]
+    return arch, ktype
+
+def _info_type(ktype):
+    #TODO: unnecessary, remove
+    if ktype in KTYPE_POS:
+        return 'pos'
+    elif ktype in KTYPE_ROT:
+        return 'rot'
+    elif ktype in KTYPE_NONE:
+        return 'none'
+
+def _validate(filepath, arch, ktype):
+    if arch not in ARCH:
+        raise ValueError('Not a kernel file: {}'.format(filepath))
+    if ktype not in KTYPE:
+        msg = "Unsupported kernel type '{}' in {}"
+        raise ValueError(msg.format(ktype, filepath))
+
+
+### Kernel property collection/sorting ###
+def icollect_kprops(path, recursive, followlinks):
+    '''Find all valid kernel files on path.'''
+    for dir_path, _, fnames in iterable_path(path, recursive, followlinks):
+        for name in fnames:
+            filepath = os.path.join(dir_path, name)
+            with ignored(ValueError):
+                yield lowlevel.kernel_properties(filepath)
+
+def ifilter_kprops(kprops_iterable):
+    '''Yield only new kernels.'''
+    existing = {k.path for k in shared.LOADED_KERNELS}
+    for kprops in kprops_iterable:
+        if kprops.path not in existing:
+            yield kprops
+
+def iunload_kprops(kprops_iterable):
+    '''Unload kernel, if loaded.'''
+    existing = {k.path: k for k in shared.LOADED_KERNELS}
+    for kprops in kprops_iterable:
+        if kprops.path in existing:
+            existing[kprops.path]._unload()
+        yield kprops
+
+def split_props(kprops_iterable):
+    kpall = set(kprops_iterable)
+    kpbody = {p for p in kpall if p.type in lowlevel.KTYPE_BODY}
+    kpmisc = kpall - body_kprops
+    return kpmisc, kpbody
+
+
+### Kernel loading ###
+def load_any(kprops):
     '''Load any valid kernel file and associated windows if necessary.
 
     Parameters
     ----------
-    path: str
-        A path to an existing file.
-    kernel_type: str
-        A kernel type identifier defined in `VALID_KERNEL_TYPES`
+    kprops: KernelProperties
 
     Returns
     -------
-    info_type: {'pos', 'rot', 'none'}
-        What kind of transformation information is provided by the kernel.
     window_map: dict[int: list[tuple[Time, Time]]]
         List of time windows for which the transformation information is
         provided, mapped to the respective body id.
     '''
-    if not os.path.isfile(path):
-        raise IOError(2, 'No such file', path)
-    if kernel_type not in VALID_KERNEL_TYPES:
-        msg = 'Invalid kernel type, expected one of {}, got {}'
-        raise ValueError(msg.format(VALID_KERNEL_TYPES, kernel_type))
     loader = {
         'sp': _load_sp,
         'c': _load_c,
         'pc': _load_pc,
         'f': _load_f
-    }.get(kernel_type, _load_dummy)
-    info_type, window_map = loader(path)
-    spice.furnsh(path)
-    return info_type, window_map
+    }.get(kprops.type, _load_dummy)
+    windows = loader(kprops.path)
+    spice.furnsh(krops.path)
+    return windows
 
-def unload_any(kernel):
-    spice.unload(kernel.path)
-
+def unload_any(kprops):
+    spice.unload(kprops.path)
 
 # Abstract loading mechanisms
 _IDS = spice.SpiceCell.integer(1000)
@@ -99,54 +159,48 @@ def _loader_template_txt(regex, path):
     with open(path, 'r') as f:
         return {int(i): TimeWindows() for i in re.findall(regex, f.read())}
 
+def _validate_ls():
+    if 'ls' not in set(k.type for k in shared.LOADED_KERNELS):
+        raise SpiceError('No leap second kernel loaded')
+
 
 # Concrete loaders for specific file formats
 def _load_dummy(path):
     '''Dummy loader for kernels not covered by any other loader.'''
-    return 'none', {}
+    return {}
 
 def _load_sp(path):
     '''Load sp kernel and associated windows.'''
+    _validate_ls()
     _IDS.reset()
-    try:
-        result = _loader_template_bin(spice.spkobj, spice.spkcov, path)
-    except spice.SpiceError as e:
-        if 'needed to compute Delta ET' in e.message:
-            #TODO: find better way to distinguish errors
-            raise spice.SpiceError('No leap second kernel loaded')
-        # Parse text kernels seperately
-        with ignored(IOError):
-            result = _loader_template_txt('BODY_?([-0-9]+)_PM', path)
-        if result == {}:
-            raise e
-    return 'pos', result
+    windows = _loader_template_bin(spice.spkobj, spice.spkcov, path)
+    return windows
 
 def _load_c(path):
     '''Load c kernel and associated windows.'''
     _IDS.reset()
-    result = _loader_template_bin(spice.ckobj, spice.ckcov, path)
-    return 'rot', result
+    windows = _loader_template_bin(spice.ckobj, spice.ckcov, path)
+    return windows
 
 def _load_pc(path):
     '''Load pc kernel and associated windows.'''
+    _validate_ls()
     _IDS.reset()
     try:
-        result = _loader_template_bin(spice.pckfrm, spice.ckcov, path)
+        windows = _loader_template_bin(spice.pckfrm, spice.ckcov, path)
     except spice.SpiceError as e:
-        if 'needed to compute Delta ET' in e.message:
-            #TODO: find better way to distinguish errors
-            raise spice.SpiceError('No leap second kernel loaded')
         # Parse text kernels seperately
+        # TODO: Necessary?
         with ignored(IOError):
-            result = _loader_template_txt('BODY_?([-0-9]+)_PM', path)
-        if result == {}:
+            windows = _loader_template_txt('BODY_?([-0-9]+)_PM', path)
+        if windows == {}:
             raise e
-    return 'rot', result
+    return windows
 
 def _load_f(path):
     '''Load f kernel.'''
-    result = _loader_template_txt('FRAME_?([-0-9]+)_NAME', path)
-    if not result:
+    windows = _loader_template_txt('FRAME_?([-0-9]+)_NAME', path)
+    if not windows:
         msg = 'Empty frame kernel: {}'
         raise spice.SpiceError(msg.format(path))
-    return 'pos', result
+    return windows
