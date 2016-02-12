@@ -159,6 +159,8 @@ for name in cmdline.data:
         for patterns in NAMES[name].values():
             for pattern in patterns:
                 old_files += find_old(pattern, data_dir)
+    except IOError as e:
+        pass
     old_names = [item[0] for item in old_files]
     # Replace old or add new files
     for url, patterns in NAMES[name].items():
