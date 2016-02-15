@@ -4,201 +4,179 @@
 from __future__ import print_function
 
 import os
-import sys
-import argparse
-
 import re
-import pickle
+import sys
+import json
+import logging
+import itertools
+import contextlib
+
 if sys.version_info.major == 3:
     import urllib.request as urllib
-    py3 = True
 else:
-    import urllib
-    py3 = False
-import datetime as dt
+    import urllib2 as urllib
 
 from operator import itemgetter
 
-# WARNING: This file is ugly and very confusingly written.
-# Read on at your own risk.
+
+class URL2Path(object):
+    def __init__(self, root_path, root_url, dct):
+        name_url = dct['name']
+        name_path = dct.get('substitute', name_url)
+        self.name = name_path
+        self.path = os.path.join(root_path, name_path)
+        self.url = '/'.join([root_url, name_url])
+        self.files = dct.get('files', [])
+        dirs = dct.get('dirs', [])
+        self.dirs = [URL2Path(self.path, self.url, d) for d in dirs]
+
+    @classmethod
+    def fromjson(cls, root_path, filepath):
+        with open(filepath, 'rt') as f:
+            source = json.load(f)
+        root_url = source['root']
+        return [cls(root_path, root_url, dct) for dct in source['dirs']]
+
+    def walk(self, urls=False):
+        if urls:
+            yield self.url, self.path, [d.name for d in self.dirs], self.files
+        else:
+            yield self.path, [d.name for d in self.dirs], self.files
+        for d in self.dirs:
+            for item in d.walk(urls):
+                yield item
+
+    def populate(self):
+        for url, path, _, files in self.walk(urls=True):
+            # Build folder structure
+            try:
+                os.mkdir(path)
+                print('Created folder {}'.format(path))
+            except Exception as e:
+                logging.debug(str(e))
+            # Ignore folders without files
+            if not files:
+                continue
+            print('Updating {}'.format(path))
+            # Load metadata
+            print('Loading metadata')
+            try:
+                with open(os.path.join(path, 'metadata.json'), 'rt') as f:
+                    meta_old = json.load(f)
+            except Exception as e:
+                logging.debug(str(e))
+                meta_old = {}
+            # Update files
+            meta_new = {}
+            for file_regex in files:
+                try:
+                    file_name, metadata = update_file(path, url, file_regex, meta_old)
+                    meta_new[file_name] = metadata
+                except Exception as e:
+                    logging.error(str(e))
+            # Store metadata
+            try:
+                with open(os.path.join(path, 'metadata.json'), 'wt') as f:
+                    json.dump(meta_new, f)
+            except Exception as e:
+                logging.error(str(e))
 
 
-### CONSTANTS ###
-NAMES = {
-    'base': {
-        'generic_kernels/spk/planets/': ['de[0-9]*\.bsp'],
-        'generic_kernels/spk/satellites/': ['mar[0-9]*\.bsp'],
-        'generic_kernels/pck/': ['pck[0-9]*\.tpc'],
-        'generic_kernels/lsk/': ['naif[0-9]*\.tls']
-    },
-    'msl': {
-        'MSL/kernels/ck/': [
-            'msl_ra_toolsref_v[0-9]*\.bc',
-            'msl_cruise_recon_rawrt_v[0-9]*\.bc',
-            'msl_cruise_recon_raweng_v[0-9]*\.bc',
-            'msl_edl_v[0-9]*\.bc',
-            'msl_surf_hga_tlm\.bc',
-            'msl_surf_ra_tlmenc\.bc',
-            'msl_surf_ra_tlmres\.bc',
-            'msl_surf_rsm_tlmenc\.bc',
-            'msl_surf_rsm_tlmres\.bc',
-            'msl_surf_rover_tlm\.bc'
-        ],
-        'MSL/kernels/fk/': [
-            'msl\.tf',
-            'msl_v08\.tf'
-        ],
-        'MSL/kernels/ik/': [
-            'msl_aux_v[0-9]*\.ti',
-            'msl_chrmi_[0-9]*_c[0-9]*\.ti',
-            'msl_hbla_[0-9]*_c[0-9]*\.ti',
-            'msl_hblb_[0-9]*_c[0-9]*\.ti',
-            'msl_hbra_[0-9]*_c[0-9]*\.ti',
-            'msl_hbrb_[0-9]*_c[0-9]*\.ti',
-            'msl_hfla_[0-9]*_c[0-9]*\.ti',
-            'msl_hflb_[0-9]*_c[0-9]*\.ti',
-            'msl_hfra_[0-9]*_c[0-9]*\.ti',
-            'msl_hfrb_[0-9]*_c[0-9]*\.ti',
-            'msl_mahli_[0-9]*_c[0-9]*\.ti',
-            'msl_mardi_[0-9]*_c[0-9]*\.ti',
-            'msl_ml_[0-9]*_c[0-9]*\.ti',
-            'msl_mr_[0-9]*_c[0-9]*\.ti',
-            'msl_nla_[0-9]*_c[0-9]*\.ti',
-            'msl_nlb_[0-9]*_c[0-9]*\.ti',
-            'msl_nra_[0-9]*_c[0-9]*\.ti',
-            'msl_nrb_[0-9]*_c[0-9]*\.ti',
-            'msl_struct_v[0-9]*\.ti'
-        ],
-        'MSL/kernels/sclk/': [
-            'msl_lmst_ops[0-9]*_v[0-9]*\.tsc',
-            'msl.tsc'
-        ],
-        'MSL/kernels/spk/': [
-            'msl_struct_v[0-9]*\.bsp',
-            #'mar[0-9]*s\.bsp',
-            'msl_cruise_v[0-9]*\.bsp',
-            'msl_edl_v[0-9]*\.bsp',
-            'msl_ls_ops[0-9]*_iau2000_v[0-9]*\.bsp',
-            'msl_surf_rover_tlm\.bsp'
-        ]
-    },
-    'helios': {
-        'HELIOS/kernels/spk/': [
-            '[0-9]*R_helios1_[0-9_]*\.bsp',
-            '[0-9]*R_helios2_[0-9_]*\.bsp'
-        ]
-    },
-    'ulysses': {
-        'ULYSSES/kernels/spk/': ['ulysses_[0-9_]*\.bsp']
-    }
-}
-BASE_URL = 'http://naif.jpl.nasa.gov/pub/naif/'
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+def update_file(folder_path, url, regex, meta):
+    def find_local(name_regex, meta):
+        matches = (re.match(name_regex, file_name) for file_name in meta)
+        matches = (item.group() for item in matches if item is not None)
+        matches = [item for item in matches if item in meta]
+        if len(matches) > 1:
+            msg = 'Regex {} found too many matches.'
+            raise ValueError(msg.format(name_regex))
+        elif len(matches) == 1:
+            old_file = matches[0]
+            old_meta = meta[old_file]
+        else:
+            old_file = ''
+            old_meta = {}
+        return old_file, old_meta
 
-
-### Evaluate command line ###
-def supported_data(arg):
-    if arg.lower() not in NAMES:
-        msg = 'DATA must be one of {}, got {}.'.format(NAMES.keys(), arg)
-        raise argparse.ArgumentTypeError(msg)
-    return arg
-def valid_path(arg):
-    if not os.path.isdir(arg):
-        msg = 'PATH {} is not a directory.'.format(arg)
-        raise argparse.ArgumentTypeError(msg)
-    return arg
-parser = argparse.ArgumentParser()
-parser.add_argument('data', nargs='*', type=supported_data,
-    default=NAMES.keys(), metavar='DATA',
-    help='The data to download (supported: {}) (Default: all).'.format(NAMES.keys()))
-parser.add_argument('--dir', '-d', nargs=1, type=valid_path,
-    default=BASE_DIR, dest='path',
-    help='Base directory for installation.')
-cmdline = parser.parse_args()
-
-
-### Get data ###
-def find_newest(pattern, text):
-    '''Returns (name, datetime)'''
-    regex_time = '[0-9a-zA-Z -]*:[0-9]*'
-    regex_fill = '[a-zA-Z<> =/"]*'
-    dt_format = '%d-%b-%Y %H:%M'
-    choices = re.findall(pattern + regex_fill + regex_time, text)
-    choices = [(re.search(pattern, item).group(),
-        dt.datetime.strptime(re.search(regex_time, item).group(), dt_format))
-        for item in choices]
-    try:
-        return sorted(choices, key=itemgetter(1), reverse=True)[0]
-    except IndexError:
-        print('Could not match pattern: {}'.format(pattern))
-
-def find_old(pattern, dir_path):
-    '''Returns (name, datetime)'''
-    time_ = dt.datetime(1970, 1, 1)
-    return [(name, time_) for name in os.listdir(dir_path)
-        if re.search(pattern, name)]
-
-for name in cmdline.data:
-    # Prepare directories
-    data_dir = os.path.join(cmdline.path, 'data', name)
-    try:
-        os.makedirs(data_dir)
-    except OSError as e:
-        if e.errno != 17:
-            print(e)
-            continue
-    # Prepare cache
-    new_files = []
-    old_files = []
-    try:
-        with open(os.path.join(data_dir, 'metadata.pickle'), 'rb') as f:
-            old_files = pickle.load(f)
-    except OSError as e:
-        if e.errno != 2:
-            print(e)
-        for patterns in NAMES[name].values():
-            for pattern in patterns:
-                old_files += find_old(pattern, data_dir)
-    except IOError as e:
-        pass
-    old_names = [item[0] for item in old_files]
-    # Replace old or add new files
-    for url, patterns in NAMES[name].items():
-        # Get url source text
-        site = urllib.urlopen(BASE_URL + url)
-        text = site.read()
-        if py3:
-            text = text.decode('utf-8')
-        site.close()
-        # Replace/add
-        for pattern in patterns:
-            newest = find_newest(pattern, text)
-            new_files.append(newest)
-            # Handle old files:
-            if newest[0] in old_names:
-                print('{} exists'.format(newest[0]))
-                # Ignore if old == new
-                if newest in old_files:
-                    print('{} is up to date'.format(newest[0]))
-                    old_files.remove(newest)
-                # Remove if old != new
-                else:
-                    print('{} will be updated'.format(newest[0]))
-                    try:
-                        os.remove(os.path.join(data_dir, newest[0]))
-                        old_names.remove(newest[0])
-                    except OSError as e:
-                        print(e)
-            # Download new
-            if newest[0] not in old_names:
-                print('{} >> {}'.format(newest[0], data_dir))
-                with open(os.path.join(data_dir, newest[0]), 'wb') as f:
-                    download = urllib.urlopen(BASE_URL + url + newest[0])
-                    f.write(download.read())
-                    download.close()
-    # Save cache
-    with open(os.path.join(data_dir, 'metadata.pickle'), 'wb') as f:
+    def find_internet(name_regex, url):
+        REGEX_TIME = '[0-9a-zA-Z -]*:[0-9]*'
+        REGEX_JUNK = '[a-zA-Z<> =/"]*'
+        REGEX_SIZE = '[0-9\.]*[kKmMgGtT]'
+        DT_FORMAT = '%d-%b-%Y %H:%M'
+        regex = '(?P<name>{0}){3}(?P<time>{1}){3}(?P<size>{2})'
+        regex = regex.format(name_regex, REGEX_TIME, REGEX_SIZE, REGEX_JUNK)
+        response = urllib.urlopen(url)
+        with contextlib.closing(response):
+            page = response.read().decode('utf-8')
+        matches = re.finditer(regex, page)
+        matches = (item.groups() for item in matches)
+        matches = sorted(matches, key=itemgetter(1), reverse=True)
         try:
-            pickle.dump(new_files, f)
-        except Exception as e:
-            print(e)
+            new_file = matches[0][0]
+            new_meta = dict(zip(('time', 'size'), matches[0][1:]))
+        except IndexError:
+            msg = 'Unable to find entry for {}'
+            raise ValueError(msg.format(name_regex))
+        return new_file, new_meta
+
+    old_file, old_meta = find_local(regex, meta)
+    old_path = os.path.join(folder_path, old_file)
+    new_file, new_meta = find_internet(regex, url)
+    new_path = os.path.join(folder_path, new_file)
+    new_url = '/'.join([url, new_file])
+    if not old_file:
+        print('{} does not exist'.format(new_file))
+        print('Creating {}'.format(new_file))
+        print('Downloading {}'.format(new_meta['size']))
+        download(new_url, new_path)
+    elif new_meta['time'] > old_meta['time']:
+        print('{} is out of date'.format(old_file))
+        if new_file != old_file:
+            print('{} changes to {}'.format(old_file, new_file))
+        print('Updating {}'.format(new_file))
+        os.remove(old_path)
+        print('Downloading {}'.format(new_meta['size']))
+        download(new_url, new_path)
+    print('{} is up to date'.format(new_file))
+    return new_file, new_meta
+
+def download(url, path):
+    response = urllib.urlopen(url)
+    with contextlib.closing(response):
+        with open(path, 'wb') as f:
+            f.write(response.read())
+
+def main(path, files, names):
+    path = os.path.join(path, 'data')
+    try:
+        os.mkdir(path)
+    except Exception:
+        pass
+    sources = (URL2Path.fromjson(path, f) for f in files)
+    sources = itertools.chain(*sources)
+    sources = {item.name: item for item in sources}
+    if not names:
+        names = sources.keys()
+    for name in names:
+        try:
+            item = sources[name]
+        except KeyError:
+            msg = 'Parameter {} is invalid'
+            raise ValueError(msg.format(name))
+        item.populate()
+
+if __name__ == '__main__':
+    import argparse
+
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    #logging.basicConfig(level=logging.DEBUG)
+
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('data', nargs='*', metavar='DATA',
+        help='The data to download (Default: all).')
+    parser.add_argument('--dir', '-d', nargs=1, default=BASE_DIR, dest='path',
+        help='Base directory for installation.')
+    vargs = parser.parse_args()
+
+    main(vargs.path, [os.path.join(BASE_DIR, 'data-naif.json')], vargs.data)

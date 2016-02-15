@@ -110,7 +110,7 @@ def unpack(filelike, path):
     proc.stdin.write(filelike.read())
 
 
-if __name__ == '__main__':
+def main(path=None, yesno=None):
     ROOT_URL = 'http://naif.jpl.nasa.gov/pub/naif/toolkit/C'
     PLATFORM_URLS = [
         'MacIntel_OSX_AppleC_32bit',
@@ -131,16 +131,23 @@ if __name__ == '__main__':
 
     result = '/'.join([ROOT_URL, best_fit(PLATFORM_URLS), FILE_URL])
 
-    yesno = raw_input('Do you want to download it? [y/n] ')
-    for char in 'nN':
-        if yesno.startswith(char):
-            raise SystemExit(0)
+    if yesno is None:
+        yesno = raw_input('Do you want to download it? [y/n] ')
+        for char in 'nN':
+            if yesno.startswith(char):
+                raise SystemExit(0)
+    elif not yesno:
+        raise SystemExit(0)
 
     ### DOWNLOAD AND UNPACK BEST PACKAGE ###
-    ROOT_DIR = os.path.realpath(os.path.dirname(__file__))
+    ROOT_DIR = path or os.path.realpath(os.path.dirname(__file__))
 
     filelike = download(result)
     with contextlib.closing(filelike):
         unpack(filelike, ROOT_DIR)
 
     print('Done')
+
+
+if __name__ == '__main__':
+    main()
