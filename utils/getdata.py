@@ -146,15 +146,24 @@ def download(url, path):
         with open(path, 'wb') as f:
             f.write(response.read())
 
-def main(path, files, names):
+def main(path, files, names, lst=False):
     path = os.path.join(path, 'data')
+    # Collect sources
+    sources = (URL2Path.fromjson(path, f) for f in files)
+    sources = itertools.chain(*sources)
+    sources = {item.name: item for item in sources}
+    # List parts
+    if lst:
+        print('Options:')
+        for key in sources:
+            print(' ', key)
+        return
+    # Make data dir
     try:
         os.mkdir(path)
     except Exception:
         pass
-    sources = (URL2Path.fromjson(path, f) for f in files)
-    sources = itertools.chain(*sources)
-    sources = {item.name: item for item in sources}
+    # Load data
     if not names:
         names = sources.keys()
     for name in names:
@@ -177,6 +186,8 @@ if __name__ == '__main__':
         help='The data to download (Default: all).')
     parser.add_argument('--dir', '-d', nargs=1, default=BASE_DIR, dest='path',
         help='Base directory for installation.')
+    parser.add_argument('--list', '-l', default=False,
+        help='List available options.')
     vargs = parser.parse_args()
 
-    main(vargs.path, [os.path.join(BASE_DIR, 'data-naif.json')], vargs.data)
+    main(vargs.path, [os.path.join(BASE_DIR, 'data-naif.json')], vargs.data, vargs.list)
