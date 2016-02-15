@@ -84,6 +84,7 @@
                 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="">Setup</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#getting-the-source">Getting the source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#quickstart">Quickstart</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#getting-cspice">Getting CSPICE</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#building">Building</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#getting-data">Getting data</a></li>
@@ -140,14 +141,23 @@
 <h1>Setup<a class="headerlink" href="#setup" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="getting-the-source">
 <h2>Getting the source<a class="headerlink" href="#getting-the-source" title="Permalink to this headline">¶</a></h2>
-<p>The source code for the spiceminer package and additional helper scripts can be
-downloaded from <a class="reference external" href="https://github.com/DaRasch/spiceminer">here</a>.</p>
+<p>The source code for the spiceminer package can be downloaded from
+<a class="reference external" href="https://github.com/DaRasch/spiceminer">here</a>.</p>
+</div>
+<div class="section" id="quickstart">
+<h2>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this headline">¶</a></h2>
+<p>In most cases these steps should be sufficient for a new install:</p>
+<ol class="arabic simple">
+<li><code class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">cspice</span></code></li>
+<li><code class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">build_ext</span> <span class="pre">--inplace</span></code></li>
+<li><code class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">data</span></code></li>
+</ol>
 </div>
 <div class="section" id="getting-cspice">
 <h2>Getting CSPICE<a class="headerlink" href="#getting-cspice" title="Permalink to this headline">¶</a></h2>
 <p>The spiceminer package requires some external C-code to work. This code can be
 downloaded from <a class="reference external" href="https://naif.jpl.nasa.gov/naif/toolkit_C.html">here</a>, or by
-running <code class="docutils literal"><span class="pre">python</span> <span class="pre">getcspice.py</span></code> from inside the spiceminer project directory.
+running <code class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">cspice</span></code> from inside the spiceminer project directory.
 This script will automatically check your system and download the version best
 suited for your system.</p>
 <p>If you download the the code yourself there are 2 different ways to make sure it
@@ -186,8 +196,8 @@ rotation information at all.</dd>
 <dt>ulysses</dt>
 <dd>Information about the ulysses mission.</dd>
 </dl>
-<p>To download any of these, simply call <code class="docutils literal"><span class="pre">python</span> <span class="pre">getdata.py</span> <span class="pre">[name]</span></code> from the
-project directory.</p>
+<p>To download any of these, simply call
+<code class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">data</span> <span class="pre">options=[name[,name...]]</span></code> from the project directory.</p>
 </div>
 </div>
 

@@ -1,6 +1,10 @@
 Bodies
 ******
 
+A body represents an object in space.
+
+API
+===
 
 .. module:: spiceminer
 

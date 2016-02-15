@@ -177,25 +177,25 @@ spiceminer module.</p>
 35
 36
 37
-38</pre></div></td><td class="code"><div class="highlight"><pre><span class="c">#!/usr/bin/env python</span>
-<span class="c">#-*- coding:utf-8 -*-</span>
+38</pre></div></td><td class="code"><div class="highlight"><pre><span class="ch">#!/usr/bin/env python</span>
+<span class="c1">#-*- coding:utf-8 -*-</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
 <span class="kn">import</span> <span class="nn">spiceminer</span> <span class="kn">as</span> <span class="nn">sm</span>
 
-<span class="c"># Load the necessary data (this example requires parts of the package &#39;base&#39;,</span>
-<span class="c"># which you can download with getdata.py)</span>
-<span class="n">sm</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;data&#39;</span><span class="p">)</span>
+<span class="c1"># Load the necessary data (this example requires parts of the package &#39;base&#39;,</span>
+<span class="c1"># which you can download with getdata.py)</span>
+<span class="n">sm</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
 
-<span class="c"># Get some planets and moons</span>
-<span class="n">mercury</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">Body</span><span class="p">(</span><span class="s">&#39;mercury&#39;</span><span class="p">)</span>
-<span class="n">venus</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">Body</span><span class="p">(</span><span class="s">&#39;venus&#39;</span><span class="p">)</span>
-<span class="n">earth</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">Body</span><span class="p">(</span><span class="s">&#39;earth&#39;</span><span class="p">)</span>
-<span class="n">moon</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">Body</span><span class="p">(</span><span class="s">&#39;moon&#39;</span><span class="p">)</span>
-<span class="n">mars</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">Body</span><span class="p">(</span><span class="s">&#39;mars&#39;</span><span class="p">)</span>
+<span class="c1"># Get some planets and moons</span>
+<span class="n">mercury</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">Body</span><span class="p">(</span><span class="s1">&#39;mercury&#39;</span><span class="p">)</span>
+<span class="n">venus</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">Body</span><span class="p">(</span><span class="s1">&#39;venus&#39;</span><span class="p">)</span>
+<span class="n">earth</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">Body</span><span class="p">(</span><span class="s1">&#39;earth&#39;</span><span class="p">)</span>
+<span class="n">moon</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">Body</span><span class="p">(</span><span class="s1">&#39;moon&#39;</span><span class="p">)</span>
+<span class="n">mars</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">Body</span><span class="p">(</span><span class="s1">&#39;mars&#39;</span><span class="p">)</span>
 
-<span class="c"># Get position information for 2 years</span>
+<span class="c1"># Get position information for 2 years</span>
 <span class="n">times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">sm</span><span class="o">.</span><span class="n">Time</span><span class="p">(</span><span class="mi">2000</span><span class="p">),</span> <span class="n">sm</span><span class="o">.</span><span class="n">Time</span><span class="p">(</span><span class="mi">2002</span><span class="p">),</span> <span class="n">sm</span><span class="o">.</span><span class="n">Time</span><span class="o">.</span><span class="n">DAY</span><span class="p">)</span>
 <span class="n">mercury_pos</span> <span class="o">=</span> <span class="n">mercury</span><span class="o">.</span><span class="n">position</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
 <span class="n">venus_pos</span> <span class="o">=</span> <span class="n">venus</span><span class="o">.</span><span class="n">position</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
@@ -203,7 +203,7 @@ spiceminer module.</p>
 <span class="n">moon_pos</span> <span class="o">=</span> <span class="n">moon</span><span class="o">.</span><span class="n">position</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
 <span class="n">mars_pos</span> <span class="o">=</span> <span class="n">mars</span><span class="o">.</span><span class="n">position</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
 
-<span class="c"># Plot them (the moon is only visible if you zoom in close)</span>
+<span class="c1"># Plot them (the moon is only visible if you zoom in close)</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span>
@@ -285,8 +285,8 @@ spiceminer module.</p>
 63
 64
 65
-66</pre></div></td><td class="code"><div class="highlight"><pre><span class="c">#!/usr/bin/env python</span>
-<span class="c">#-*- coding:utf-8 -*-</span>
+66</pre></div></td><td class="code"><div class="highlight"><pre><span class="ch">#!/usr/bin/env python</span>
+<span class="c1">#-*- coding:utf-8 -*-</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
@@ -300,23 +300,23 @@ spiceminer module.</p>
     <span class="n">phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan</span><span class="p">(</span><span class="n">xyz</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">xyz</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">r</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">phi</span>
 
-<span class="c"># Load the necessary data (this example requires parts of the packages &#39;base&#39;</span>
-<span class="c"># and &#39;msl&#39;, which you can download with getdata.py)</span>
-<span class="n">sm</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;data&#39;</span><span class="p">)</span>
+<span class="c1"># Load the necessary data (this example requires parts of the packages &#39;base&#39;</span>
+<span class="c1"># and &#39;msl&#39;, which you can download with getdata.py)</span>
+<span class="n">sm</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
 
-<span class="c"># Get necessary bodies</span>
-<span class="n">mars</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">Body</span><span class="p">(</span><span class="s">&#39;mars&#39;</span><span class="p">)</span>
-<span class="n">rover</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">Body</span><span class="p">(</span><span class="s">&#39;msl_rover&#39;</span><span class="p">)</span>
+<span class="c1"># Get necessary bodies</span>
+<span class="n">mars</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">Body</span><span class="p">(</span><span class="s1">&#39;mars&#39;</span><span class="p">)</span>
+<span class="n">rover</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">Body</span><span class="p">(</span><span class="s1">&#39;msl_rover&#39;</span><span class="p">)</span>
 
-<span class="c"># Let&#39;s look at a month shortly after landing</span>
+<span class="c1"># Let&#39;s look at a month shortly after landing</span>
 <span class="n">times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">sm</span><span class="o">.</span><span class="n">Time</span><span class="p">(</span><span class="mi">2013</span><span class="p">),</span> <span class="n">sm</span><span class="o">.</span><span class="n">Time</span><span class="p">(</span><span class="mi">2013</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">sm</span><span class="o">.</span><span class="n">Time</span><span class="o">.</span><span class="n">HOUR</span><span class="p">)</span>
 
-<span class="c"># Get position on mars surface</span>
+<span class="c1"># Get position on mars surface</span>
 <span class="n">position</span> <span class="o">=</span> <span class="n">rover</span><span class="o">.</span><span class="n">position</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">observer</span><span class="o">=</span><span class="n">mars</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="n">mars</span><span class="p">)</span>
 <span class="n">dist</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">phi</span> <span class="o">=</span> <span class="n">car2sphere</span><span class="p">(</span><span class="n">position</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
 
 <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
-<span class="c"># Get the angle of the mars rover on the surface (obvious method)</span>
+<span class="c1"># Get the angle of the mars rover on the surface (obvious method)</span>
 <span class="n">rotation</span> <span class="o">=</span> <span class="n">rover</span><span class="o">.</span><span class="n">rotation</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">mars</span><span class="p">)</span>
 <span class="n">rover_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">r</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rotation</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
 <span class="n">rover_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">r</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="o">-</span><span class="n">Y</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rotation</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
@@ -325,28 +325,28 @@ spiceminer module.</p>
 <span class="n">radians_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">angle</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">rover_x</span><span class="p">,</span> <span class="n">position</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">T</span><span class="p">)])</span>
 <span class="n">radians_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">angle</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span> <span class="k">for</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">rover_y</span><span class="p">,</span> <span class="n">position</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">T</span><span class="p">)])</span>
 
-<span class="c"># Get the angle of the mars rover on the surface (fast, absolute)</span>
+<span class="c1"># Get the angle of the mars rover on the surface (fast, absolute)</span>
 <span class="n">points</span> <span class="o">=</span> <span class="n">mars</span><span class="o">.</span><span class="n">position</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">observer</span><span class="o">=</span><span class="n">rover</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="n">rover</span><span class="p">)</span>
 <span class="n">radians2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">angle</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">T</span><span class="p">])</span>
 <span class="n">radians2_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">angle</span><span class="p">(</span><span class="n">Z</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">])</span>
 <span class="n">radians2_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">angle</span><span class="p">(</span><span class="n">Z</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">points</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span><span class="o">.</span><span class="n">T</span><span class="p">])</span>
 
-<span class="c"># Some nice diagrams</span>
+<span class="c1"># Some nice diagrams</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 
 <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;position&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;position&#39;</span><span class="p">)</span>
 <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;elevation&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;elevation&#39;</span><span class="p">)</span>
 <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">radians</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;Abs&#39;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">radians_x</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;X&#39;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">radians_y</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;Y&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">radians</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Abs&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">radians_x</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;X&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">radians_y</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Y&#39;</span><span class="p">)</span>
 <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">radians2</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;Abs&#39;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">radians2_x</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;X&#39;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">radians2_y</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;Y&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">radians2</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Abs&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">radians2_x</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;X&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">radians2_y</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Y&#39;</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axes</span><span class="o">.</span><span class="n">ravel</span><span class="p">():</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
 

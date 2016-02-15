@@ -5,8 +5,8 @@ Time
 spiceminer ships its own time implementation to allow custom features and more
 consistency than the standart datetime module.
 
-What are the differences to datetime?
-=====================================
+Differences to datetime
+=======================
 
 It's a float:
     That means it can be used in range functions that support floats like

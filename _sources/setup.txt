@@ -3,22 +3,31 @@ Setup
 
 Getting the source
 ==================
-The source code for the spiceminer package and additional helper scripts can be
-downloaded from `here <https://github.com/DaRasch/spiceminer>`_.
+The source code for the spiceminer package can be downloaded from
+`here <https://github.com/DaRasch/spiceminer>`_.
+
+Quickstart
+==========
+In most cases these steps should be sufficient for a new install:
+
+1) ``python setup.py cspice``
+2) ``python setup.py build_ext --inplace``
+3) ``python setup.py data``
 
 Getting CSPICE
 ==============
 The spiceminer package requires some external C-code to work. This code can be
 downloaded from `here <https://naif.jpl.nasa.gov/naif/toolkit_C.html>`_, or by
-running ``python getcspice.py`` from inside the spiceminer project directory.
+running ``python setup.py cspice`` from inside the spiceminer project directory.
 This script will automatically check your system and download the version best
 suited for your system.
 
 If you download the the code yourself there are 2 different ways to make sure it
 is available in the build process:
 
-1. Copy or symlink the unzipped code to *spiceminer/cspice*.
-2. Set the environment variable ``CSPICEPATH`` to the absolute path of the
+1) Copy or symlink the unzipped code to *spiceminer/cspice*.
+
+2) Set the environment variable ``CSPICEPATH`` to the absolute path of the
    unzipped code.
 
 Building
@@ -48,5 +57,5 @@ helios
 ulysses
     Information about the ulysses mission.
 
-To download any of these, simply call ``python getdata.py [name]`` from the
-project directory.
+To download any of these, simply call
+``python setup.py data options=[name[,name...]]`` from the project directory.

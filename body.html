@@ -87,7 +87,10 @@
 <li class="toctree-l1"><a class="reference internal" href="examples/examples.html">Examples</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="apidoc.html">API Documentation</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="kernel.html">Kernels</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="">Bodies</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Bodies</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#module-spiceminer">API</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="time.html">Time</a></li>
 <li class="toctree-l2"><a class="reference internal" href="extra.html">Extras</a></li>
 </ul>
@@ -139,8 +142,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-spiceminer">
-<span id="bodies"></span><h1>Bodies<a class="headerlink" href="#module-spiceminer" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="bodies">
+<h1>Bodies<a class="headerlink" href="#bodies" title="Permalink to this headline">¶</a></h1>
+<p>A body represents an object in space.</p>
+<div class="section" id="module-spiceminer">
+<span id="api"></span><h2>API<a class="headerlink" href="#module-spiceminer" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="spiceminer.Body">
 <em class="property">class </em><code class="descclassname">spiceminer.</code><code class="descname">Body</code><span class="sig-paren">(</span><em>body</em><span class="sig-paren">)</span><a class="headerlink" href="#spiceminer.Body" title="Permalink to this definition">¶</a></dt>
@@ -467,7 +473,7 @@ and their instruments).</p>
 <dl class="class">
 <dt id="spiceminer.Planet">
 <em class="property">class </em><code class="descclassname">spiceminer.</code><code class="descname">Planet</code><span class="sig-paren">(</span><em>body</em><span class="sig-paren">)</span><a class="headerlink" href="#spiceminer.Planet" title="Permalink to this definition">¶</a></dt>
-<dd><p>SBodies representing planets.</p>
+<dd><p>Bodies representing planets.</p>
 <p>Planets are ephimeris objects with IDs between 199 and 999 with
 pattern [1-9]99.</p>
 <p class="rubric">Attributes</p>
@@ -503,6 +509,7 @@ pattern [1-9][0-9][1-8].</p>
 <p class="rubric">Methods</p>
 </dd></dl>
 
+</div>
 </div>
 
 
