@@ -32,8 +32,8 @@ def angle(v0, v1):
         If one or both vector-arrays do not fit the requirements.
     '''
     def iangle(v0, v1):
-        v0 = v0 / norm(v0, axis=1)
-        v1 = v1 / norm(v1, axis=1)
+        v0 = v0 / norm(v0, axis=0)
+        v1 = v1 / norm(v1, axis=0)
         for x, y in zip(v0.T, v1.T):
             radians = np.arccos(np.dot(x, y))
             if np.isnan(radians):
@@ -49,7 +49,7 @@ def angle(v0, v1):
     if v0.shape[0] < 2:
         msg = 'vectors must havew at least 2 dimensions, got {}'
         raise ValueError(msg.format(v0.shape[0]))
-    if len(v0.shape > 2):
+    if len(v0.shape) > 2:
         msg = 'v0 and v1 may only be 1-D or 2-D, got {}-D'
         raise ValueError(msg.format(len(v0.shape)))
     if len(v0.shape) == 1:
