@@ -14,6 +14,59 @@ __all__ = ['Body', 'Asteroid', 'Barycenter', 'Comet', 'Instrument',
             'Planet', 'Satellite', 'Spacecraft', 'Star']
 
 
+### Special frame handlers ###
+class FrameDecorator(object):
+    '''Decorator for frames which are not built into cspice.'''
+    FRAMES = {}
+
+    def __init__(self, base, name=None):
+        self.base = base
+        self.name = name
+
+    def __call__(self, transformer):
+        if self.name is None:
+            self.name = transformer.__name__.strip('_')
+        self.__class__.FRAMES[self.name.upper()] = (self.base, transformer())
+        return transformer
+
+
+class SpecialFrame(object):
+    '''Template for custom frames.'''
+    def state(self, output):
+        return output
+    #def speed(self, output):
+    #    return output
+    def position(self, output):
+        return output
+    def rotation(self, output):
+        return output
+
+
+@FrameDecorator('SUN')
+class _Carrington(SpecialFrame):
+    '''Carrington frame.
+
+    This frame is just an alias for 'SUN'.
+    '''
+    pass
+    # MATRIX = numpy.array([
+    #     [0.88966691, 0.4530133, -0.05719917, 0],
+    #     [-0.4530133, 0.89139829, 0.01371246, 0],
+    #     [0.05719917, 0.01371246, 0.99826861, 0],
+    #     [0, 0, 0, 1]
+    # ])
+
+    # def _make_4dim(self, vector):
+    #     result = numpy.ones(shape=(4,))
+    #     result[:3] = vector
+    #     return result
+
+    # def position(self, output):
+    #     iterator = (MATRIX.dot(_make_4dim(item[1:]))[:-1] for item in output.T)
+    #     output[1:] = numpy.fromiter(iterator, dtype=float, count=len(output)).T
+    #     return output
+
+
 ### Helpers ###
 def _iterbodies(start, stop, step=1):
     '''Iterate over all bodies with ids in the given range.'''
@@ -31,10 +84,15 @@ def _typecheck(times, observer=None, frame='ECLIPJ2000'):
         times = [float(times)]
     if observer is not None:
         observer = Body(observer).name
+    frame = frame.upper()
+    try:
+        frame, transform = FrameDecorator.FRAMES[frame]
+    except KeyError:
+        transform = SpecialFrame()
     if frame not in ('J2000', 'ECLIPJ2000'):
         frame = Body(frame)
         frame = frame._frame or frame.name
-    return times, observer, frame
+    return times, observer, frame, transform
 
 
 class _BodyMeta(type):
@@ -209,14 +267,14 @@ class Body(object):
         SpiceError
             If necessary information is missing.
         '''
-        times, observer, frame = _typecheck(times, observer, frame)
+        times, observer, frame, transform = _typecheck(times, observer, frame)
         result = []
         for time in times:
             with ignored(spice.SpiceError):
                 data = spice.spkezr(self.name, Time.fromposix(time).et(),
                     frame, abcorr or Body._ABCORR, observer)
                 result.append([time] + data[0] + [data[1]])
-        return numpy.array(result).transpose()
+        return transform.state(numpy.array(result).transpose())
 
     def position(self, times, observer='SUN', frame='ECLIPJ2000',
         abcorr=None):
@@ -251,14 +309,14 @@ class Body(object):
         SpiceError
             If necessary information is missing.
         '''
-        times, observer, frame = _typecheck(times, observer, frame)
+        times, observer, frame, transform = _typecheck(times, observer, frame)
         result = []
         for time in times:
             with ignored(spice.SpiceError):
                 result.append([time] + spice.spkpos(self.name,
                 Time.fromposix(time).et(), frame, abcorr or Body._ABCORR,
                 observer)[0])
-        return numpy.array(result).transpose()
+        return transform.position(numpy.array(result).transpose())
 
     def speed(self, times, observer='SUN', frame='ECLIPJ2000',
         abcorr=None):
@@ -293,7 +351,7 @@ class Body(object):
         SpiceError
             If necessary information is missing.
         '''
-        times, observer, frame = _typecheck(times, observer, frame)
+        #times, observer, _, _ = _typecheck(times, observer, frame)
         data = self.state(times, observer, frame, abcorr)
         return data[numpy.array([True] + [False] * 3 + [True] * 3)]
 
@@ -322,7 +380,7 @@ class Body(object):
         SpiceError
             If necessary information is missing.
         '''
-        times, _, target = _typecheck(times, None, target)
+        times, _, target, transform = _typecheck(times, None, target)
         result = []
         valid_times = []
         for time in times:
@@ -330,8 +388,9 @@ class Body(object):
                 result.append(spice.pxform(self._frame or self.name,
                     target, Time.fromposix(time).et()))
                 valid_times.append(time)
-        return numpy.array(valid_times), [numpy.array(item).reshape(3, 3)
+        result = numpy.array(valid_times), [numpy.array(item).reshape(3, 3)
             for item in result]
+        return transform.rotation(result)
 
     def proximity(self, time, distance, classes=None):
         '''Get other bodies at most `distance` km away from this body.
@@ -435,7 +494,7 @@ class Instrument(Body):
         For more information on the relation between shape and bounds, see
         `here <http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/getfov_c.html#Detailed_Output>`_
         '''
-        nt = collections.namedtuple('FOVParameters', 
+        nt = collections.namedtuple('FOVParameters',
             ['shape', 'frame', 'boresight', 'bounds'])
         shape, frame, boresight, bounds = spice.getfov(self.id)
         frame = Body(frame)
@@ -490,6 +549,7 @@ class Spacecraft(Body):
     @property
     def children(self):
         return list(_iterbodies(self.id * 1000, self.id * 1000 - 1000, -1))
+
 
 class Star(Body):
     '''Body representing the sun.
