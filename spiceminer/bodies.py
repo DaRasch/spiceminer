@@ -74,6 +74,30 @@ def _iterbodies(start, stop, step=1):
         with ignored(ValueError):
             yield Body(i)
 
+def _prepare_times(times):
+    if isinstance(times, basestring):
+        times = [float(times)]
+    try:
+        times = (float(t) for t in times)
+    except TypeError:
+        times = [float(times)]
+    return times
+
+def _prepare_observer(body):
+    return Body(body).name
+
+def _prepare_frame(frame):
+    try:
+        frame = Body(frame)
+        frame = frame._frame or frame.name
+        transform = SpecialFrame()
+    except Exception:
+        if frame.upper() in ('J2000', 'ECLIPJ2000'):
+            transform = SpecialFrame()
+        else:
+            frame, transform = FrameDecorator.FRAMES[frame.upper()]
+    return frame, transform
+
 def _typecheck(times, observer=None, frame='ECLIPJ2000'):
     '''Check and convert arguments for spice interface methods.'''
     if isinstance(times, basestring):
@@ -501,6 +525,41 @@ class Instrument(Body):
         boresight = numpy.array(boresight)
         bounds = numpy.array(bounds).T
         return nt(shape, frame, boresight, bounds)
+
+    def can_see(self, times, body, abcorr=None):
+        '''Test if the Instrument can see a specified Body.
+
+        Parameters
+        ----------
+        times: float or iterable of float
+            The time(s) for which to get the visibility.
+        body: str or Body
+            The Body to test visibility for.
+        abcorr: {'LT', 'LT+S', 'CN', 'CN+S', 'XLT', 'XLT+S', 'XCN', 'XCN+S'}, optional
+            Aberration correction to be applied. For explanation see
+            `here <http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkez_c.html#Detailed_Input>`_.
+
+        Returns
+        ------
+        times: array-like of float
+            The posix time stamps of all times for which the visibility could
+            be tested.
+        visibility: array-like of bool
+            If the Body was visible at the given time.
+        '''
+        times = _prepare_times(times)
+        body = Body(body)
+        frame, _ = _prepare_frame(body)
+        observer = self.fov().frame
+        result = []
+        for t in times:
+            with ignored(spice.SpiceError):
+                visible = spice.fovtrg(self.name, body.name, 'POINT', frame,
+                    abcorr or Body._ABCORR, observer.name,
+                    Time.fromposix(t).et())
+                result.append([float(t), visible])
+        return [numpy.array(row) for row in zip(*result)]
+
 
 
 class Planet(Body):

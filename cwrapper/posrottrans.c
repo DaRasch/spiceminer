@@ -51,3 +51,9 @@ char* getfov_custom(int instrument_id, char shape[16], char frame[64], double bo
     CHECK_EXCEPTION
     FINALIZE
 }
+
+char* fovtrg_custom(char* inst, char* target, char* tshape, char* tframe, char* abcorr, char* observer, double* et, int* visible) {
+    fovtrg_c(inst, target, tshape, tframe, abcorr, observer, et, visible);
+    CHECK_EXCEPTION
+    FINALIZE
+}
