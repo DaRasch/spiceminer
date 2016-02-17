@@ -92,30 +92,19 @@ def _prepare_frame(frame):
         frame = frame._frame or frame.name
         transform = SpecialFrame()
     except Exception:
-        if frame.upper() in ('J2000', 'ECLIPJ2000'):
+        frame = frame.upper()
+        if frame in ('J2000', 'ECLIPJ2000'):
             transform = SpecialFrame()
         else:
-            frame, transform = FrameDecorator.FRAMES[frame.upper()]
+            frame, transform = FrameDecorator.FRAMES[frame]
     return frame, transform
 
 def _typecheck(times, observer=None, frame='ECLIPJ2000'):
     '''Check and convert arguments for spice interface methods.'''
-    if isinstance(times, basestring):
-        times = [float(times)]
-    try:
-        times = (float(t) for t in times)
-    except TypeError:
-        times = [float(times)]
-    if observer is not None:
-        observer = Body(observer).name
-    frame = frame.upper()
-    try:
-        frame, transform = FrameDecorator.FRAMES[frame]
-    except KeyError:
-        transform = SpecialFrame()
-    if frame not in ('J2000', 'ECLIPJ2000'):
-        frame = Body(frame)
-        frame = frame._frame or frame.name
+    times = _prepare_times(times)
+    if observer:
+        observer = _prepare_observer(observer)
+    frame, transform = _prepare_frame(frame)
     return times, observer, frame, transform
 
 
