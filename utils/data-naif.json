@@ -1,0 +1,134 @@
+{
+    "root": "http://naif.jpl.nasa.gov/pub/naif",
+    "dirs": [
+        {
+            "name": "generic_kernels",
+            "substitute": "base",
+            "dirs": [
+                {
+                    "name": "spk",
+                    "dirs": [
+                        {
+                            "name": "planets",
+                            "files": [
+                                "de430.bsp"
+                            ]
+                        },
+                        {
+                            "name": "sattelites",
+                            "files": [
+                                "mar097.bsp"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "pck",
+                    "files": [
+                        "pck00010.tpc"
+                    ]
+                },
+                {
+                    "name": "lsk",
+                    "files": [
+                        "naif0011.tls"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "MSL/kernels",
+            "substitute": "msl",
+            "dirs": [
+                {
+                    "name": "ck",
+                    "files": [
+                        "msl_ra_toolsref_v[0-9]*\\.bc",
+                        "msl_cruise_recon_rawrt_v[0-9]*\\.bc",
+                        "msl_cruise_recon_raweng_v[0-9]*\\.bc",
+                        "msl_edl_v[0-9]*\\.bc",
+                        "msl_surf_hga_tlm\\.bc",
+                        "msl_surf_ra_tlmenc\\.bc",
+                        "msl_surf_ra_tlmres\\.bc",
+                        "msl_surf_rsm_tlmenc\\.bc",
+                        "msl_surf_rsm_tlmres\\.bc",
+                        "msl_surf_rover_tlm\\.bc"
+                    ]
+                },
+                {
+                    "name": "fk",
+                    "files": [
+                        "msl\\.tf",
+                        "msl_v[0-9]*\\.tf"
+                    ]
+                },
+                {
+                    "name": "ik",
+                    "files": [
+                        "msl_aux_v[0-9]*\\.ti",
+                        "msl_chrmi_[0-9]*_c[0-9]*\\.ti",
+                        "msl_hbla_[0-9]*_c[0-9]*\\.ti",
+                        "msl_hblb_[0-9]*_c[0-9]*\\.ti",
+                        "msl_hbra_[0-9]*_c[0-9]*\\.ti",
+                        "msl_hbrb_[0-9]*_c[0-9]*\\.ti",
+                        "msl_hfla_[0-9]*_c[0-9]*\\.ti",
+                        "msl_hflb_[0-9]*_c[0-9]*\\.ti",
+                        "msl_hfra_[0-9]*_c[0-9]*\\.ti",
+                        "msl_hfrb_[0-9]*_c[0-9]*\\.ti",
+                        "msl_mahli_[0-9]*_c[0-9]*\\.ti",
+                        "msl_mardi_[0-9]*_c[0-9]*\\.ti",
+                        "msl_ml_[0-9]*_c[0-9]*\\.ti",
+                        "msl_mr_[0-9]*_c[0-9]*\\.ti",
+                        "msl_nla_[0-9]*_c[0-9]*\\.ti",
+                        "msl_nlb_[0-9]*_c[0-9]*\\.ti",
+                        "msl_nra_[0-9]*_c[0-9]*\\.ti",
+                        "msl_nrb_[0-9]*_c[0-9]*\\.ti",
+                        "msl_struct_v[0-9]*\\.ti"
+                    ]
+                },
+                {
+                    "name": "sclk",
+                    "files": [
+                        "msl_lmst_ops[0-9]*_v[0-9]*\\.tsc",
+                        "msl.tsc"
+                    ]
+                },
+                {
+                    "name": "spk",
+                    "files": [
+                        "msl_struct_v[0-9]*\\.bsp",
+                        "msl_cruise_v[0-9]*\\.bsp",
+                        "msl_edl_v[0-9]*\\.bsp",
+                        "msl_ls_ops[0-9]*_iau2000_v[0-9]*\\.bsp",
+                        "msl_surf_rover_tlm\\.bsp"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "HELIOS/kernels",
+            "substitute": "helios",
+            "dirs": [
+                {
+                    "name": "spk",
+                    "files": [
+                        "[0-9]*R_helios1_[0-9_]*\\.bsp",
+                        "[0-9]*R_helios2_[0-9_]*\\.bsp"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "ULYSSES/kernels",
+            "substitute": "ulysses",
+            "dirs": [
+                {
+                    "name": "spk",
+                    "files": [
+                        "ulysses_[0-9_]*\\.bsp"
+                    ]
+                }
+            ]
+        }
+    ]
+}

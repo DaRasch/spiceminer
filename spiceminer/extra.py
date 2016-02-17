@@ -4,86 +4,160 @@ import calendar
 
 import numpy as np
 
-from numpy import arccos, dot, cross, isnan, pi
 from numpy.linalg import norm
 
-__all__ = ['angle']
+__all__ = ['angle', 'sphere2cartesian', 'cartesian2sphere']
 
 UX, UY, UZ = np.identity(3)
 
 
-def angle(v0, v1, center=None):
+def angle(v0, v1):
     '''Calculate the angle between 2 vectors.
 
     Parameters
     ----------
     v0, v1: array-like
-        The two vectors to measure the angle between. Must have shape (n>1,).
-    center: array-like, optional
-        An alternative vector to use as zero-vector. Must have shape (n>1,).
-        If `center` is given, `v0` and `v1` are assumed to be relative to it
-        and the angle between ``v0 - center`` and ``v1 - center`` is
-        calculated instead.
+        The vectors to measure the angle between. Must have shape (n>1,) or
+        (n>1, m) where n is the dimension of the vector and m the number of
+        vectors.
 
     Returns
     -------
-    float
-        The angle between `v0` and `v1` in radians.
-    '''
-    # TODO: allow arrays to contain more than 1 vector
-    if center is None:
-        u_v0 = v0 / norm(v0)
-        u_v1 = v1 / norm(v1)
-    else:
-        u_v0 = (v0 - center) / norm(v0)
-        u_v1 = (v1 - center) / norm(v1)
-    radians = arccos(dot(u_v0, u_v1))
-    if isnan(radians):
-        if (u_v0 == u_v1).all():
-            return 0.0
-        else:
-            return pi
-    return radians
+    array-like
+        The angles between `v0` and `v1` in radians.
 
-def clockwise_angle(v0, v1, center=None, up=None):
-    '''Calculates the clockwise angle between 2 vectors (one-dimensional
-    arrays). Always uses the clockwise angle, allowing angles greater than
-    pi.
-
-    :type v0: ``numpy.ndarray``
-    :arg v0: A vector.
-    :type v1: ``numpy.ndarray``
-    :arg v1: A vector.
-    :type center: ``numpy.ndarray``
-    :arg center: The point around which the angle is calculated.
-      **Default:** [0,0,0]
-    :type up: ``numpy.array``
-    :arg up: The vector defining which side of the plane defined by *v0* and
-      *v1* is up.
-      **Default:** [0,0,1]
-    :return: (``float``) -- The clockwise angle between *v0* and *v1* around
-      *center* in radians.
-    :raises:
-      (``ValueError``) -- If *up* lies in the plane formed by *v0* and *v1*.
+    Raises
+    ------
+    ValueError
+        If one or both vector-arrays do not fit the requirements.
     '''
-    radians = angle(v0, v1, center)
-    if up is None:
-        up = UZ
-    else:
-        up = up / norm(up)
-    normal = cross(v0, v1)
-    normal = normal / norm(normal)
-    direction = dot(up, normal)
-    if direction > 0:
-        # Angle greater pi
-        return 2 * pi - radians
-    elif direction < 0:
-        # Angle smaller pi
-        return radians
-    else:
-        # If the angle between up and normal is pi/2 (up 'dot' normal == 0), it
-        # is impossible to decide which way is clockwise
-        raise ValueError('Bad up-vector: ' + str(up))
+    def iangle(v0, v1):
+        v0 = v0 / norm(v0, axis=0)
+        v1 = v1 / norm(v1, axis=0)
+        for x, y in zip(v0.T, v1.T):
+            radians = np.arccos(np.dot(x, y))
+            if np.isnan(radians):
+                if (x == y).all():
+                    radians = 0.0
+                else:
+                    radians = np.pi
+            yield radians
+
+    if v0.shape != v1.shape:
+        msg = 'shapes {} and {} not equal'
+        raise ValueError(msg.format(v0.shape, v1.shape))
+    if v0.shape[0] < 2:
+        msg = 'vectors must havew at least 2 dimensions, got {}'
+        raise ValueError(msg.format(v0.shape[0]))
+    if len(v0.shape) > 2:
+        msg = 'v0 and v1 may only be 1-D or 2-D, got {}-D'
+        raise ValueError(msg.format(len(v0.shape)))
+    if len(v0.shape) == 1:
+        v0 = np.array([[item] for item in v0])
+        v1 = np.array([[item] for item in v1])
+    return np.fromiter(iangle(v0, v1), dtype=float, count=v0.shape[1])
+
+def clockwise_angle(v0, v1):
+    '''Calculates the clockwise angle between vectors. Always uses the
+    clockwise angle, allowing angles 0 <= x < 2 * pi.
+
+    Parameters
+    ----------
+    v0, v1: array-like
+        The vectors to measure the angle between. Must have shape (n>1,) or
+        (n>1, m) where n is the dimension of the vector and m the number of
+        vectors.
+
+    Returns
+    -------
+    array-like
+        The angles between `v0` and `v1` in radians.
+
+    Raises
+    ------
+    ValueError
+        If one or both vector-arrays do not fit the requirements.
+    '''
+    def iclockwise_angle(v0, v1):
+        radians = angle(v0, v1)
+        for x, y, rad in zip(v0, v1, radians):
+            normal = np.cross(x, y)
+            normal = normal / norm(normal)
+            direction = np.dot(UZ, normal)
+            if direction > 0:
+                # Angle greater pi
+                yield 2 * pi - radians
+            elif direction < 0:
+                # Angle smaller pi
+                yield radians
+            else:
+                # If the angle between up and normal is pi/2
+                # (up 'dot' normal == 0), it is impossible to decide which way
+                # is clockwise
+                # I am ignoring that.
+                yield radians
+    return np.fromiter(iclockwise_angle(v0, v1), dtype=float, count=v0.shape[1])
+
+
+### Coordinate transformations ###
+def cartesian2sphere(vectors):
+    '''Convert cartesian to spherical coordinates.
+
+    Parameters
+    ----------
+    vectors: array-like
+        The vectors to transform. Must have shape (3,) or (3, n) where n is
+        the number of vectors.
+        Vectors should have the form [x, y, z].
+
+    Returns
+    -------
+    array-like
+        The converted coordinates as [r, phi, theta].
+
+    Raises
+    ------
+    ValueError
+        If the vector-array does not fit the requirements.
+    '''
+    if vectors.shape[0] != 3:
+        msg = 'shape must be (3,) or (3,n), got {}'
+        raise ValueError(msg.format(vectors.shape))
+    x, y, z = vectors
+    r = np.sqrt(np.sum(vectors ** 2, 0))
+    phi = np.arctan(y / x)
+    theta = np.arccos(z / r)
+    return np.array([r, phi, theta])
+
+def sphere2cartesian(vectors):
+    '''Convert spherical to cartesian coordinates.
+
+    Parameters
+    ----------
+    vectors: array-like
+        The vectors to transform. Must have shape (3,) or (3, n) where n is
+        the number of vectors.
+        Vectors should have the form [r, phi, theta].
+
+    Returns
+    -------
+    array-like
+        The converted coordinates as [x, y, z].
+
+    Raises
+    ------
+    ValueError
+        If the vector-array does not fit the requirements.
+    '''
+    if vectors.shape[0] != 3:
+        msg = 'shape must be (3,) or (3,n), got {}'
+        raise ValueError(msg.format(vectors.shape))
+    r, phi, theta = vectors
+    sinphi = np.sin(phi)
+    x = r * np.cos(theta) * sinphi
+    y = r * np.sin(theta) * sinphi
+    z = r * np.cos(phi)
+    return np.array([x, y, z])
 
 
 ### Some range-functions for easier usage of bodies.Body.state() etc. ###
@@ -98,7 +172,6 @@ def _range_base(start, stop, step):
         while start > stop:
             yield start
             start += step
-
 
 def _meta_range(args, mutator, fname):
     '''A metafunction to build xrange-like functions.

@@ -143,7 +143,7 @@ class Time(numbers.Real):
         Time
             New POSIX timestamp.
         '''
-        return cls.fromdatetime(datetime.utcnow())
+        return cls.fromdatetime(datetime.datetime.utcnow())
 
     @classmethod
     def fromposix(cls, timestamp):

@@ -6,7 +6,7 @@ import ctypes
 
 import numpy
 
-from ctypes import c_void_p, c_int, c_double, c_char, c_char_p
+from ctypes import c_void_p, c_bool, c_int, c_double, c_char, c_char_p
 from ctypes import cast, sizeof, byref, POINTER, Structure
 
 root = os.path.dirname(__file__)
@@ -224,21 +224,6 @@ cspice.pckcov_custom.errcheck = errcheck
 def pckcov(path, idcode, cell):
     cspice.pckcov_custom(path, idcode, byref(cell))
 
-cspice.getfov_custom.argtypes = [c_int, c_char * 16, c_char * 64, c_double * 3, POINTER(c_int), c_double * (8 * 3)]
-cspice.getfov_custom.restype = c_char_p
-cspice.getfov_custom.errcheck = errcheck
-def getfov(idcode):
-    shape2bounds = {'POLYGON': 3, 'RECTANGLE': 4, 'CIRCLE': 1, 'ELLIPSE': 2}
-    shape = (c_char * 16)()
-    frame = (c_char * 64)()
-    boresight = (c_double * 3)()
-    n = c_int()
-    bounds = (c_double * (8 * 3))()
-    cspice.getfov_custom(idcode, shape, frame, boresight, byref(n), bounds)
-    bounds_count = shape2bounds.get(shape.value.upper(), n.value)
-    bounds_list = [bounds[i*3:i*3+3] for i in range(bounds_count)]
-    return shape.value, frame.value, boresight[::], bounds_list
-
 ### Time conversion ###
 cspice.utc2et_custom.argtypes = [c_char_p, POINTER(c_double)]
 cspice.utc2et_custom.restype = c_char_p
@@ -309,3 +294,28 @@ def ckgp(spacecraft_id, instrument_id, et, tol, ref_frame): #Unused
     if not found:
         return None
     return (numpy.array(cmat).reshape(3, 3), float(clkout))
+
+cspice.getfov_custom.argtypes = [c_int, c_char * 16, c_char * 64, c_double * 3, POINTER(c_int), c_double * (8 * 3)]
+cspice.getfov_custom.restype = c_char_p
+cspice.getfov_custom.errcheck = errcheck
+def getfov(idcode):
+    shape2bounds = {'POLYGON': 3, 'RECTANGLE': 4, 'CIRCLE': 1, 'ELLIPSE': 2}
+    shape = (c_char * 16)()
+    frame = (c_char * 64)()
+    boresight = (c_double * 3)()
+    n = c_int()
+    bounds = (c_double * (8 * 3))()
+    cspice.getfov_custom(idcode, shape, frame, boresight, byref(n), bounds)
+    bounds_count = shape2bounds.get(shape.value.upper(), n.value)
+    bounds_list = [bounds[i*3:i*3+3] for i in range(bounds_count)]
+    return shape.value, frame.value, boresight[::], bounds_list
+
+cspice.fovtrg_custom.argtypes = [c_char_p] * 6 + [POINTER(c_double), POINTER(c_int)]
+cspice.fovtrg_custom.restype = c_char_p
+cspice.fovtrg_custom.errcheck = errcheck
+def fovtrg(inst, target, tshape, tframe, abcorr, observer, et):
+    et = c_double(et)
+    visible = c_int()
+    cspice.fovtrg_custom(inst, target, tshape, tframe, abcorr, observer,
+        byref(et), byref(visible))
+    return bool(visible.value)

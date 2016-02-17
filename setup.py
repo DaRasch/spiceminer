@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 #-*- coding:utf-8 -*-
 
+from __future__ import print_function
+
 import os
+import re
 import sys
 import glob
-import re
 import subprocess
 
 try:
@@ -15,6 +17,9 @@ except ImportError:
     from distutils.core import setup, Extension, Command
     has_setuptools = False
 
+import utils.getdata
+import utils.getcspice
+
 PROJECT_NAME = 'spiceminer'
 
 ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -22,9 +27,9 @@ ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 ### BUILD C-EXTENSION ###
 cspice_root = os.getenv('CSPICEPATH', os.path.join(ROOT_DIR, 'cspice'))
-if not os.path.isdir(cspice_root):
-    print 'ERROR: spice not found' #XXX search lib in default locations?
-    sys.exit(1)
+#if not os.path.isdir(cspice_root):
+#    print('ERROR: spice not found') #XXX search lib in default locations?
+#    sys.exit(1)
 cspice_include = os.path.join(cspice_root, 'include')
 cspice_lib = os.path.join(cspice_root, 'lib', 'cspice.a') #XXX same under windows?
 
@@ -44,7 +49,7 @@ class NewTestCommand(Command):
         pass
     def use_pytest(self, argv):
         import pytest
-        errno = pytest.main(*argv)#self.user_options)
+        errno = pytest.main(*argv)
         sys.exit(errno)
     def use_fallback(self, argv):
         test_script = 'runtests.py'
@@ -67,6 +72,40 @@ class NewTestCommand(Command):
         except ImportError:
             print('WARNING: Using fallback (pytest not available).')
             self.use_fallback(argv)
+
+
+### EXTRA SETUP COMMANDS ###
+class CSpiceCommand(Command):
+    description = 'download c libs'
+    user_options = [('path=', None, 'alternative target folder')]
+    def initialize_options(self):
+        self.path = ROOT_DIR
+    def finalize_options(self):
+        pass
+    def run(self):
+        utils.getcspice.main(self.path, True)
+
+class DataCommand(Command):
+    description = 'download data kernels'
+    user_options = [
+        ('path=', None, 'alternative target folder'),
+        ('options=', None, 'parts to download (option[,option...])'),
+        ('list', 'l', 'list options')
+    ]
+    def initialize_options(self):
+        self.path = ROOT_DIR
+        self.options = None
+        self.list = False
+    def finalize_options(self):
+        if self.options is not None:
+            self.options = self.options.split(',')
+        utils_path = os.path.join(ROOT_DIR, 'utils')
+        self.files = os.listdir(utils_path)
+        self.files = (item for item in self.files if item.endswith('.json'))
+        self.files = [os.path.join(utils_path, item) for item in self.files]
+    def run(self):
+        utils.getdata.main(self.path, self.files, self.options, self.list)
+
 
 
 ### FIND ALL SUB-PACKAGES ###
@@ -102,7 +141,11 @@ metadata = {
     'packages': PACKAGES,
     'ext_modules': [cwrapper],
     'requires': ['numpy'],
-    'cmdclass': {'test': NewTestCommand},
+    'cmdclass': {
+        'test': NewTestCommand,
+        'cspice': CSpiceCommand,
+        'data': DataCommand
+    },
     'classifiers': ('Intended Audience :: Developers',
                      'Intended Audience :: Science/Research',
                      'License :: OSI Approved :: MIT License',
