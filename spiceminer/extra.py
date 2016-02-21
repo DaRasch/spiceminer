@@ -125,7 +125,7 @@ def cartesian2sphere(vectors):
         raise ValueError(msg.format(vectors.shape))
     x, y, z = vectors
     r = np.sqrt(np.sum(vectors ** 2, 0))
-    phi = np.arctan(y / x)
+    phi = np.arctan2(y, x)
     theta = np.arccos(z / r)
     return np.array([r, phi, theta])
 
