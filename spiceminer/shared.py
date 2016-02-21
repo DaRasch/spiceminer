@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 #-*- coding:utf-8 -*-
 
+import collections
+
+from ._helpers import TimeWindows
+
+
 # Set of Kernel
 LOADED_KERNELS = set()
 

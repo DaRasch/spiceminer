@@ -31,8 +31,12 @@ def load(path='.', recursive=True, followlinks=False, force=False):
     ------
     IOError
         If no files were found.
+
+    See also
+    --------
+    unload: Unload kernels.
     '''
-    return Kernel(**locals())
+    return Kernel.load(**locals())
 
 def unload(path='.', recursive=True, followlinks=False):
     '''Unload a kernel file or all kernel files in a directory tree.
@@ -50,5 +54,9 @@ def unload(path='.', recursive=True, followlinks=False):
     -------
     kernels: set of Kernel
         The unloaded kernels.
+
+    See also
+    --------
+    load: Load files.
     '''
     return Kernel.unload(**locals())

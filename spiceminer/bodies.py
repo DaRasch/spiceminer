@@ -4,8 +4,8 @@ import collections
 
 import numpy
 
+from . import shared
 from . import _spicewrapper as spice
-from .kernel import shared
 from .time_ import Time
 from ._helpers import ignored
 
@@ -127,11 +127,9 @@ class _BodyMeta(type):
 
     def __init__(cls, name, bases, namespace):
         super(cls.__class__, cls).__init__(name, bases, namespace)
-        if not hasattr(cls, 'LOADED'):
-            cls.LOADED = set()
-        if not hasattr(cls, '_REGISTRY'):
-            cls._REGISTRY = set(base for base in bases if type(base) == cls.__class__)
-            cls._REGISTRY.add(cls)
+        cls.LOADED = set()
+        cls._REGISTRY = set(base for base in bases if isinstance(cls, cls.__class__))
+        cls._REGISTRY.add(cls)
 
     def _register(cls, body):
         for kls in cls._REGISTRY:
@@ -169,7 +167,6 @@ class _BodyMeta(type):
             body.__class__._register(body)
             _BodyMeta._ID_MAP[id_] = body
         _BodyMeta._ID_COUNTER[id_] += 1
-        return body
 
     def _delete(cls, id_):
         _BodyMeta._ID_COUNTER[id_] -= 1
@@ -199,10 +196,10 @@ class _BodyMeta(type):
         else:
             msg = "'int' or 'str' argument expected, got '{}'"
             raise TypeError(msg.format(type(body)))
-        if id_ not in _ID_MAP:
+        if id_ not in _BodyMeta._ID_MAP:
             msg = "No loaded 'Body' with ID or name '{}'"
             raise ValueError(msg.format(body))
-        return _ID_MAP[id_]
+        return _BodyMeta._ID_MAP[id_]
 
 
 ### Public API ###

@@ -176,6 +176,15 @@ def namfrm(name):
     return code.value
 
 ### Kernel (un)load ###
+cspice.getfat_custom.argtypes = [c_char_p, c_int, c_int, c_char_p, c_char_p]
+cspice.getfat_custom.restype = c_char_p
+cspice.getfat_custom.errcheck = errcheck
+def getfat(path):
+    arch = (c_char * 4)()
+    type_ = (c_char * 4)()
+    cspice.getfat_custom(path, 4, 4, arch, type_)
+    return arch.value, type_.value[:-1].lower() or '?'
+
 cspice.furnsh_custom.argtypes = [c_char_p]
 cspice.furnsh_custom.restype = c_char_p
 cspice.furnsh_custom.errcheck = errcheck

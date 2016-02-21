@@ -1,17 +1,20 @@
 #!/usr/bin/env python
 #-*- coding:utf-8 -*-
 
+import os
+import re
 import collections
 
 from .. import _spicewrapper as spice
+from .. import shared
 from ..time_ import Time
-from .._helpers import ignored, TimeWindows
+from .._helpers import ignored, iterable_path, TimeWindows
 
 
 ### Constants ###
 #TODO: move to constants.py
 # File encodings
-ARCH_BIN = {'DAF', 'DAS', 'NAIF'}
+ARCH_BIN = {'DAF', 'DAS'}
 ARCH_TXT = {'KPL'}
 ARCH = set.union(ARCH_BIN, ARCH_TXT)
 
@@ -46,23 +49,13 @@ def kernel_properties(filepath):
     Legal characters in text kernels:
         https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/kernel.html#Text%20Kernel%20Specifications
     '''
-    with open(filepath, 'rb') as file:
-        identifier = file.read(8).decode('utf-8').strip()
-    arch, ktype = _split_identifier(identifier)
+    arch, ktype = '?', '?'
+    with ignored(spice.SpiceError):
+        arch, ktype = spice.getfat(filepath)
     _validate(filepath, arch, ktype)
     binary = arch in ARCH_BIN
-    info = _info_type(kernel_type)
+    info = _info_type(ktype)
     return kp(filepath, binary, arch, ktype, info)
-
-def _split_identifier(identifier):
-    try:
-        i = identifier.index('/')
-        arch = identifier[:i]
-        ktype = identifier[i + 1:][:-1]
-    except ValueError:
-        arch = identifier[:3]
-        ktype = identifier[3:6]
-    return arch, ktype
 
 def _info_type(ktype):
     #TODO: unnecessary, remove
@@ -74,7 +67,7 @@ def _info_type(ktype):
         return 'none'
 
 def _validate(filepath, arch, ktype):
-    if arch not in ARCH:
+    if arch is '?':
         raise ValueError('Not a kernel file: {}'.format(filepath))
     if ktype not in KTYPE:
         msg = "Unsupported kernel type '{}' in {}"
@@ -88,7 +81,7 @@ def icollect_kprops(path, recursive, followlinks):
         for name in fnames:
             filepath = os.path.join(dir_path, name)
             with ignored(ValueError):
-                yield lowlevel.kernel_properties(filepath)
+                yield kernel_properties(filepath)
 
 def ifilter_kprops(kprops_iterable):
     '''Yield only new kernels.'''
@@ -107,8 +100,8 @@ def iunload_kprops(kprops_iterable):
 
 def split_props(kprops_iterable):
     kpall = set(kprops_iterable)
-    kpbody = {p for p in kpall if p.type in lowlevel.KTYPE_BODY}
-    kpmisc = kpall - body_kprops
+    kpbody = {p for p in kpall if p.type in KTYPE_BODY}
+    kpmisc = kpall - kpbody
     return kpmisc, kpbody
 
 
@@ -133,7 +126,7 @@ def load_any(kprops):
         'f': _load_f
     }.get(kprops.type, _load_dummy)
     windows = loader(kprops.path)
-    spice.furnsh(krops.path)
+    spice.furnsh(kprops.path)
     return windows
 
 def unload_any(kprops):
