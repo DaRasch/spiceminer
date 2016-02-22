@@ -3,80 +3,102 @@
 import pytest
 
 import os
-import itertools as itt
-from collections import namedtuple
+import random
 
+import spiceminer._spicewrapper as spice
 import spiceminer.kernel as kernel
 
 
+MAX_FILES = 10
+
 PKG_ROOT = os.path.realpath(os.path.join(__file__, '..', '..'))
 
-DATA_DIR = os.getenv('SPICEMINERDATA', os.path.join(PKG_ROOT, 'data'))
-if not os.path.isdir(DATA_DIR):
-    DATA_DIR = None
+DATA_ROOT = os.getenv('SPICEMINERDATA', os.path.join(PKG_ROOT, 'data'))
+if not os.path.isdir(DATA_ROOT):
+    DATA_ROOT = None
 
 def _iter_files(root):
     if not root:
         raise StopIteration()
-    kfile = namedtuple('KernelFile', ['path', 'type'])
-    for dir_path, _, files in os.walk(root):
-        for name in files:
-            try:
-                # FIXME remove dependency on internal spiceminer code
-                kernel_type = kernel.lowlevel.filter_extensions(name)
-                yield kfile(os.path.join(dir_path, name), kernel_type)
-            except ValueError as e:
-                pass
+    for dirname, _, filenames in os.walk(root):
+        for fname in filenames:
+            yield os.path.join(dirname, fname)
 
-DATA_FILES = list(itt.islice(_iter_files(DATA_DIR), 100))
+DATA_FILES = list(_iter_files(DATA_ROOT))
+random.shuffle(DATA_FILES)
 
+def _filter_kernels(paths):
+    for path in paths:
+        try:
+            arch, ktype = spice.getfat(path)
+        except spice.SpiceError:
+            continue
+        if arch != '?' and ktype != '?':
+            yield path
+
+KERNEL_FILES = list(_filter_kernels(DATA_FILES))
+NONKERNEL_FILES = list(set(DATA_FILES) - set(KERNEL_FILES))
 
 def pytest_namespace():
-    return {
-        'needs_datafiles': pytest.mark.skipif(not DATA_FILES, reason='No data in data directory. [{}]'.format(DATA_DIR))
-    }
+    return {}
 
 
-### Fixtures ###
+### Argument fixtures ###
 @pytest.fixture(scope='session')
 def datadir():
-    if DATA_DIR is None:
+    if DATA_ROOT is None:
         pytest.skip('No data directory available.')
-    return DATA_DIR
+    return DATA_ROOT
 
-@pytest.fixture(scope='session')
-def datafiles(datadir):
-    if not DATA_FILES:
-        pytest.skip('No data in data directory. [{}]'.format(datadir))
-    return DATA_FILES
-
-@pytest.fixture(scope='session', params=DATA_FILES, ids=[f.path for f in DATA_FILES])
-def kernelfile(request):
-    #if request.param is None:
-    #    pytest.skip('No data in data directory. [{}]'.format(datadir))
+@pytest.fixture(scope='session', params=DATA_FILES[:MAX_FILES])
+@pytest.mark.skipif(not DATA_FILES,
+    reason='No data in data directory. [{}]'.format(DATA_ROOT))
+def datafile(request):
     return request.param
 
+@pytest.fixture(scope='session')
+@pytest.mark.skipif(not KERNEL_FILES,
+    reason='No kernels in data directory. [{}]'.format(DATA_ROOT))
+def kernelfiles(datadir):
+    return KERNEL_FILES
+
+@pytest.fixture(scope='session', params=KERNEL_FILES[:MAX_FILES])
+@pytest.mark.skipif(not KERNEL_FILES,
+    reason='No kernels in data directory. [{}]'.format(DATA_ROOT))
+def kernelfile(request):
+    return request.param
+
+@pytest.fixture(scope='session', params=NONKERNEL_FILES[:MAX_FILES])
+@pytest.mark.skipif(not NONKERNEL_FILES,
+    reason='No non-kernels in data directory. [{}]'.format(DATA_ROOT))
+def nonkernelfile(request):
+    return request.param
+
+
+### Marker fixtures ###
 @pytest.yield_fixture(scope='function')
-def with_leapseconds(datafiles):
-    for item in datafiles:
-        if item.type == 'ls':
-            kernel.load(item.path)
+def with_leapseconds():
+    for path in KERNEL_FILES:
+        if spice.getfat(path)[1] == 'ls':
+            kernel.load(path)
             break
     else:
-        pytest.skip('No leap seconds kernel available')
+        pytest.skip('No leap seconds kernel available.')
     yield
-    kernel.unload(item.path)
+    kernel.unload(path)
 
 @pytest.yield_fixture(scope='function')
 def with_spacecraftclock(datafiles):
-    for item in datafiles:
-        if item.type == 'sc':
-            kernel.load(item.path)
-            break
-    else:
-        pytest.skip('No spacecraft clock kernel available')
+    paths = [path for path in KERNEL_FILES if spice.getfat(path)[1] == 'sc']
+    if not paths:
+        pytest.skip('No spacecraft clock kernel available.')
+    for path in paths:
+        kernel.load(path)
     yield
-    kernel.unload(item.path)
+    for path in paths:
+        kernel.unload(item.path)
+
+
 
 
 @pytest.fixture(scope='function')

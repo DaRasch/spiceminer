@@ -9,8 +9,11 @@ import itertools as itt
 import spiceminer as sm
 import spiceminer.kernel.lowlevel as lowlevel
 
+
+### Helpers ###
 @pytest.fixture(scope='function', params=['pos', 'rot', 'none'])
 def dummyfy(request, monkeypatch):
+    '''Patch lowlevel loader functions to rerturn dummy results.'''
     def fake_loader(path):
         if request.param == 'none':
             windows = {}
@@ -21,10 +24,47 @@ def dummyfy(request, monkeypatch):
         monkeypatch.setattr(lowlevel, func, fake_loader)
     return request.param
 
-
-def generate_strings(max_size):
+def rstrings(max_size):
     while True:
         yield ''.join(random.sample(string.lowercase, random.randint(1, max_size)))
+
+
+### Tests ###
+class TestKernelProperties(object):
+    def test_kp_good(self, kernelfile):
+        kprops = lowlevel.kernel_properties(kernelfile)
+        assert kprops.path == kernelfile
+        assert kprops.arch in lowlevel.ARCH
+        assert kprops.type in lowlevel.KTYPE
+
+    def test_kp_bad(self, nonkernelfile):
+        with pytest.raises((ValueError, sm.SpiceError)):
+            kprops = lowlevel.kernel_properties(nonkernelfile)
+
+@pytest.mark.parametrize('ktype', list(lowlevel.KTYPE) + list(
+    set(itt.islice(rstrings(10), 5)) - lowlevel.KTYPE
+))
+def test_info_type(ktype):
+    info = lowlevel._info_type(ktype)
+    if ktype in lowlevel.KTYPE:
+        assert info in ('pos', 'rot', 'none')
+    else:
+        assert info == None
+
+xValueError = pytest.mark.xfail(raises=ValueError)
+@pytest.mark.parametrize('arch', list(lowlevel.ARCH) + [xValueError('?')])
+@pytest.mark.parametrize('ktype', list(lowlevel.KTYPE) + [
+    xValueError(next(rstrings(10)))
+])
+def test_validate(arch, ktype):
+    lowlevel._validate('Test', arch, ktype)
+
+@pytest.mark.parametrize('recursive', [True, False])
+def test_icollect_kprops(datadir, kernelfiles, recursive):
+    paths = set(kp.path for kp in lowlevel.icollect_kprops(datadir, recursive, False))
+    if not recursive:
+        assert len(paths) < len(kernelfiles)
+    assert paths - set(kernelfiles) == set()
 
 def generate_filenames():
     xfail = pytest.mark.xfail(raises=ValueError)
@@ -66,9 +106,9 @@ def generate_filenames():
         if rstr not in valid_ext:
             yield xfail('.' + rstr)
 
-@pytest.mark.parametrize('filename', generate_filenames())
-def test_filter_extensions(filename):
-    assert lowlevel.filter_extensions(filename) in lowlevel.VALID_KERNEL_TYPES
+#@pytest.mark.parametrize('filename', generate_filenames())
+#def test_filter_extensions(filename):
+#    assert lowlevel.filter_extensions(filename) in lowlevel.VALID_KERNEL_TYPES
 
 @pytest.mark.usefixtures('dummyfy')
 def test_load_any(kernelfile):
