@@ -98,7 +98,7 @@ class Kernel(object):
         return self._kprops.info
 
     @classmethod
-    def load(cls, path='.', recursive=True, followlinks=False, force=False):
+    def load(cls, path='.', recursive=True, followlinks=False, force_reload=False):
         '''Load a kernel file or all kernel files in a directory tree.
 
         Meta-kernels are not supported, because they would be parsed internally
@@ -143,12 +143,12 @@ class Kernel(object):
             raise IOError(2, msg, path)
         else:
             kpall = itertools.chain([first], kpall)
-        # Filter depending on force to allow reloading existing kernels
-        if force:
+        # Filter depending on force_reload to allow reloading existing kernels
+        if force_reload:
             kpall = lowlevel.iunload_kprops(kpall)
         else:
             kpall = lowlevel.ifilter_kprops(kpall)
-        # Split and create instances (misc first, to assure .tls is loaded)
+        # Split and create instances (misc first for ls and sc)
         kpmisc, kpbody = lowlevel.split_kprops(kpall)
         misc_kernels = set(cls(kprops) for kprops in kpmisc)
         body_kernels = set(cls(kprops) for kprops in kpbody)

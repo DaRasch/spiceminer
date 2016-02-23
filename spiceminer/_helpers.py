@@ -78,6 +78,9 @@ class TimeWindows(collections.Sequence):
     def __eq__(self, other):
         return other == self._merged
 
+    def __bool__(self):
+        return bool(self._raw)
+
     @staticmethod
     def _merge(lst):
         '''Return a sorted list of non-overlapping start-end-tuples.'''

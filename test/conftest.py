@@ -4,6 +4,7 @@ import pytest
 
 import os
 import random
+import tempfile
 import collections
 
 import spiceminer._spicewrapper as spice
@@ -49,6 +50,12 @@ def pytest_namespace():
 
 
 ### Argument fixtures ###
+@pytest.yield_fixture(scope='function')
+def tempdir():
+    path = tempfile.mkdtemp()
+    yield path
+    os.rmdir(path)
+
 @pytest.fixture(scope='session')
 def datadir():
     if DATA_ROOT is None:
