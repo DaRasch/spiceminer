@@ -98,7 +98,7 @@ def iunload_kprops(kprops_iterable):
             existing[kprops.path]._unload()
         yield kprops
 
-def split_props(kprops_iterable):
+def split_kprops(kprops_iterable):
     kpall = set(kprops_iterable)
     kpbody = {p for p in kpall if p.type in KTYPE_BODY}
     kpmisc = kpall - kpbody
@@ -154,7 +154,7 @@ def _loader_template_txt(regex, path):
 
 def _validate_ls():
     if 'ls' not in set(k.type for k in shared.LOADED_KERNELS):
-        raise SpiceError('No leap second kernel loaded')
+        raise spice.SpiceError('No leap second kernel loaded')
 
 
 # Concrete loaders for specific file formats

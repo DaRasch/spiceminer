@@ -4,6 +4,7 @@ import pytest
 
 import os
 import random
+import collections
 
 import spiceminer._spicewrapper as spice
 import spiceminer.kernel as kernel
@@ -28,15 +29,19 @@ DATA_FILES = list(_iter_files(DATA_ROOT))
 random.shuffle(DATA_FILES)
 
 def _filter_kernels(paths):
+    types = collections.defaultdict(list)
+    files = []
     for path in paths:
         try:
             arch, ktype = spice.getfat(path)
         except spice.SpiceError:
             continue
         if arch != '?' and ktype != '?':
-            yield path
+            types[ktype.lower()].append(path)
+            files.append(path)
+    return types, files
 
-KERNEL_FILES = list(_filter_kernels(DATA_FILES))
+TYPED_FILES, KERNEL_FILES = _filter_kernels(DATA_FILES)
 NONKERNEL_FILES = list(set(DATA_FILES) - set(KERNEL_FILES))
 
 def pytest_namespace():
@@ -74,29 +79,52 @@ def kernelfile(request):
 def nonkernelfile(request):
     return request.param
 
+@pytest.fixture(scope='session', params=TYPED_FILES['sp'][:MAX_FILES])
+@pytest.mark.skipif(not TYPED_FILES['sp'],
+    reason='No sp kernels in data directory. [{}]'.format(DATA_ROOT))
+def spfile(request):
+    return request.param
+
+@pytest.fixture(scope='session', params=TYPED_FILES['c'][:MAX_FILES])
+@pytest.mark.skipif(not TYPED_FILES['c'],
+    reason='No c kernels in data directory. [{}]'.format(DATA_ROOT))
+def cfile(request):
+    return request.param
+
+@pytest.fixture(scope='session', params=TYPED_FILES['pc'][:MAX_FILES])
+@pytest.mark.skipif(not TYPED_FILES['pc'],
+    reason='No pc kernels in data directory. [{}]'.format(DATA_ROOT))
+def pcfile(request):
+    return request.param
+
+@pytest.fixture(scope='session', params=TYPED_FILES['f'][:MAX_FILES])
+@pytest.mark.skipif(not TYPED_FILES['f'],
+    reason='No f kernels in data directory. [{}]'.format(DATA_ROOT))
+def ffile(request):
+    return request.param
+
 
 ### Marker fixtures ###
 @pytest.yield_fixture(scope='function')
-def with_leapseconds():
+def with_leapseconds(datadir):
     for path in KERNEL_FILES:
         if spice.getfat(path)[1] == 'ls':
-            kernel.load(path)
+            k = kernel.load(path).pop()
             break
     else:
         pytest.skip('No leap seconds kernel available.')
     yield
-    kernel.unload(path)
+    k._unload()
 
 @pytest.yield_fixture(scope='function')
-def with_spacecraftclock(datafiles):
+def with_spacecraftclock(datadir):
     paths = [path for path in KERNEL_FILES if spice.getfat(path)[1] == 'sc']
     if not paths:
         pytest.skip('No spacecraft clock kernel available.')
-    for path in paths:
-        kernel.load(path)
+    kernels = set.union(*(kernel.load(path) for path in paths))
     yield
-    for path in paths:
-        kernel.unload(item.path)
+    for k in kernels:
+        k._unload()
 
 
 

@@ -5,28 +5,45 @@ import pytest
 import random
 import string
 import itertools as itt
+import collections
 
 import spiceminer as sm
 import spiceminer.kernel.lowlevel as lowlevel
 
 
 ### Helpers ###
-@pytest.fixture(scope='function', params=['pos', 'rot', 'none'])
-def dummyfy(request, monkeypatch):
-    '''Patch lowlevel loader functions to rerturn dummy results.'''
-    def fake_loader(path):
-        if request.param == 'none':
-            windows = {}
-        else:
-            windows = {'ABC': 'Test'}
-        return request.param, windows
-    for func in ('_load_sp', '_load_pc', '_load_c', '_load_f'):
-        monkeypatch.setattr(lowlevel, func, fake_loader)
-    return request.param
-
 def rstrings(max_size):
     while True:
         yield ''.join(random.sample(string.lowercase, random.randint(1, max_size)))
+
+class FakeKernel(object):
+    def __init__(self, path):
+        self.path = path
+        self.loaded = True
+
+    def _unload(self):
+        self.loaded = False
+
+@pytest.fixture(scope='function')
+def fake_LOADED(kernelfiles, monkeypatch):
+    available = random.sample(kernelfiles, random.randint(0, len(kernelfiles)))
+    substitute = {FakeKernel(path) for path in available}
+    monkeypatch.setattr(lowlevel.shared, 'LOADED_KERNELS', substitute)
+    return substitute
+
+@pytest.fixture(scope='function')
+def fake_loaders(monkeypatch):
+    '''Patch lowlevel loader functions to rerturn dummy results.'''
+    def fake_loader(path):
+        windows = {'ABC': 'Test'}
+        return windows
+    for func in ('_load_sp', '_load_pc', '_load_c', '_load_f'):
+        monkeypatch.setattr(lowlevel, func, fake_loader)
+
+@pytest.fixture(scope='function')
+def fake_furnsh(monkeypatch):
+    monkeypatch.setattr(lowlevel.spice, 'furnsh', lambda x: None)
+    monkeypatch.setattr(lowlevel.spice, 'unload', lambda x: None)
 
 
 ### Tests ###
@@ -66,121 +83,70 @@ def test_icollect_kprops(datadir, kernelfiles, recursive):
         assert len(paths) < len(kernelfiles)
     assert paths - set(kernelfiles) == set()
 
-def generate_filenames():
-    xfail = pytest.mark.xfail(raises=ValueError)
-    rstrings = generate_strings(4)
-    valid_ext = [''.join(ext) for ext in itt.product(('b', 't'), lowlevel.VALID_KERNEL_TYPES)]
+def test_ifilter_kprops(kernelfiles, fake_LOADED):
+    kp = collections.namedtuple('KernelPath', 'path')
+    result = lowlevel.ifilter_kprops(kp(path) for path in kernelfiles)
+    result_paths = set(kprops.path for kprops in result)
+    fake_paths = set(k.path for k in fake_LOADED)
+    assert result_paths.symmetric_difference(fake_paths) == set(kernelfiles)
 
-    ### Valid
-    for ext in valid_ext:
-        # real file names
-        yield '.'.join([next(rstrings), ext])
-        # extension equals file name
-        yield '.'.join([ext, ext])
-        # multiple dots
-        yield '...' + ext
-        yield '.'.join(['.'.join(itt.islice(rstrings, 4)), ext])
-        # no name
-        yield '.' + ext
+def test_iunload_kprops(kernelfiles, fake_LOADED):
+    kp = collections.namedtuple('KernelPath', 'path')
+    result = lowlevel.iunload_kprops(kp(path) for path in kernelfiles)
+    result_paths = set(kprops.path for kprops in result)
+    assert result_paths == set(kernelfiles)
+    unloaded_paths = {k.path for k in fake_LOADED if not k.loaded}
+    assert len(unloaded_paths) == len(fake_LOADED)
 
-    ### Invalid
-    # empty
-    yield xfail('')
-    yield xfail('.')
-    # no extension
-    yield xfail(next(rstrings) + '.')
-    # only extension
-    for ext in valid_ext:
-        yield xfail(ext)
-    # no dot
-    for ext in valid_ext:
-        yield xfail(''.join([next(rstrings), ext]))
-    # bad prefix
-    for ext in valid_ext:
-        yield xfail(''.join(['.', next(rstrings), ext]))
-    # bad postfix
-    for ext in valid_ext:
-        yield xfail(''.join(['.', ext, next(rstrings)]))
-    # blackbox
-    for rstr in itt.islice(rstrings, 4):
-        if rstr not in valid_ext:
-            yield xfail('.' + rstr)
+@pytest.mark.parametrize('types', [
+    [random.choice(list(lowlevel.KTYPE)) for i in range(10)]
+])
+def test_split_kprops(types):
+    kt = collections.namedtuple('KernelType', 'type')
+    kpmisc, kpbody = lowlevel.split_kprops(kt(t) for t in types)
+    body_types = {kt.type for kt in kpbody}
+    misc_types = {kt.type for kt in kpmisc}
+    assert body_types.union(lowlevel.KTYPE_BODY) == lowlevel.KTYPE_BODY
+    assert misc_types.intersection(lowlevel.KTYPE_BODY) == set()
+    assert body_types.union(misc_types) == set(types)
 
-#@pytest.mark.parametrize('filename', generate_filenames())
-#def test_filter_extensions(filename):
-#    assert lowlevel.filter_extensions(filename) in lowlevel.VALID_KERNEL_TYPES
 
-@pytest.mark.usefixtures('dummyfy')
+
+
+@pytest.mark.usefixtures('fake_loaders', 'fake_furnsh')
 def test_load_any(kernelfile):
-    if kernelfile.path.endswith('.bc'):
-        pytest.xfail(reason='.bc files require a loaded sc kernel')
-    info, time_window_map = lowlevel.load_any(*kernelfile)
-    assert info in ['pos', 'rot', 'none']
-    assert isinstance(time_window_map, dict)
-
-@pytest.mark.parametrize('path', ['.', '/', '~'])
-def test_load_any_errors(path):
-    with pytest.raises(IOError):
-        info, time_window_map = lowlevel.load_any(path, '')
-
+    kp = collections.namedtuple('KernelProperties', ['path', 'type'])
+    kprops = kp(kernelfile, random.choice(list(lowlevel.KTYPE)))
+    time_window_map = lowlevel.load_any(kprops)
+    if kprops.type in lowlevel.KTYPE_BODY:
+        assert time_window_map == {'ABC': 'Test'}
+    else:
+        assert time_window_map == {}
 
 def test_unload_any():
     pass
 
 
-# misc
 @pytest.mark.parametrize('path', ['.'])
 def test_load_dummy(path):
-    assert lowlevel._load_dummy(path) == ('none', {})
-
-
-def _abstract_loader_fixture(request, kernelfile, types):
-    if kernelfile.type in types:
-        return kernelfile.path
-    else:
-        request.applymarker(pytest.mark.xfail(raises=sm.SpiceError))
-        return kernelfile.path
-
-# sp
-@pytest.fixture
-def sp_file(request, kernelfile):
-    return _abstract_loader_fixture(request, kernelfile, ['sp'])
+    assert lowlevel._load_dummy(path) == {}
 
 @pytest.mark.usefixtures('with_leapseconds')
-def test_load_sp(sp_file):
-    info_type, time_window_map = lowlevel._load_sp(sp_file)
-    assert info_type == 'pos'
+def test_load_sp(spfile):
+    time_window_map = lowlevel._load_sp(spfile)
     assert time_window_map != {}
-
-# c/sc
-@pytest.fixture
-def c_file(request, kernelfile):
-    return _abstract_loader_fixture(request, kernelfile, ['c'])
 
 @pytest.mark.usefixtures('with_leapseconds', 'with_spacecraftclock')
-def test_load_c(c_file):
-    info_type, time_window_map = lowlevel._load_c(c_file)
-    assert info_type == 'rot'
+def test_load_c(cfile):
+    time_window_map = lowlevel._load_c(cfile)
     assert time_window_map != {}
 
-# pc
-@pytest.fixture
-def pc_file(request, kernelfile):
-    return _abstract_loader_fixture(request, kernelfile, ['pc'])
-
 @pytest.mark.usefixtures('with_leapseconds')
-def test_load_pc(pc_file):
-    info_type, time_window_map = lowlevel._load_pc(pc_file)
-    assert info_type == 'rot'
+def test_load_pc(pcfile):
+    time_window_map = lowlevel._load_pc(pcfile)
     assert time_window_map != {}
 
-# f
-@pytest.fixture
-def f_file(request, kernelfile):
-    return _abstract_loader_fixture(request, kernelfile, ['f'])
-
 @pytest.mark.usefixtures('with_leapseconds')
-def test_load_f(f_file):
-    info_type, time_window_map = lowlevel._load_f(f_file)
-    assert info_type == 'pos'
+def test_load_f(ffile):
+    time_window_map = lowlevel._load_f(ffile)
     assert time_window_map != {}

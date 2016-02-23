@@ -44,7 +44,7 @@ class Kernel(object):
     TIMEWINDOWS_ROT = shared.TIMEWINDOWS_ROT
 
     def __init__(self, kprops):
-        self.path, self.binary, self.arch, self.type, self.info = kprops
+        self._kprops = kprops
         self.bodies = set()
         # Load the kernel file
         self._windows = lowlevel.load_any(kprops)
@@ -72,7 +72,7 @@ class Kernel(object):
                 if not windows[body]:
                     del windows[body]
                 bodies.Body._delete(id_)
-        lowlevel.unload_any(self.kprops)
+        lowlevel.unload_any(self._kprops)
 
     def __str__(self):
         return '{} {} ({})'.format(
@@ -80,6 +80,22 @@ class Kernel(object):
 
     def __repr__(self):
         return '{}({})'.format(self.__class__.__name__, self.path)
+
+    @property
+    def path(self):
+        return self._kprops.path
+    @property
+    def binary(self):
+        return self._kprops.binary
+    @property
+    def arch(self):
+        return self._kprops.arch
+    @property
+    def type(self):
+        return self._kprops.type
+    @property
+    def info(self):
+        return self._kprops.info
 
     @classmethod
     def load(cls, path='.', recursive=True, followlinks=False, force=False):
@@ -133,7 +149,7 @@ class Kernel(object):
         else:
             kpall = lowlevel.ifilter_kprops(kpall)
         # Split and create instances (misc first, to assure .tls is loaded)
-        kpmisc, kpbody = lowlevel.split_props(kpall)
+        kpmisc, kpbody = lowlevel.split_kprops(kpall)
         misc_kernels = set(cls(kprops) for kprops in kpmisc)
         body_kernels = set(cls(kprops) for kprops in kpbody)
         return set.union(misc_kernels, body_kernels)
@@ -164,7 +180,7 @@ class Kernel(object):
         if not os.path.exists(path):
             msg = 'No such file or directory'
             raise IOError(2, msg, path)
-        kpfound = set.union(*cls._collect(path, recursive, followlinks))
+        kpfound = set.union(set(lowlevel.icollect_kprops(path, recursive, followlinks)))
         if not kpfound:
             msg = 'No valid files found on path'
             raise IOError(2, msg, path)
