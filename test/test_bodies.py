@@ -7,6 +7,7 @@ import collections
 import numpy as np
 
 import spiceminer as sm
+import spiceminer.bodies as bodies
 import spiceminer._spicewrapper as spice
 
 
@@ -21,38 +22,44 @@ def with_kernels(datadir):
     yield
     sm.unload(datadir)
 
-class FakeKernel(object):
-    def __init__(self):
-        self.__class__.LOADED = {self}
-        # All hardcoded body ids
-        self.ids = {i for i in xrange(-100000, 200000) if spice.bodc2n(i)}
-FakeKernel()
-
 @pytest.fixture(scope='function')
-def patch_kernel(monkeypatch):
-    '''Fake Kernel to simulate all possible bodies beeing loaded.'''
-    import spiceminer.bodies as bodies
-    monkeypatch.setattr(bodies, 'Kernel', FakeKernel)
+def make_bodies():
+    '''Run with bodies made.'''
+    ids = [10, 301, 399, 499]
+    for item in ids:
+        bodies.Body._make(item)
 
+@pytest.yield_fixture(scope='function')
+def clear_bodies():
+    yield
+    for id_, count in bodies._BodyMeta._ID_COUNTER.items():
+        for i in range(count):
+            if id_ != 0:
+                bodies.Body._delete(id_)
 
-### Data generators ###
-def gen_bodies():
-    nt = collections.namedtuple('BodyAttributes',
-        ['id', 'name', 'children', 'parent', 'class_'])
-    yield nt(399, 'EARTH', [301], 10, sm.Planet)
-    yield nt(301, 'MOON', [], 399, sm.Satellite)
-    yield nt(499, 'MARS', [401, 402], 10, sm.Planet)
-    yield nt(10, 'SUN', [i for i in range(199, 1000, 100)], 0, sm.Star)
-    yield nt(0, 'SOLAR SYSTEM BARYCENTER', [], None, sm.Barycenter)
+### Data ###
+VALID_PARAMETERS = [
+    0,
+    10,
+    399,
+    399.6,
+    '399',
+    '399.5',
+    'EARTH',
+    'earth',
+    'Earth',
+    ' EARTH',
+    'EARTH ',
+    'SOLAR SYSTEM BARYCENTER'
+]
 
-VALID_PARAMETERS = [399, '399', 'EARTH', 'earth', 'Earth', ' EARTH', 'EARTH ']
 INVALID_PARAMETERS = [
     XFailType(1j),
-    XFailType(399.5),
-    XFailValue('399.5'),
     XFailValue('SOLARSYSTEMBARYCENTER'),
     XFailValue('EA RTH')
 ]
+
+IDS = [10, 301, 399]
 
 TIMES = [
     15.45,
@@ -67,40 +74,45 @@ TIMES = [
 ]
 
 ### No kernels needed ###
-# TODO: _iterbodies, _typecheck, _BodyMeta
+# TODO: _iterbodies, _typecheck
 
-@pytest.mark.usefixtures('patch_kernel')
+@pytest.mark.usefixtures('clear_bodies')
+def test_make():
+    assert len(bodies.Body.LOADED) == 1
+    assert len(bodies.Barycenter.LOADED) == 1
+    bodies.Body._make(399)
+    assert len(bodies.Body.LOADED) == 2
+    assert len(bodies.Planet.LOADED) == 1
+    bodies.Body._make(399)
+    assert len(bodies.Body.LOADED) == 2
+    assert len(bodies.Planet.LOADED) == 1
+    bodies.Body._make(10)
+    assert len(bodies.Body.LOADED) == 3
+    assert len(bodies.Planet.LOADED) == 1
+    assert len(bodies.Star.LOADED) == 1
+    assert all(type(x) == bodies.Planet for x in bodies.Planet.LOADED)
+
+@pytest.mark.usefixtures('clear_bodies')
+def test_delete():
+    for i in [399, 399, 10]:
+        bodies.Body._make(i)
+    bodies.Body._delete(399)
+    assert len(bodies.Body.LOADED) == 3
+    assert len(bodies.Planet.LOADED) == 1
+    bodies.Body._delete(399)
+    assert len(bodies.Body.LOADED) == 2
+    assert bodies.Planet.LOADED == set()
+    bodies.Body._delete(10)
+    assert len(bodies.Body.LOADED) == 1
+    assert bodies.Star.LOADED == set()
+    with pytest.raises(ValueError):
+        bodies.Body._delete(10)
+
+@pytest.mark.usefixtures('make_bodies', 'clear_bodies')
 @pytest.mark.parametrize('arg', VALID_PARAMETERS + INVALID_PARAMETERS)
 def test_constructor(arg):
-    sm.Body(arg)
-
-@pytest.mark.usefixtures('patch_kernel')
-@pytest.mark.parametrize('arg,class_', [(x[0], x[-1]) for x in gen_bodies()])
-def test_type(arg, class_):
-    body = sm.Body(arg)
-    assert isinstance(body, class_)
-    assert isinstance(body, sm.Body)
-
-@pytest.mark.usefixtures('patch_kernel')
-@pytest.mark.parametrize('idcode,name,children,parent', [x[:4] for x in gen_bodies()])
-def test_attributes(idcode, name, children, parent):
-    body = sm.Body(idcode)
-    assert body.id == idcode
-    with pytest.raises(AttributeError):
-        body.id = idcode
-    assert body.name == name
-    with pytest.raises(AttributeError):
-        body.name = name
-    assert body.children == [sm.Body(c) for c in children]
-    if parent is not None:
-        assert body.parent == sm.Body(parent)
-    else:
-        assert body.parent == None
-
-@pytest.mark.usefixtures('patch_kernel')
-@pytest.mark.parametrize('idcode,name', [x[:2] for x in gen_bodies()])
-def test_equals(idcode, name):
-    assert sm.Body(idcode) == sm.Body(name)
+    body = bodies.Body(arg)
+    assert body is bodies.Body(arg)
 
 
 ### Kernels needed ###
@@ -124,7 +136,7 @@ class TestBodyData:
             cols = 1
         return cols
 
-    @pytest.mark.parametrize('idcode', [x[0] for x in gen_bodies()])
+    @pytest.mark.parametrize('idcode', IDS)
     @pytest.mark.parametrize('times', TIMES)
     def test_state(self, idcode, times):
         cols = self._cols(times)
@@ -133,7 +145,8 @@ class TestBodyData:
         assert data.shape == (8, cols)
         assert data.dtype == float
 
-    @pytest.mark.parametrize('idcode,times', list(gen_data()))
+    @pytest.mark.parametrize('idcode', IDS)
+    @pytest.mark.parametrize('times', TIMES)
     def test_position(self, idcode, times):
         cols = self._cols(times)
         body = sm.Body(idcode)
@@ -141,7 +154,8 @@ class TestBodyData:
         assert data.shape == (4, cols)
         assert data.dtype == float
 
-    @pytest.mark.parametrize('idcode,times', list(gen_data()))
+    @pytest.mark.parametrize('idcode', IDS)
+    @pytest.mark.parametrize('times', TIMES)
     def test_speed(self, idcode, times):
         cols = self._cols(times)
         body = sm.Body(idcode)
@@ -149,7 +163,8 @@ class TestBodyData:
         assert data.shape == (4, cols)
         assert data.dtype == float
 
-    @pytest.mark.parametrize('idcode,times', list(gen_data()))
+    @pytest.mark.parametrize('idcode', IDS)
+    @pytest.mark.parametrize('times', TIMES)
     def test_rotation(self, idcode, times):
         cols = self._cols(times)
         body = sm.Body(idcode)

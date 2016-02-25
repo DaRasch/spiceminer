@@ -4,7 +4,7 @@
 from .highlevel import Kernel
 
 
-def load(path='.', recursive=True, followlinks=False, force=False):
+def load(path='.', recursive=True, followlinks=False, force_reload=False):
     '''Load a kernel file or all kernel files in a directory tree.
 
     Meta-kernels are not supported, because they would be parsed internally by
@@ -19,7 +19,7 @@ def load(path='.', recursive=True, followlinks=False, force=False):
         Search subdirectories for kernel files.
     followlinks: bool, optional
         Follow symbolic links.
-    force: bool, optional
+    force_reload: bool, optional
         Reload already loaded kernel files.
 
     Returns

@@ -171,20 +171,19 @@ class _BodyMeta(type):
 
     def __call__(cls, body):
         # Check and convert type
-        if isinstance(body, cls):
+        try:
             id_ = body.id
-        elif isinstance(body, basestring):
-            try:
-                id_ = int(body)
-            except ValueError:
-                id_ = spice.bodn2c(body)
-                if id_ is None:
-                    raise ValueError("Got invalid name '{}'".format(body))
-        elif isinstance(body, int):
+        except AttributeError:
             id_ = body
-        else:
-            msg = "'int' or 'str' argument expected, got '{}'"
+        try:
+            id_ = int(float(id_))
+        except TypeError:
+            msg = "'Body', 'int' or 'str' argument expected, got '{}'"
             raise TypeError(msg.format(type(body)))
+        except ValueError:
+            id_ = spice.bodn2c(body)
+            if id_ is None:
+                raise ValueError("Got invalid name '{}'".format(body))
         if id_ not in _BodyMeta._ID_MAP:
             msg = "No loaded 'Body' with ID or name '{}'"
             raise ValueError(msg.format(body))
@@ -476,6 +475,8 @@ class Barycenter(Body):
     '''
     def __init__(self, body):
         super(Barycenter, self).__init__(body)
+
+Body._make(0)
 
 
 class Comet(Body):
