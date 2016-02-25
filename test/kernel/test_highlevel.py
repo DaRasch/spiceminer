@@ -35,7 +35,7 @@ def clear_Kernel():
 
 ### Tests ###
 # Load
-@pytest.mark.usefixtures('patch_lowlevel')
+@pytest.mark.usefixtures('patch_lowlevel', 'clear_Kernel')
 def test_load(datadir, kernelfiles):
     loaded = highlevel.Kernel.load(datadir)
     assert set(item.path for item in loaded) == set(kernelfiles)
@@ -47,7 +47,7 @@ def test_load(datadir, kernelfiles):
     assert reloaded.intersection(loaded) == set()
     assert highlevel.Kernel.LOADED == reloaded
 
-@pytest.mark.usefixtures('patch_lowlevel')
+@pytest.mark.usefixtures('patch_lowlevel', 'clear_Kernel')
 def test_load_errors(tempdir):
     with pytest.raises(IOError):
         loaded = highlevel.Kernel.load(tempdir)
@@ -55,14 +55,14 @@ def test_load_errors(tempdir):
         loaded = highlevel.Kernel.load(os.path.join(tempdir, 'test'))
 
 # Unload
-@pytest.mark.usefixtures('patch_lowlevel')
+@pytest.mark.usefixtures('patch_lowlevel', 'clear_Kernel')
 def test_unload(datadir):
     loaded = highlevel.Kernel.load(datadir)
     unloaded = highlevel.Kernel.unload(datadir)
     assert unloaded == loaded
     assert highlevel.Kernel.LOADED == set()
 
-@pytest.mark.usefixtures('patch_lowlevel')
+@pytest.mark.usefixtures('patch_lowlevel', 'clear_Kernel')
 def test_unload_errors(tempdir):
     with pytest.raises(IOError):
         unloaded = highlevel.Kernel.unload(tempdir)
