@@ -6,8 +6,7 @@ import itertools
 
 from . import lowlevel
 from .. import bodies
-from .. import shared
-from .._helpers import ignored, cleanpath, iterable_path
+from .. import util
 
 __all__ = ['Kernel']
 
@@ -39,9 +38,9 @@ class Kernel(object):
         All bodies about which the kernel has information.
     '''
 
-    LOADED = shared.LOADED_KERNELS
-    TIMEWINDOWS_POS = shared.TIMEWINDOWS_POS
-    TIMEWINDOWS_ROT = shared.TIMEWINDOWS_ROT
+    LOADED = lowlevel.LOADED_KERNELS
+    TIMEWINDOWS_POS = util.TIMEWINDOWS_POS
+    TIMEWINDOWS_ROT = util.TIMEWINDOWS_ROT
 
     def __init__(self, kprops):
         self._kprops = kprops
@@ -130,7 +129,7 @@ class Kernel(object):
         --------
         Kernel.unload: Unload kernels.
         '''
-        path = cleanpath(path)
+        path = util.cleanpath(path)
         if not os.path.exists(path):
             msg = 'No such file or directory'
             raise IOError(2, msg, path)
@@ -176,7 +175,7 @@ class Kernel(object):
         --------
         Kernel.load: Load files.
         '''
-        path = cleanpath(path)
+        path = util.cleanpath(path)
         if not os.path.exists(path):
             msg = 'No such file or directory'
             raise IOError(2, msg, path)

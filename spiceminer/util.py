@@ -6,17 +6,21 @@ import collections
 from contextlib import contextmanager
 
 
+### Usefull functions ###
 @contextmanager
 def ignored(*exceptions):
+    '''Silence certain exceptions.'''
     try:
         yield
     except exceptions:
         pass
 
 def cleanpath(path):
+    '''Make any path absolute.'''
     return os.path.abspath(os.path.realpath(os.path.expanduser(os.path.expandvars(path))))
 
 def iterable_path(path, recursive, followlinks):
+    '''Make any path (even if it is a file) walkable with optional recursion.'''
     if os.path.isfile(path):
         dirname, basename = os.path.split(path)
         walker = [[dirname, [], [basename]]]
@@ -38,6 +42,7 @@ class TimeWindows(collections.Sequence):
 
     @property
     def raw(self):
+        '''A copy of the original data.'''
         return self._raw[:]
 
     def __getitem__(self, key):
@@ -104,3 +109,9 @@ class TimeWindows(collections.Sequence):
                 old = (old[0], max(old[1], new[1]))
         result.append(old)
         return result
+
+
+### Shared variables for Body and Kernel ###
+# Mapping of Body -> TimeWindows
+TIMEWINDOWS_POS = collections.defaultdict(TimeWindows)
+TIMEWINDOWS_ROT = collections.defaultdict(TimeWindows)

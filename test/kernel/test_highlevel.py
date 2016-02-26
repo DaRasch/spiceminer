@@ -6,7 +6,7 @@ import os
 import random
 import collections
 
-import spiceminer._helpers as helpers
+import spiceminer.util as util
 import spiceminer.kernel.lowlevel as lowlevel
 import spiceminer.kernel.highlevel as highlevel
 
@@ -16,7 +16,7 @@ import spiceminer.kernel.highlevel as highlevel
 def patch_lowlevel(monkeypatch):
     def fake_load_any(kprops):
         if kprops.type in lowlevel.KTYPE_BODY:
-            windows = {10: helpers.TimeWindows()}
+            windows = {10: util.TimeWindows()}
         else:
             windows = {}
         return windows

@@ -5,10 +5,9 @@ import os
 import re
 import collections
 
+from .. import util
 from .. import _spicewrapper as spice
-from .. import shared
 from ..time_ import Time
-from .._helpers import ignored, iterable_path, TimeWindows
 
 
 ### Constants ###
@@ -27,7 +26,6 @@ KTYPE = set.union(KTYPE_BODY, KTYPE_NONE)
 
 
 ### Kernel property parsing ###
-# TODO: move to its own module
 kp = collections.namedtuple('KernelProperties', ['path', 'binary', 'arch', 'type', 'info'])
 def kernel_properties(filepath):
     '''Information about a kernel file.
@@ -50,7 +48,7 @@ def kernel_properties(filepath):
         https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/kernel.html#Text%20Kernel%20Specifications
     '''
     arch, ktype = '?', '?'
-    with ignored(spice.SpiceError):
+    with util.ignored(spice.SpiceError):
         arch, ktype = spice.getfat(filepath)
     _validate(filepath, arch, ktype)
     binary = arch in ARCH_BIN
@@ -75,24 +73,26 @@ def _validate(filepath, arch, ktype):
 
 
 ### Kernel property collection/sorting ###
+LOADED_KERNELS = set()
+
 def icollect_kprops(path, recursive, followlinks):
     '''Find all valid kernel files on path.'''
-    for dir_path, _, fnames in iterable_path(path, recursive, followlinks):
+    for dir_path, _, fnames in util.iterable_path(path, recursive, followlinks):
         for name in fnames:
             filepath = os.path.join(dir_path, name)
-            with ignored(ValueError):
+            with util.ignored(ValueError):
                 yield kernel_properties(filepath)
 
 def ifilter_kprops(kprops_iterable):
     '''Yield only new kernels.'''
-    existing = {k.path for k in shared.LOADED_KERNELS}
+    existing = {k.path for k in LOADED_KERNELS}
     for kprops in kprops_iterable:
         if kprops.path not in existing:
             yield kprops
 
 def iunload_kprops(kprops_iterable):
     '''Unload kernel, if loaded.'''
-    existing = {k.path: k for k in shared.LOADED_KERNELS}
+    existing = {k.path: k for k in LOADED_KERNELS}
     for kprops in kprops_iterable:
         if kprops.path in existing:
             existing[kprops.path]._unload()
@@ -145,15 +145,15 @@ def _loader_template_bin(getter_ids, getter_times, path):
         # Create new time windows
         windows = ((Time.fromet(et0), Time.fromet(et1))
             for et0, et1 in zip(_WINDOWS[::2], _WINDOWS[1::2]))
-        result[idcode] = TimeWindows(*windows)
+        result[idcode] = util.TimeWindows(*windows)
     return result
 
 def _loader_template_txt(regex, path):
     with open(path, 'r') as f:
-        return {int(i): TimeWindows() for i in re.findall(regex, f.read())}
+        return {int(i): util.TimeWindows() for i in re.findall(regex, f.read())}
 
 def _validate_ls():
-    if 'ls' not in set(k.type for k in shared.LOADED_KERNELS):
+    if 'ls' not in set(k.type for k in LOADED_KERNELS):
         raise spice.SpiceError('No leap second kernel loaded')
 
 
@@ -184,7 +184,7 @@ def _load_pc(path):
     except spice.SpiceError as e:
         # Parse text kernels seperately
         # TODO: Necessary?
-        with ignored(IOError):
+        with util.ignored(IOError):
             windows = _loader_template_txt('BODY_?([-0-9]+)_PM', path)
         if windows == {}:
             raise e

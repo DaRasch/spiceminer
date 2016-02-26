@@ -28,7 +28,7 @@ class FakeKernel(object):
 def fake_LOADED(kernelfiles, monkeypatch):
     available = random.sample(kernelfiles, random.randint(0, len(kernelfiles)))
     substitute = {FakeKernel(path) for path in available}
-    monkeypatch.setattr(lowlevel.shared, 'LOADED_KERNELS', substitute)
+    monkeypatch.setattr(lowlevel, 'LOADED_KERNELS', substitute)
     return substitute
 
 @pytest.fixture(scope='function')

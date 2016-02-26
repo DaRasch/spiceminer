@@ -4,10 +4,9 @@ import collections
 
 import numpy
 
-from . import shared
+from . import util
 from . import _spicewrapper as spice
 from .time_ import Time
-from ._helpers import ignored
 
 __all__ = ['Body', 'Asteroid', 'Barycenter', 'Comet', 'Instrument',
             'Planet', 'Satellite', 'Spacecraft', 'Star']
@@ -70,7 +69,7 @@ class _Carrington(SpecialFrame):
 def _iterbodies(start, stop, step=1):
     '''Iterate over all bodies with ids in the given range.'''
     for i in xrange(start, stop, step):
-        with ignored(ValueError):
+        with util.ignored(ValueError):
             yield Body(i)
 
 def _prepare_times(times):
@@ -251,11 +250,11 @@ class Body(object):
 
     @property
     def times_pos(self):
-        return shared.TIMEWINDOWS_POS[self]
+        return util.TIMEWINDOWS_POS[self]
 
     @property
     def times_rot(self):
-        return shared.TIMEWINDOWS_ROT[self]
+        return util.TIMEWINDOWS_ROT[self]
 
     @property
     def parent(self):
@@ -302,7 +301,7 @@ class Body(object):
         times, observer, frame, transform = _typecheck(times, observer, frame)
         result = []
         for time in times:
-            with ignored(spice.SpiceError):
+            with util.ignored(spice.SpiceError):
                 data = spice.spkezr(self.name, Time.fromposix(time).et(),
                     frame, abcorr or Body._ABCORR, observer)
                 result.append([time] + data[0] + [data[1]])
@@ -344,7 +343,7 @@ class Body(object):
         times, observer, frame, transform = _typecheck(times, observer, frame)
         result = []
         for time in times:
-            with ignored(spice.SpiceError):
+            with util.ignored(spice.SpiceError):
                 result.append([time] + spice.spkpos(self.name,
                 Time.fromposix(time).et(), frame, abcorr or Body._ABCORR,
                 observer)[0])
@@ -416,7 +415,7 @@ class Body(object):
         result = []
         valid_times = []
         for time in times:
-            with ignored(spice.SpiceError):
+            with util.ignored(spice.SpiceError):
                 result.append(spice.pxform(self._frame or self.name,
                     target, Time.fromposix(time).et()))
                 valid_times.append(time)
@@ -562,7 +561,7 @@ class Instrument(Body):
         observer = self.fov().frame
         result = []
         for t in times:
-            with ignored(spice.SpiceError):
+            with util.ignored(spice.SpiceError):
                 visible = spice.fovtrg(self.name, body.name, 'POINT', frame,
                     abcorr or Body._ABCORR, observer.name,
                     Time.fromposix(t).et())
