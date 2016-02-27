@@ -1,0 +1,33 @@
+stages:
+  - build
+  - test
+  - artifact
+
+cache: 
+  key: "$CI_PROJECT_ID"
+  paths:
+  - cspice/
+
+build_master:
+  stage: build
+  only:
+    - master
+    - tags
+  script:
+    - "[[ ! -d cspice ]] && python2 setup.py cspice"
+    - "python2 setup.py build_ext --inplace"
+
+run_test:
+  stage: test
+  script:
+    - "python2 setup.py test -rXS"
+
+run_artifact:
+  stage: artifact
+  only:
+    - tags
+  script:
+    - "true"
+  artifacts:
+    paths:
+    - spiceminer/
