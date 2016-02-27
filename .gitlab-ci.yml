@@ -31,3 +31,14 @@ run_artifact:
   artifacts:
     paths:
     - spiceminer/
+run_docs:
+  stage: artifact
+  only:
+    - master
+  script:
+    - "cd docs"
+    - "make html"
+    - "cd .."
+  artifacts:
+    paths:
+    - docs/build/html
