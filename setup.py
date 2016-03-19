@@ -6,6 +6,7 @@ from __future__ import print_function
 import os
 import re
 import sys
+import platform
 import glob
 import subprocess
 
@@ -31,7 +32,7 @@ cspice_root = os.getenv('CSPICEPATH', os.path.join(ROOT_DIR, 'cspice'))
 #    print('ERROR: spice not found') #XXX search lib in default locations?
 #    sys.exit(1)
 cspice_include = os.path.join(cspice_root, 'include')
-cspice_lib = os.path.join(cspice_root, 'lib', 'cspice.a') #XXX same under windows?
+cspice_lib = os.path.join(cspice_root, 'lib', 'cspice.lib' if platform.system() == 'Windows' else 'cspice.a')
 
 src_files = glob.glob(os.path.join(ROOT_DIR, 'cwrapper', '*.c'))
 cwrapper = Extension('.'.join([PROJECT_NAME, 'libspice']), src_files,
