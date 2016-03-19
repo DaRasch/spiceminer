@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #-*- coding:utf-8 -*-
 
-#WARNING: Only tested with Linux 64bit
+#WARNING: Only tested with Linux 64bit and Windows 10 64bit
 #TODO: Test with other platforms
 
 from __future__ import print_function
@@ -40,7 +40,7 @@ def best_fit(options):
     give_points(system)
 
     compiler = platform.python_compiler()
-    compiler = re.search('(Apple|GC|Visual|Sun)C', compiler).group()
+    compiler = re.search('(Apple|GC|Visual|MS|Sun)C', compiler).group()
     print('  COMPILER: ', compiler)
     give_points(compiler)
 
@@ -103,11 +103,14 @@ def download(url, chunksize=2**20):
     return fakefile
 
 
-def unpack(filelike, path):
+def unpack(filelike, path, zip):
     print('Unpacking to: {}'.format(path))
-    cmd = 'gunzip | tar xC ' + path
-    proc = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE)
-    proc.stdin.write(filelike.read())
+    if zip:
+        zipfile.ZipFile(filelike).extractall(path)
+    else:
+        cmd = 'gunzip | tar xC ' + path
+        proc = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE)
+        proc.stdin.write(filelike.read())
 
 
 def main(path=None, yesno=None):
@@ -127,9 +130,12 @@ def main(path=None, yesno=None):
         'SunSPARC_Solaris_GCC_64bit',
         'SunSPARC_Solaris_SunC_32bit',
         'SunSPARC_Solaris_SunC_64bit']
-    FILE_URL = 'packages/cspice.tar.Z'
 
-    result = '/'.join([ROOT_URL, best_fit(PLATFORM_URLS), FILE_URL])
+    platform_url = best_fit(PLATFORM_URLS)
+    use_zip = platform_url.startswith('PC_Windows')
+    file_url = 'packages/cspice{0}'.format(('.zip' if use_zip else '.tar.Z'))
+
+    result = '/'.join([ROOT_URL, platform_url, file_url])
 
     if yesno is None:
         yesno = raw_input('Do you want to download it? [y/n] ')
@@ -144,7 +150,7 @@ def main(path=None, yesno=None):
 
     filelike = download(result)
     with contextlib.closing(filelike):
-        unpack(filelike, ROOT_DIR)
+        unpack(filelike, ROOT_DIR, use_zip)
 
     print('Done')
 
