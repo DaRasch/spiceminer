@@ -108,11 +108,11 @@ def _prepare_observer(body):
 
 def _prepare_frame(frame):
     try:
+        frame, transform = FrameDecorator.convert(frame)
+    except (KeyError, AttributeError):
         frame = Body(frame)
         frame = frame._frame or frame.name
         transform = SpecialFrame()
-    except (TypeError, ValueError):
-        frame, transform = FrameDecorator.convert(frame)
     return frame, transform
 
 def _typecheck(times, observer=None, frame='ECLIPJ2000'):
@@ -586,9 +586,8 @@ class Instrument(Body):
                 visible = spice.fovtrg(self.name, body.name, 'POINT', frame,
                     abcorr or Body._ABCORR, observer.name,
                     Time.fromposix(t).et())
-                result.append([float(t), visible])
-        return [numpy.array(row) for row in zip(*result)]
-
+                result.extend([float(t), not visible])
+        return numpy.ma.array(result[::2], mask=result[1::2])
 
 
 class Planet(Body):

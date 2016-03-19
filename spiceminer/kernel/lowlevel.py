@@ -11,7 +11,6 @@ from ..time_ import Time
 
 
 ### Constants ###
-#TODO: move to constants.py
 # File encodings
 ARCH_BIN = {'DAF', 'DAS'}
 ARCH_TXT = {'KPL'}
