@@ -1,5 +1,12 @@
 #include "CustomSpice.h"
 
+/* Get kernel architecture and type */
+char* getfat_custom(char* path, int arclen, int typlen, char* arch, char* type) {
+    getfat_c(path, arclen, typlen, arch, type);
+    CHECK_EXCEPTION
+    FINALIZE
+}
+
 /* Load kernel */
 char* furnsh_custom(char* path) {
     furnsh_c(path);

@@ -1,6 +1,7 @@
 #-*- coding:utf-8 -*-
 
-from .time_ import Time
+from . import extensions
+from .time_ import *
 from .bodies import *
 from .kernel import *
 from ._spicewrapper import SpiceError

@@ -6,7 +6,7 @@ import os
 import collections
 import itertools as itt
 
-import spiceminer._helpers as _helpers
+import spiceminer.util as util
 
 
 def gen_ignored():
@@ -17,7 +17,7 @@ def gen_ignored():
 @pytest.mark.parametrize('errors', gen_ignored())
 def test_ignored(errors):
     for error in errors:
-        with _helpers.ignored(*errors):
+        with util.ignored(*errors):
             raise error()
 
 
@@ -32,7 +32,7 @@ cleanable_paths = [
 @pytest.mark.parametrize('path', iterable_paths + cleanable_paths)
 def test_cleanpath(path, monkeypatch):
     monkeypatch.setenv('ENV_TEST', '.')
-    path = _helpers.cleanpath(path)
+    path = util.cleanpath(path)
     assert os.path.exists(path)
     for symbol in ['~', '$', '{', '}', '..']:
         assert symbol not in path
@@ -42,7 +42,7 @@ def test_cleanpath(path, monkeypatch):
 @pytest.mark.parametrize('recursive', [True, False])
 @pytest.mark.parametrize('followlinks', [True, False])
 def test_iterable_path(path, recursive, followlinks):
-    iterable = _helpers.iterable_path(path, recursive, followlinks)
+    iterable = util.iterable_path(path, recursive, followlinks)
     assert isinstance(iterable, collections.Iterable)
     for dir_path, dirs, files in itt.islice(iterable, 5):
         assert os.path.exists(dir_path)
@@ -76,7 +76,7 @@ class TestTimeWindows:
     @pytest.mark.parametrize('args,merged', gen_basics())
     def test_basics(self, args, merged):
         # init
-        instance = _helpers.TimeWindows(*args)
+        instance = util.TimeWindows(*args)
         assert instance._merged == merged
         # properties
         assert instance.raw == args
@@ -94,8 +94,8 @@ class TestTimeWindows:
 
     @pytest.mark.parametrize('args1,args2,equal,add,sub', gen_infix())
     def test_infix_methods(self, args1, args2, equal, add, sub):
-        instance_0 = _helpers.TimeWindows(*args1)
-        instance_1 = _helpers.TimeWindows(*args2)
+        instance_0 = util.TimeWindows(*args1)
+        instance_1 = util.TimeWindows(*args2)
         assert (instance_0 == instance_1) is equal
         assert (instance_0 + instance_1) == add
         assert (instance_0 - instance_1) == sub
